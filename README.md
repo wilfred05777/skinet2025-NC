@@ -1,3 +1,4 @@
+
 creation of .net project 
 ```
 dotnet sln add Core
@@ -24,4 +25,16 @@ cd Core folder
 cd root folder
 -dotnet restore
 - dotnet build
+```
+
+config on APi Controllers .net v9
+```
+- api/properties 
+- launchSettings.json
+- 
+"http": {
+      "applicationUrl": "http://localhost:5000; http://localhost:5001",
+    },
+-- bug in this section: 
+https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45148203#notes
 ```
