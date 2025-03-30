@@ -10,3 +10,18 @@ dotnet sln add Core // add to main file using dotnet sln list if it is seen it i
 dotnet sln list // show attacheh folders
 dotnet new gitignore // add git .gitignore file
 ```
+
+```
+cd API folder
+- dotnet add reference ../Infrastructure
+
+cd ..
+cd Core folder
+-dotnet add reference ../Core
+```
+
+```
+cd root folder
+-dotnet restore
+- dotnet build
+```
