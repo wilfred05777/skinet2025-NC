@@ -38,3 +38,10 @@ config on APi Controllers .net v9
 -- bug in this section: 
 https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45148203#notes
 ```
+
+
+```
+dotnet dev-certs https
+dotnet dev-certs https --trust
+dotnet dev-certs https --clean
+```
