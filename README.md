@@ -256,3 +256,10 @@ public class ProductsController : ControllerBase
     }
 }
 ```
+
+14. Using postman to test our new API Endpoints 
+- Postman
+  - Create new workspace 
+  - name of workspace, only me,
+  - new collection
+  - skinet -> variables for defining variable for api testing oranization
