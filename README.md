@@ -149,3 +149,59 @@ migratations
 
 To undo this action, use `'dotnet ef migrations remove -s API -p Infrastructure'`
 `note: docker tool should run in order to excute properly the removal of migration`
+
+
+12. Configuring the entities for the migration
+- StoreContext.cs
+`override space selectOnModelCreating(ModelBuilder modelBuilder)) `
+```
+namespace Infrastructure.Data;
+using Core.Entities; // Ensure the Core project is referenced in the Infrastructure project
+using Infrastructure.Config;
+using Microsoft.EntityFrameworkCore;
+
+
+public class StoreContext(DbContextOptions options) : DbContext(options)
+{
+    public DbSet<Product> Products { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {   
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductConfiguration).Assembly);
+    }
+}
+```
+
+- create-> Infrastructure/Config/ProductConfiguration.cs
+- `Soulution Explorer`
+  - `higlight->IEntityTypeConfiguration->implement Interface`
+```
+using System;
+using Core.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Infrastructure.Config;
+
+public class ProductConfiguration : IEntityTypeConfiguration<Product>
+{
+    public void Configure(EntityTypeBuilder<Product> builder)
+    {
+        builder.Property(x => x.Price).HasColumnType("decimal(18,2)");
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
+    }
+}
+```
+` terminal: dotnet ef migrations add InitialCreate -s API -p Infrastructure `
+create database
+`note: Docker should be running/started`
+`terminal root: dotnet ef database update -s API -p Infrastructure`
+
+View Database Content
+`SQL Server Via VS Code Extension`
+` server: localhost `
+` username: SA login`
+` password: Password@1 `
+` [skinet].dbo.[__EFMigrationsHistory] right click-> select 1000`
