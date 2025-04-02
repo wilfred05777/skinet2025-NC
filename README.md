@@ -121,3 +121,31 @@ running docker-compose.yaml file
 ```
  root terminal: docker compose up -d
 ```
+
+11. Connecting to the Sql Server from the app
+```
+Solution Explorer:
+                  -skinet2025/API/appsettings.json/appsettings.Development.json
+```
+appsettings.Development.json
+``` 
+"ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=skinet;User Id=SA;Password=Password@1;TrustServerCertificate=True;"
+  }, 
+```
+
+install package
+`https://www.nuget.org/packages/dotnet-ef`
+
+`terminal: dotnet tool install --global dotnet-ef --version 9.0.3"`
+` stop the running APP & restart it again: dotnet watch or dotnet run`
+
+check if there is a dotnet ef tool
+`at terminal root folder skinet: dotnet ef`
+
+migratations
+`note: api runnig should be stop befor running the command below at the terminal` 
+`dotnet ef migrations add InitialCreate -s API -p Infrastructure`
+
+To undo this action, use `'dotnet ef migrations remove -s API -p Infrastructure'`
+`note: docker tool should run in order to excute properly the removal of migration`
