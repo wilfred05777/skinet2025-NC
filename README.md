@@ -68,3 +68,25 @@ public class Product
     public int QuantityInStock { get; set; }
 }
 ```
+
+9. Setting up entity framework
+```
+- Solution Explorer
+-- Infractructure folder
+--- VS Code - Nuget tab / Uncheck Pre-release
+---- Search for -> Microsoft.EntityFrameworkCore.SqlServer -> install in Infrastructure project
+---- Search for -> Microsoft.EntityFrameworkCore.Design -> install in API project
+---- In Infrastructure folder - removed Class1.cs
+
+---- Infrastructure/Data/StoreContext.cs
+---- click yellow bulb in VSCode ->Generate constructor(storeContext(optional))
+---- refactor the generated code to primary constructor
+```
+Connection String @ Program.cs dbContext
+```
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddDbContext<StoreContext>(opt =>{
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+```
