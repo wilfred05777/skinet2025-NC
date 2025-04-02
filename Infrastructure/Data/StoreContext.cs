@@ -1,8 +1,8 @@
 using System;
+namespace Infrastructure.Data;
 using Core.Entities; // Ensure the Core project is referenced in the Infrastructure project
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Data;
 
 public class StoreContext(DbContextOptions options) : DbContext(options)
 {

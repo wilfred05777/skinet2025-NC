@@ -1,4 +1,6 @@
-
+To run the program
+  - cd api / dotnet run or dotnet watch
+---
 creation of .net project 
 ```
 dotnet sln add Core
@@ -89,4 +91,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<StoreContext>(opt =>{
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+```
+```
+- issue cd infrastructure then -> dotnet add reference ../Core/Core.csproj
 ```
