@@ -45,3 +45,26 @@ dotnet dev-certs https
 dotnet dev-certs https --trust
 dotnet dev-certs https --clean
 ```
+
+8. Creating the Product Entity
+```
+ - Solution Explorer
+ - Core / Class1.cs - delte
+ - create new folder & file core/Entities/product.cs
+```
+product.cs
+```
+namespace Core.Entities;
+
+public class Product
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+    public decimal Price { get; set; }
+    public required string PictureUrl { get; set; }
+    public required string Type { get; set; }
+    public required string Brand { get; set; }   
+    public int QuantityInStock { get; set; }
+}
+```
