@@ -1,6 +1,10 @@
 To run the program
   - cd api / dotnet run or dotnet watch
 ---
+
+API
+<hr>
+
 creation of .net project 
 ```
 dotnet sln add Core
@@ -94,4 +98,26 @@ builder.Services.AddDbContext<StoreContext>(opt =>{
 ```
 ```
 - issue cd infrastructure then -> dotnet add reference ../Core/Core.csproj
+```
+
+10. Setting up Sql Server
+```
+- docker
+- root file skinnet2025/docker-compose.yml
+```
+docker-compose.yml
+```
+services: 
+  sql:
+    image: mcr.microsoft.com/azure-sql-edge
+    environment:
+      ACCEPT_EULA: "1"
+      MSSQL_SA_PASSWORD: "Password@1"
+    ports:
+      - "1433:1433"
+      
+```
+running docker-compose.yaml file
+```
+ root terminal: docker compose up -d
 ```
