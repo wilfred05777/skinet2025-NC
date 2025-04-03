@@ -330,3 +330,37 @@ API Architecture
 ` Abstraction of an abstraction ` 
 ` Optimization challenges `
 ` Optimization challenges `
+
+20. Creating the repository interface and implementation class
+` Solution Explorer -> Core/Interfaces ` 
+` Solution Explorer -> Core/Interfaces/IProductRepository.cs ` 
+- IProductRepository.cs
+```
+using Core.Entities;
+namespace Core.Interfaces;
+public interface IProductRepository
+{
+
+    Task<IReadOnlyList<Product>> GetProductsAsync();
+    Task<Product?> GetProductByIdAsync(int id);
+    void AddProduct (Product product);
+    void UpdateProduct (Product product);
+    void DeleteProduct (Product product);
+    bool ProductExists(int id);
+    Task<bool> SaveChangesAsync();
+
+}
+```
+- implement the Interface IProductRepository
+` Solution Explorer -> Infrastructure/Data/ProductRepository.cs `
+` ProductRepository.cs`
+` vscode: highlight + quick fix select-> implement interface`
+```
+public class ProductRepository : IProductRepository // <-Highlight this 
+``` 
+`it  will generate default scafolding content in  ProductRepository.cs `
+- Add ProductREPOSITORY as service in PROGRAM CLASS
+` Program.cs `
+```
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+```
