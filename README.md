@@ -310,3 +310,23 @@ API Architecture
 ` The Repository Pattern `
 ` Seeding Data `
 ` Migrations and Startup `
+
+19. Introduction to the repository pattern
+
+- The Repository Pattern - Goals
+` Decouple business code from data access `
+` Separation of concerns `
+` Minimise duplicate query logic`
+` Testability `
+
+- The Repository pattern - Why use it?
+` Avoid messy controllers `
+` Simplified testing `
+` Increased abstraction `
+` Maintainability ` 
+` Reduced duplicated code ` 
+
+- The Repository pattern - Downsides?
+` Abstraction of an abstraction ` 
+` Optimization challenges `
+` Optimization challenges `
