@@ -301,3 +301,12 @@ public class ProductsController : ControllerBase
         return context.Products.Any(x => x.Id == id);
     }
 ```
+
+<hr>
+API Architecture
+<hr>
+
+` Application archeticture `
+` The Repository Pattern `
+` Seeding Data `
+` Migrations and Startup `
