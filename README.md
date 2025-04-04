@@ -364,3 +364,10 @@ public class ProductRepository : IProductRepository // <-Highlight this
 ```
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 ```
+
+21. Implementing the repository methods
+
+` infrastructure/Data/ProductRepository.cs `
+` context -> create & assign field 'context' `
+` ProductRepository -> use primary constructor `
+remove `private readonly StoreContext context = context; `
