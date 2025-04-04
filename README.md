@@ -480,3 +480,66 @@ public class ProductsController(IProductRepository repo) : ControllerBase
 }
 ```
 `Check Api endpoints in PostMan`
+
+23. Seeding data
+` CA/seed data/delivery.json`
+` CA/seed data/products.json`
+` add = Infrastructure/Data/SeedData/delivery.json`
+` add = Infrastructure/Data/SeedData/products.json`
+
+` create = Infrastructure/Data/StoreContextSeed.json`
+```
+using System;
+using System.Text.Json;
+using Core.Entities;
+
+namespace Infrastructure.Data;
+
+public class StoreContextSeed
+{
+    public static async Task SeedAsync(StoreContext context)
+    {
+        if(!context.Products.Any())
+        {
+            var productsData = await File.ReadAllTextAsync("../Infrastructure/Data/SeedData/products.json");
+            
+            var products = JsonSerializer.Deserialize<List<Product>>(productsData);
+
+            if(products == null) return;
+            context.Products.AddRange(products);
+            await context.SaveChangesAsync();
+        }
+    }
+}
+```
+
+` Program.cs `
+```
+app.MapControllers();
+
+try
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<StoreContext>();
+    await context.Database.MigrateAsync();
+    await StoreContextSeed.SeedAsync(context);
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+    throw;
+}
+
+app.Run();
+```
+
+` local development server: shutdown API dotnet watch/run`
+` cd API/ then$: ' dotnet ef database drop -p Infrastructure -s API ' `
+encounter issue
+` Unable to retrieve project metadata. Ensure it's an SDK-style project. If you're using a custom BaseIntermediateOutputPath or MSBuildProjectExtensionsPath values, Use the --msbuildprojectextensionspath option. `
+
+solution on encounter issue:
+` reason I encounter this error is that I was in API I should be in the root folder of Skinet => 'cd ..'`
+
+`if successfully drop data from database 'cd api' again then run 'dotnet watch'`
