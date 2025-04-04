@@ -543,3 +543,59 @@ solution on encounter issue:
 ` reason I encounter this error is that I was in API I should be in the root folder of Skinet => 'cd ..'`
 
 `if successfully drop data from database 'cd api' again then run 'dotnet watch'`
+
+
+24. Getting the brands and types
+` Core/Interface/IProductRepository.cs `
+
+```
+public interface IProductRepository
+{
+Task<IReadOnlyList<string>> GetBrandsAsync();
+Task<IReadOnlyList<string>> GetTypesAsync();
+}
+```
+
+implement
+
+` Infrastructure/Data/ProductRepository.cs`
+```
+// IProductRepository => Implement interface 
+public class ProductRepository(StoreContext context) : IProductRepository
+{
+...
+ public async Task<IReadOnlyList<string>> GetBrandsAsync()
+    {
+        return await context.Products.Select(x=> x.Brand)
+            .Distinct()
+            .ToListAsync();
+    }
+ public async Task<IReadOnlyList<string>> GetTypesAsync()
+    {
+        return await context.Products.Select(x=> x.Type)
+            .Distinct()
+            .ToListAsync();
+    }
+ ...   
+}
+```
+` API/Controllers/ProductsController.cs `
+```
+public class ProductsController(IProductRepository repo) : ControllerBase
+{
+...
+ [HttpGet("brands")]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
+    {
+        return Ok(await repo.GetBrandsAsync());
+    }
+
+    [HttpGet("types")]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
+    {
+        return Ok(await repo.GetTypesAsync());
+    }
+...
+}
+```
+` Postman API testing section 3 - Get Products Brands & Get Product Types`
