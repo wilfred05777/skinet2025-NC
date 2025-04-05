@@ -599,3 +599,48 @@ public class ProductsController(IProductRepository repo) : ControllerBase
 }
 ```
 ` Postman API testing section 3 - Get Products Brands & Get Product Types`
+
+25. Filtering the products by brand = FF
+
+` IProductRepository.cs `
+```
+public interface IProductRepository
+{
+    ...
+ Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type);
+    ...
+}
+```
+` ProductRepository.cs`
+```
+    public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type)
+    {   
+        var query = context.Products.AsQueryable();
+
+        if(!string.IsNullOrWhiteSpace(brand))
+            query = query.Where(x => x.Brand == brand);
+
+        if(!string.IsNullOrWhiteSpace(type))
+            query = query.Where(x => x.Type == type);
+
+        return await query.ToListAsync();
+        // return await context.Products.ToListAsync();
+    }
+```
+
+` ProductsController.cs`
+```
+[HttpGet]
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type)
+    {
+      // return a product list  
+    return Ok(await repo.GetProductsAsync(brand,type));
+
+    }
+```
+` Test it in Postman: Get Products by Brand or Type`
+```
+{{url}}/api/products?brand=React 
+or
+{{url}}/api/products?type=boards
+```
