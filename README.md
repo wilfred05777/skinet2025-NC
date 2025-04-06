@@ -689,3 +689,7 @@ public class ProductsController(IProductRepository repo) : ControllerBase
 ` Postman: Sec. Archeticture - Get Products sorted by price asc`
 ` Postman: Sec. Archeticture - Get Products sorted by price asc {{url}}/api/products?sort=priceDesc`
 ` Postman: Sec. Archeticture - Get Products sorted by price asc {{url}}/api/products?sort=priceAsc`
+
+<hr>
+The specification Pattern
+<hr>
