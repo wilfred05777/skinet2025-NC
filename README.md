@@ -644,3 +644,48 @@ public interface IProductRepository
 or
 {{url}}/api/products?type=boards
 ```
+
+198. Creating the order components
+
+` IProductRepository.cs `
+```
+Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type, string? sort);
+```
+
+` ProductRepository.cs `
+```
+public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type, string? sort)
+{
+    // if(!string.IsNullOrWhiteSpace(sort))
+    // {
+        query = sort switch
+        {
+            "priceAsc" => query.OrderBy(x => x.Price),
+            "priceDesc" => query.OrderByDescending(x => x.Price),
+            _ => query.OrderBy(x => x.Name)
+        };
+    // }
+}
+```
+
+` ProductsController.cs `
+```
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController(IProductRepository repo) : ControllerBase
+{
+
+ [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
+    {
+      // return a product list  
+    return Ok(await repo.GetProductsAsync(brand,type, sort));
+
+    }
+}
+```
+
+` Postman: Sec. Archeticture - Get Products`
+` Postman: Sec. Archeticture - Get Products sorted by price asc`
+` Postman: Sec. Archeticture - Get Products sorted by price asc {{url}}/api/products?sort=priceDesc`
+` Postman: Sec. Archeticture - Get Products sorted by price asc {{url}}/api/products?sort=priceAsc`
