@@ -1,11 +1,11 @@
 To run the program
   - cd api / dotnet run or dotnet watch
+
+---
+### API
 ---
 
-API
-<hr>
-
-creation of .net project 
+###### creation of .net project 
 ```
 dotnet sln add Core
 dotnet new webapi -o API -controllers
@@ -690,6 +690,73 @@ public class ProductsController(IProductRepository repo) : ControllerBase
 ` Postman: Sec. Archeticture - Get Products sorted by price asc {{url}}/api/products?sort=priceDesc`
 ` Postman: Sec. Archeticture - Get Products sorted by price asc {{url}}/api/products?sort=priceAsc`
 
+``
+
+#### The specification Pattern
 <hr>
-The specification Pattern
-<hr>
+- 28. Introduction
+
+` Create a generic repository `
+` Specification pattern `
+` Using the specification pattern `
+` Using the debugger `
+` Shaping data `
+
+- `about Generics`
+    - `Been around shice C# 2.0 (2002)`
+    - `Help avoid duplicate code`
+    - `Type safety`
+
+##### Generics - We are already using
+
+```
+    // e.g 1
+    public StoreContext(DbContextOptions<StoreContext> options) : base(options)){
+
+    // => <StoreContext> <=
+    }
+```
+
+```
+    // e.g 2
+    pubic DbSet<Product> Products {get; set;}
+
+    // => <Product>
+```
+```
+    services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnections)));
+    
+    // => <StoreContext>
+```
+##### Generic Repository
+```
+public interface IGenericRepository<T> where T: BaseEntity
+{
+    Task<T> GetByIdAsync(int id);
+    Task<IReadOnlyList<T>> ListAllAsync();
+}
+
+// => <T> or T
+```
+##### Generic Expressions:
+###### Product Repository
+```
+public aync Task<IReadOnlyList<Product>> GetProductsContainingRed()
+{
+    return await _context.Products
+        .Where(x => x.Name.Contains("red"))
+        .ToListAsync();
+}
+```
+###### Generic Repository
+```
+public aync Task<IReadOnlyList<T>> ListAllAsync()
+{
+    return await _context.Set<T>()
+        .OrderBy(p => p.Name)
+        .ToListAsync();
+        // => p.Name error or there is a change here.
+}
+```
+` Generic Repository can do a simple things `
+` but when it comes to more complex queries  bearing in mind for Generic Repositories 'I have a hundred queries' `
