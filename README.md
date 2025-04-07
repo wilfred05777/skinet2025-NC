@@ -760,3 +760,80 @@ public aync Task<IReadOnlyList<T>> ListAllAsync()
 ```
 ` Generic Repository can do a simple things `
 ` but when it comes to more complex queries  bearing in mind for Generic Repositories 'I have a hundred queries' `
+
+###### 29. Creating a generic repository
+`Generic Version of IProductRepository.cs & ProductRepository.cs`
+
+`Core/Interfaces/IGenericRepository.cs`
+```
+using System;
+using Core.Entities;
+
+namespace Core.Interfaces;
+
+public interface IGenericRepository<T> where T : BaseEntity
+{
+    Task<T?> GetByIdAsync(int id); 
+    Task<IReadOnlyList<T>> ListAllAsync();
+    void Add(T entity);
+    void Update(T entity);
+    void Remove(T entity);
+    Task<bool> SaveChangesAsync();
+    bool Exists(int id);
+}
+
+```
+###### implementation
+`Infrastructure/Data/GenericRepository.cs`
+```
+using System;
+using Core.Entities;
+using Core.Interfaces;
+
+namespace Infrastructure.Data;
+
+public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
+{
+    public void Add(T entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Exists(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<T?> GetByIdAsync(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IReadOnlyList<T>> ListAllAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Remove(T entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> SaveChangesAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Update(T entity)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+```
+` implement the interface - highlight this- IGenericRepository `
+##### Add to service in program.cs
+```
+// services section
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+```
