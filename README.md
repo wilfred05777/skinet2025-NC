@@ -994,3 +994,62 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ```
 ###### `Postman checking`
 ` Section 4: Specification -> Get Products by Brand`
+
+###### 32. Introduction to the specification pattern
+
+` Specification pattern `
+` Generic Repository is an Anti-Pattern! `
+```
+public interface IRepository<T>
+{
+    IReadOnlyList<T> ListAllAsync();
+    IReadOnlyList <T> FindAsync(Expression<Func<T, bool>> query);
+    T GetByID(int id);
+    void Add(T item);
+    void Update(T item);
+    void Delete(T item); 
+}
+
+//FindAsync(Expression<Func<T, bool>> query); // FindAsync = Leaky abstraction or too generic?
+
+// Generic expression e.g: in (Expression<Func<T, bool>> query)
+// x=>x.Name.Contains("red")
+```
+
+`The specification pattern to the rescue!`
+
+```
+- Describes a query in an object
+- Returns an IQueryable<T>
+- Generic List method takes specification as parameter
+- Specification can have meaningful name
+    - OrdersWithItemsAndSortingSpecification
+```
+
+```
+---------------------------  
+|   Specification:        |
+|   that have a brand     |
+|   of 'react' and are a  |
+|   type of 'gloves'      |
+---------------------------
+            |
+            | down arrow
+---------------------------  
+|                         |
+|                         | Generic Repository
+|  ListAsync(specifation) |
+|                         |
+|                         |
+---------------------------
+    spec |       | IQueryable<T>
+         |       | 
+downarrow|       | up arrow
+---------------------------  
+|                         |
+|                         | 
+|      Evaluator          |
+|                         |
+|                         |
+---------------------------
+```
