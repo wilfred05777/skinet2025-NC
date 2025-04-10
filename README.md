@@ -1053,3 +1053,42 @@ downarrow|       | up arrow
 |                         |
 ---------------------------
 ```
+
+###### 33. Setting up the specification classes
+` Core/Interfaces/ISpecification.cs `
+```
+using System;
+using System.Linq.Expressions;
+
+namespace Core.Interfaces;
+
+public interface ISpecification<T>
+{
+    Expression<Func<T, bool>> Criteria{ get; }
+}
+
+```
+- create folder name
+` Core/Specifications `
+` Core/Specifications/BaseSpecifications.cs `
+` implement the interface `
+` create and assign field 'criteria' `
+` BaseSpecifications(Expression< - highlight Expression - Use primary constructor `
+```
+using System;
+using System.Linq.Expressions;
+using Core.Interfaces;
+
+namespace Core.Specifications;
+
+public class BaseSpecifications<T>(Expression<Func<T, bool>> criteria) : ISpecification<T>
+{
+    public Expression<Func<T, bool>>  Criteria => criteria;
+}
+
+```
+
+` Infrastructure/Data/SpecificationEvaluator.cs`
+```
+
+```
