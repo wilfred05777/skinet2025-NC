@@ -1090,5 +1090,62 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>> criteria) : ISpecif
 
 ` Infrastructure/Data/SpecificationEvaluator.cs`
 ```
+using System;
+using Core.Entities;
+using Core.Interfaces;
 
+namespace Infrastructure.Data;
+
+public class SpecificationEvaluator<T> where T: BaseEntity
+{
+    public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+    {
+        if( spec.Criteria !=null)
+        {
+            query = query.Where(spec.Criteria); // x => x.Brand == brand
+        }
+
+        return query;
+        
+    }
+}
+
+```
+###### 34. Updating the repository to use the specification
+
+` Update Core/Interfaces/IGenericRepository.cs `
+```
+public interface IGenericRepository<T> where T : BaseEntity
+{
+    /...
+    Task<T?> GetEntityWithSpec(ISpecification<T> spec);
+    Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
+    /...
+}
+```
+` Update Infrastructure/Data/GenericRepository.cs `
+` IGenericRepository = Implement generic methods by Implement Interface `
+```
+public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
+{
+
+    public async Task<T?> GetEntityWithSpec(ISpecification<T> spec)
+    {
+        return await ApplySpecification(spec).FirstOrDefaultAsync();
+    }
+
+    //... 
+
+    public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
+    {
+       return await ApplySpecification(spec).ToListAsync(); // filter the spec base on the list (spec).ToListAsync(); and return the list.
+    }
+
+    //..
+    private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+    {
+        return SpecificationEvaluator<T>.GetQuery(context.Set<T>().AsQueryable(), spec);
+    }
+
+}
 ```
