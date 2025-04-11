@@ -1149,3 +1149,90 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
 
 }
 ```
+###### 35. Using the specification pattern
+
+` create Core/Specification/ProductSpecification.cs -> start `
+
+```
+using Core.Entities;
+
+namespace Core.Specifications;
+
+public class ProductSpecification : BaseSpecifications<Product>
+{
+
+}
+
+```
+
+` adjustment to Core/Specifications/BaseSpecification.cs `
+```
+using System.Linq.Expressions;
+using Core.Interfaces;
+
+namespace Core.Specifications;
+
+// making it optional by adding in bool>>? <--
+public class BaseSpecifications<T>(Expression<Func<T, bool>>? criteria) : ISpecification<T>
+{
+    // empty constructor ProductSpecification
+    protected BaseSpecifications() : this(null) {}
+
+    // making it optional by adding in bool>>? <--
+    public Expression<Func<T, bool>>?  Criteria => criteria;
+}
+```
+
+` adjust code in  Core/Interaces/ISpecification.cs `
+```
+using System.Linq.Expressions;
+
+namespace Core.Interfaces;
+
+public interface ISpecification<T>
+{
+    Expression<Func<T, bool>>? Criteria{ get; }
+}
+// making it optional by adding in bool>>? <--
+```
+
+` continue -> create Core/Specification/ProductSpecification.cs `
+
+```
+using Core.Entities;
+
+namespace Core.Specifications;
+
+public class ProductSpecification : BaseSpecifications<Product>
+{
+    // traditional constructor 
+    public ProductSpecification(string? brand, string? type) : base(x => 
+        (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
+        (string.IsNullOrWhiteSpace(type) || x.Type == type))
+    {
+
+    }    
+}
+```
+
+` update API/Controllers/ProductsController.cs `
+```
+using Core.Entities;
+using Core.Interfaces;
+using Core.Specifications;
+using Microsoft.AspNetCore.Mvc;
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
+    {
+        var spec = new ProductSpecification(brand, type);
+        var products = await repo.ListAsync(spec);
+        return Ok(products);
+    }
+}
+```
+
+` then test Postman Section 4. Specification - Get Products by Brand & Get Products by Type `

@@ -4,7 +4,10 @@ using Core.Interfaces;
 
 namespace Core.Specifications;
 
-public class BaseSpecifications<T>(Expression<Func<T, bool>> criteria) : ISpecification<T>
+public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
 {
-    public Expression<Func<T, bool>>  Criteria => criteria;
+    // empty constructor ProductSpecification
+    protected BaseSpecifications() : this(null) {}
+
+    public Expression<Func<T, bool>>?  Criteria => criteria;
 }
