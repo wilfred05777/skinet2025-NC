@@ -1059,7 +1059,6 @@ downarrow|       | up arrow
 ```
 using System;
 using System.Linq.Expressions;
-
 namespace Core.Interfaces;
 
 public interface ISpecification<T>
@@ -1117,10 +1116,10 @@ public class SpecificationEvaluator<T> where T: BaseEntity
 ```
 public interface IGenericRepository<T> where T : BaseEntity
 {
-    /...
+    //...
     Task<T?> GetEntityWithSpec(ISpecification<T> spec);
     Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
-    /...
+    //...
 }
 ```
 ` Update Infrastructure/Data/GenericRepository.cs `
@@ -1128,12 +1127,10 @@ public interface IGenericRepository<T> where T : BaseEntity
 ```
 public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
 {
-
     public async Task<T?> GetEntityWithSpec(ISpecification<T> spec)
     {
         return await ApplySpecification(spec).FirstOrDefaultAsync();
     }
-
     //... 
 
     public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
@@ -1155,7 +1152,6 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
 
 ```
 using Core.Entities;
-
 namespace Core.Specifications;
 
 public class ProductSpecification : BaseSpecifications<Product>
@@ -1169,7 +1165,6 @@ public class ProductSpecification : BaseSpecifications<Product>
 ```
 using System.Linq.Expressions;
 using Core.Interfaces;
-
 namespace Core.Specifications;
 
 // making it optional by adding in bool>>? <--
@@ -1186,7 +1181,6 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>? criteria) : ISpeci
 ` adjust code in  Core/Interaces/ISpecification.cs `
 ```
 using System.Linq.Expressions;
-
 namespace Core.Interfaces;
 
 public interface ISpecification<T>
@@ -1199,10 +1193,7 @@ public interface ISpecification<T>
 ` continue -> create Core/Specification/ProductSpecification.cs `
 
 ```
-using Core.Entities;
-
-namespace Core.Specifications;
-
+//...
 public class ProductSpecification : BaseSpecifications<Product>
 {
     // traditional constructor 
@@ -1217,10 +1208,7 @@ public class ProductSpecification : BaseSpecifications<Product>
 
 ` update API/Controllers/ProductsController.cs `
 ```
-using Core.Entities;
-using Core.Interfaces;
-using Core.Specifications;
-using Microsoft.AspNetCore.Mvc;
+//...
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
@@ -1236,3 +1224,144 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ```
 
 ` then test Postman Section 4. Specification - Get Products by Brand & Get Products by Type `
+
+###### 36. Adding sorting to the specification
+` update Core/Interfaces/ISpecification.cs `
+```
+using System.Linq.Expressions;
+namespace Core.Interfaces;
+
+public interface ISpecification<T>
+{
+    Expression<Func<T, object>>? OrderBy { get; }
+    Expression<Func<T, object>>? OrderByDescending { get; }
+}
+```
+` Core/Specifications/BaseSpecification.cs`
+```
+using System.Linq.Expressions;
+using Core.Interfaces;
+
+namespace Core.Specifications;
+
+public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
+{
+    //...
+    public Expression<Func<T, object>>? OrderBy {get; private set;} 
+    public Expression<Func<T, object>>? OrderByDescending {get; private set;}
+
+    protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
+    {
+        OrderBy = orderByExpression;
+    }
+
+    protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
+    {
+        // correction
+        OrderByDescending = orderByDescExpression;
+
+        // incorrect
+        // OrderBy = orderByDescExpression; // encounter issue seen after the testing
+       
+    }
+}
+```
+` Evaluate our expression from BaseSpecification and apply it to the query doing that to our SpecificationEvaluator`
+
+` update Infrastructure/Data/SpecificationEvaluator.cs `
+```
+using Core.Entities;
+using Core.Interfaces;
+
+namespace Infrastructure.Data;
+
+public class SpecificationEvaluator<T> where T: BaseEntity
+{
+    public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+    {
+        //... more code @ top
+
+        if(spec.OrderBy != null)
+        {
+            query = query.OrderBy(spec.OrderBy);
+        }
+        
+        if(spec.OrderByDescending != null)
+        {
+            query = query.OrderByDescending(spec.OrderByDescending);
+        }
+
+        return query;
+        
+    }
+}
+```
+` update Core/Specifications/ProductSpecification.cs `
+```
+using Core.Entities;
+
+namespace Core.Specifications;
+
+public class ProductSpecification : BaseSpecifications<Product>
+{
+    // traditional constructor 
+    public ProductSpecification(string? brand, string? type, string? sort) : base(x => 
+        (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
+        (string.IsNullOrWhiteSpace(type) || x.Type == type))
+    {
+        switch (sort)
+        {
+            case "priceAsc":
+                AddOrderBy(x => x.Price);
+                break;
+            case "priceDesc":
+                AddOrderByDescending(x => x.Price);
+                break;
+            default:
+                AddOrderBy(x => x.Name);
+                break;
+        }
+    }    
+}
+```
+` Update API/Controllers/ProductsController.cs file`
+```
+//more codes top ....
+
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
+    {
+        var spec = new ProductSpecification(brand, type, sort); //<--  adding sort here
+        var products = await repo.ListAsync(spec);
+        return Ok(products);
+    }
+
+    //more codes below ....
+}
+```
+##### Sorting/Filtering Specificaton by Checking API through Postman 
+- ` check API through postman section 4 - Specification - 'Get Products' check if the filter is in Alphabetical order`
+- ` check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceAsc price upwards from smallest to highest `
+
+##### !! Issue Encounter & Solution !!: 
+` check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceDesc price downwards from highest to lowest ! it got some bugs = because of copy and paste` <br>
+
+- ` solution check: Infrastructure/Data/SpecificationEvaluator.cs -looks good `
+- ` solution check: Core/Specifications/ProductSpecification.cs -looks good `
+- ` solution check: Core/Specifications/BaseSpecification.cs -the issue is here `
+```
+//...
+public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
+{
+    //...
+    protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
+    {
+        OrderByDescending = orderByDescExpression;
+    }
+}
+```
+- `check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceDesc price downwards from highest to lowest - functionally good`
