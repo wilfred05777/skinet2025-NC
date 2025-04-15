@@ -1453,15 +1453,74 @@ public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria)
     }
 }
 ```
-- Note this below is continuation of next (for edit)
-
 `update Infrastructure/Data/SpecificationEvaluator.cs `
+```
+public class SpecificationEvaluator<T> where T: BaseEntity
+{
+    // more function on top
+    public static IQueryable<TResult> GetQuery<TSpec, TResult>(IQueryable<T> query, ISpecification<T, TResult> spec)
+    {
+        if( spec.Criteria !=null)
+        {
+            query = query.Where(spec.Criteria); // x => x.Brand == brand
+        }
 
-`/Infrastructure/Data/ProductRepository.cs`
-```
-```
-`/Infrastructure/Data/GenericReposistory`
+        if(spec.OrderBy != null)
+        {
+            query = query.OrderBy(spec.OrderBy);
+        }
+        
+        if(spec.OrderByDescending != null)
+        {
+            query = query.OrderByDescending(spec.OrderByDescending);
+        }
+
+        var selectQuery = query as IQueryable<TResult>;  
+        if(spec.Select != null)
+        {
+            selectQuery = query.Select(spec.Select);
+        }
+        return selectQuery ?? query.Cast<TResult>();
+        
+    }
+}
 ```
 
+###### 39. Adding projection to the spec part 2
+
+` update Core/Interfaces/IGenericRepository.cs `
 ```
+public interface IGenericRepository<T> where T : BaseEntity
+{
+    // more code on top
+
+    Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec);
+    Task<IReadOnlyList<TResult>> ListAsync<TResult>(ISpecification<T, TResult> spec);
+    
+    // more code on below
+}
+```
+` update Infrastructure/Data/GenericRepository.cs `
+```
+// implementing interface 'IGenericRepository'
+
+public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
+{
+    public async Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec)
+    {
+        return await ApplySpecification(spec).FirstOrDefaultAsync();
+    }
+
+    public async Task<IReadOnlyList<TResult>> ListAsync<TResult>(ISpecification<T, TResult> spec)
+    {
+        return await ApplySpecification(spec).ToListAsync();
+    }
+
+    private IQueryable<TResult> ApplySpecification<TResult>(ISpecification<T, TResult> spec)
+    {
+       return SpecificationEvaluator<T>.GetQuery<T, TResult>(context.Set<T>().AsQueryable(), spec);
+    }
+}
+```
+
 
