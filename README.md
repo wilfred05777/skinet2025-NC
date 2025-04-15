@@ -1428,3 +1428,40 @@ to
 ` 'step into' ProductsControllers.cs`
 
 ` - Flow of all and correlation about how data is working behind the scene using vscode debugger `
+
+###### 38. Adding projection to the spec part 1
+` Enhancing the specification pattern `
+
+`update /Core/Interfaces/ISpecification.cs`
+```
+//other function on top
+public interface ISpecification<T,TResult> : ISpecification<T>
+{
+    Expression<Func<T, TResult>>? Select { get; }
+}
+```
+
+`update /Core/Specifcations/BaseSpecification.cs`
+```
+// other function on top 
+public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria) : BaseSpecifications<T>(criteria), ISpecification<T, TResult>
+{
+    public Expression<Func<T, TResult>>? Select {get; private set; }
+    protected void AddSelect(Expression<Func<T, TResult>> selectExpression)
+    {
+        Select = selectExpression;
+    }
+}
+```
+- Note this below is continuation of next (for edit)
+
+`update Infrastructure/Data/SpecificationEvaluator.cs `
+
+`/Infrastructure/Data/ProductRepository.cs`
+```
+```
+`/Infrastructure/Data/GenericReposistory`
+```
+
+```
+
