@@ -1522,5 +1522,127 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
     }
 }
 ```
+###### 40. Adding projection to the spec part 3
+` update Core/Interface/ISpecification.cs `
+```
+public interface ISpecification<T>
+{
+    bool IsDistinct { get; }
 
+}
+```
+` update Core/Specifications/BaseSpecification.cs `
+```
+public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
+{
+    public bool IsDistinct {get; private set;} = false;
 
+    // there is a code here protected void AddOrderByDescending
+
+    protected void AppyDistinct()
+    {
+        IsDistinct = true;
+    }
+}
+```
+` update Infrastructure/Data/SpecificationEvaluator.cs `
+```
+public class SpecificationEvaluator<T> where T: BaseEntity
+{
+    public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+    {   
+        // more code on top
+
+        if(spec.IsDistinct)
+        {
+            query = query.Distinct();
+        }
+
+        return query;   
+    }
+
+    public static IQueryable<TResult> GetQuery<TSpec, TResult>(IQueryable<T> query, ISpecification<T, TResult> spec)
+    {
+        // more code on top
+
+        if(spec.IsDistinct)
+        {
+            selectQuery = selectQuery?.Distinct();
+        }
+
+        return selectQuery ?? query.Cast<TResult>();
+        
+    }
+}
+```
+`Adding new file at Core/Specifications/BrandListSpecification.cs`
+```
+using Core.Entities;
+
+namespace Core.Specifications;
+
+public class BrandListSpecification : BaseSpecifications<Product, string>
+{
+ public BrandListSpecification()
+ {
+    AddSelect(x => x.Brand);
+    AppyDistinct();
+ }
+}
+```
+` Note: Error on BrandListSpecification(){...} to fixed it in BaseSpecification.cs `
+```
+public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria) : BaseSpecifications<T>(criteria), ISpecification<T, TResult>
+{
+    protected BaseSpecifications() : this(null!) {}
+    //more code below...
+}
+```
+`Adding new file at Core/Specifications/TypeListSpecification.cs`
+```
+using Core.Entities;
+namespace Core.Specifications;
+
+public class TypeListSpecification : BaseSpecifications<Product, string>
+{
+    public TypeListSpecification()
+    {   
+        AddSelect(x => x.Type);
+        AppyDistinct();
+    }
+}
+```
+` update ProductsController.cs`
+
+```
+//...
+
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
+{
+    //...
+
+    [HttpGet("brands")]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
+    {   
+        var spec = new BrandListSpecification();
+
+        return Ok(await repo.ListAsync(spec));
+    }
+
+    [HttpGet("types")]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
+    {   
+        var spec = new TypeListSpecification();
+
+        return Ok(await repo.ListAsync(spec));
+    }
+    
+    //...
+}
+```
+` check in postman `
+` section 4 - Specification `
+- ` Get Product Brands  - {{url}}/api/products/brands `
+- ` Get Product Types  - {{url}}/api/products/types `

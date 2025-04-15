@@ -79,13 +79,17 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
     {   
-        return Ok();
+        var spec = new BrandListSpecification();
+
+        return Ok(await repo.ListAsync(spec));
     }
 
     [HttpGet("types")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
     {   
-        return Ok();
+        var spec = new TypeListSpecification();
+
+        return Ok(await repo.ListAsync(spec));
     }
 
     private bool ProductExists(int id)
