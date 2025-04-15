@@ -1638,7 +1638,7 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
         return Ok(await repo.ListAsync(spec));
     }
-    
+
     //...
 }
 ```
@@ -1646,3 +1646,16 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ` section 4 - Specification `
 - ` Get Product Brands  - {{url}}/api/products/brands `
 - ` Get Product Types  - {{url}}/api/products/types `
+
+###### 41. Summary
+- Creating a generic repository
+- Specification pattern
+- Using the specification pattern
+- Using the debugger
+- Shaping data
+
+- FAQs
+` Question: This is over engineering in action! `
+` Answer; True for now, but we do now have a repository for every entity we create. Imagine we have 100 or 1000 entities, then we have just creatd repositories for all of them. `
+
+` its reusable for every across every future project creating all the example are all generic and reuseable. `
