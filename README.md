@@ -1365,3 +1365,66 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
 }
 ```
 - `check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceDesc price downwards from highest to lowest - functionally good`
+
+
+###### 37. Using the debugger
+
+` creating debugger - VSCode left handside - 'Run & Debug' -> create a launch.json file` 
+` select c# `
+` launch.json`
+` select add Configuration button + ` 
+- `'.NET: attach to .NET process' `
+` select add Configuration button + ` 
+- `'.NET: launch C# project' `
+```
+// default
+"configurations": [
+        {
+            "name": "C#: <project-name> Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/<relative-path-to-project-folder><project-name>.csproj"
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+
+
+    ]
+```
+###### `update to`
+```
+// correction
+   "configurations": [
+        {
+            "name": "C#: API Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/API.csproj"
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+```
+` then create/assign breakpoint in this case its  ProductsController.cs line 18 `
+```
+  var spec = new ProductSpecification(brand, type, sort);
+```
+` click debug and run icon - search API and select it then also select .NET Core Attach`
+` hit green play icon`
+
+` test in postman`
+` Get Products sorted by price `
+```
+{{url}}/api/products?sort=priceDesc
+to 
+{{url}}/api/products?sort=priceDesc&type=boards
+```
+` 'step into' ProductsControllers.cs`
+
+` - Flow of all and correlation about how data is working behind the scene using vscode debugger `
