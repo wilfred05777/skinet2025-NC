@@ -1659,3 +1659,28 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ` Answer; True for now, but we do now have a repository for every entity we create. Imagine we have 100 or 1000 entities, then we have just creatd repositories for all of them. `
 
 ` its reusable for every across every future project creating all the example are all generic and reuseable. `
+
+##### Section 5: Sorting, Filtering, Searching & Pagination
+--- 
+###### 42. Introduction
+- API Sorting, Search, Filtering, & Paging
+    - ` Sorting `
+    - ` Filtering `
+    - ` Searching `
+    - ` Paging `
+
+- Goal: 
+``` To be able to implement sorting, searching and pagination functionality in a list using the Specification parttern ```
+
+- Pagination
+    - ` Performance `
+    - ` Parameters passed by query string: api/products?pageNumber=2&pageSize=5  `
+    - ` Page size should be limited `
+    - ` We should always page results `
+- Deferred Execution
+    - ` Query commands are stored in a variable`
+    - ` Execution of the query is deffered `
+    - ` IQueryable<T> creates an expression tree `
+    - ` Execution:  `
+        - ` ToList(), ToArrya(), ToDictionary()  `
+        - ` Count() or other singleton queries  `
