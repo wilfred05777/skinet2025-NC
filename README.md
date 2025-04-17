@@ -1783,3 +1783,82 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
 ` Get Products by Brand and Types ` 
     - `{{url}}/api/products?brands=Angular,React&types=Boots,Gloves `
+
+
+###### 44. Adding pagination part 1
+` update Infrastructure/Data/ProductRepository.cs `
+```
+public class ProductRepository(StoreContext context) : IProductRepository
+{
+    public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type, string? sort)
+    {   
+        //...
+        return await query.Skip(5).Take(5).ToListAsync();
+    }
+}
+```
+` update Core/Interface/ISpecification.cs `
+```
+public interface ISpecification<T>
+{
+    //...
+        int Take { get; }
+    int Skip { get; }
+    bool IsPagingEnabled { get; }
+
+}
+```
+
+` update Core/Specifications/BaseSpecifications.cs `
+```
+// implement interface
+
+public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
+{
+    //...
+    public int Take {get; private set;}
+    public int Skip {get; private set;}
+    public bool IsPagingEnabled { get; private set; }
+
+    //...
+    protected void ApplyPaging(int skip, int take)
+    {
+        Skip = skip;
+        Take = take;
+        // IsPagingEnabled = true;
+    }
+}
+```
+
+` update Infrastructure/Data/SpecificationEvaluator.cs `
+```
+
+
+public class SpecificationEvaluator<T> where T: BaseEntity
+{
+    public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+    {   
+        //...
+
+        if(spec.IsPagingEnabled)
+        {
+            query = query.Skip(spec.Skip).Take(spec.Take);
+        }
+
+        //...
+    }
+
+    public static IQueryable<TResult> GetQuery<TSpec, TResult>(IQueryable<T> query, ISpecification<T, TResult> spec)
+    {
+        //...
+
+        if(spec.IsPagingEnabled)
+        {
+            selectQuery = selectQuery?.Skip(spec.Skip).Take(spec.Take);
+        }
+
+        //...
+    }
+
+}
+```

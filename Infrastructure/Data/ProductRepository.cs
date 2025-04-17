@@ -41,17 +41,15 @@ public class ProductRepository(StoreContext context) : IProductRepository
         if(!string.IsNullOrWhiteSpace(type))
             query = query.Where(x => x.Type == type);
 
-        // if(!string.IsNullOrWhiteSpace(sort))
-        // {
+
             query = sort switch
             {
                 "priceAsc" => query.OrderBy(x => x.Price),
                 "priceDesc" => query.OrderByDescending(x => x.Price),
                 _ => query.OrderBy(x => x.Name)
             };
-        // }
-        return await query.ToListAsync();
-        // return await context.Products.ToListAsync();
+
+        return await query.Skip(5).Take(5).ToListAsync();
     }
 
     public async Task<IReadOnlyList<string>> GetTypesAsync()
