@@ -1862,3 +1862,49 @@ public class SpecificationEvaluator<T> where T: BaseEntity
 
 }
 ```
+
+###### 45. Adding pagination part 2
+`update Core/Specifications/ProductSpecParams.cs`
+
+```
+public class ProductSpecParams
+{
+    private const int MaxPageSize = 50;
+    public int PageIndex { get; set; } = 1;
+    private int _pageSize = 6;
+
+    public int PageSize
+    {   
+        get => _pageSize;
+        set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+    }
+    //...
+}
+```
+` update Core/Specifications/ProductSpecification.cs `
+```
+public class ProductSpecification : BaseSpecifications<Product>
+{
+
+    public ProductSpecification(ProductSpecParams specParams) : base(x => 
+        (specParams.Brands.Any() || specParams.Brands.Contains(x.Brand) ) &&
+        (specParams.Types.Any() || specParams.Types.Contains(x.Type))
+    )
+    {
+        //...
+        ApplyPaging(specParams.PageSize *(specParams.PageIndex - 1), specParams.PageSize);
+        //...
+    }
+}
+```
+
+` Create API/RequestHelpers/Pagination.cs `
+```
+public class Pagination<T>(int PageIndex, int pageSize, int count, IReadOnlyList<T> data) 
+{
+    public int PageIndex { get; set; } = PageIndex;
+    public int PageSize {get; set;} = pageSize;
+    public int Count { get; set; } = count;
+    public IReadOnlyList<T> Data {get; set;} = data;
+}
+```
