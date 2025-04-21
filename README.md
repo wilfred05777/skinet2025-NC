@@ -1908,3 +1908,86 @@ public class Pagination<T>(int PageIndex, int pageSize, int count, IReadOnlyList
     public IReadOnlyList<T> Data {get; set;} = data;
 }
 ```
+
+###### 46. Adding pagination part 3
+`update Core/Interfaces/IGenericRepository.cs`
+
+```
+public interface IGenericRepository<T> where T : BaseEntity
+{
+    //...
+    Task<int> CountAsync(ISpecification<T> spec);
+}
+```
+
+`update Core/Insterfaces/ISpecification.cs `
+```
+public interface ISpecification<T>
+{
+    //...
+    IQueryable<T> ApplyCriteria(IQueryable<T> inputQuery);
+}
+```
+
+` update Core/Specifications/BaseSpecification.cs `
+```
+// ISpecification<T> -> implement interface
+
+public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
+{
+    //...
+
+    public IQueryable<T> ApplyCriteria(IQueryable<T> query)
+    {
+        if(Criteria != null)
+        {
+            query = query.Where(Criteria);
+        }
+        return query;
+    }
+}
+```
+`update Infrastructure/Data/GenericRepository.cs `
+```
+// IGenericRepository<T> - implement interface 
+
+public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
+{
+    //...
+    public async Task<int> CountAsync(ISpecification<T> spec)
+    {
+        var query = context.Set<T>().AsQueryable();
+
+        query = spec.ApplyCriteria(query);
+
+        return await query.CountAsync();
+    }
+    //...
+}
+```
+`update API/Controllers/ProductsController.cs `
+```
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
+{
+    [HttpGet]
+
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery]ProductSpecParams specParams)
+    {
+        var spec = new ProductSpecification(specParams);
+        var products = await repo.ListAsync(spec);
+
+        /** new update start here ======= */
+        var count = await repo.CountAsync(spec);
+        var pagination = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);        
+
+        return Ok(pagination);
+        /** new update end here ======= */
+    }
+    //...
+}
+```
+` testing API via Postman Section 5 - Paging, sorting, and filtering : `
+   - ` Get Paged Products Page 0 Size 5 -> {{url}}/api/products?pageSize=3&pageIndex=1 `
+    - ` not showing count: 0 upon testing the api `

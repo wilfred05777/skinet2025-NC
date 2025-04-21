@@ -43,6 +43,14 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
         IsPagingEnabled = true;
     }
 
+    public IQueryable<T> ApplyCriteria(IQueryable<T> query)
+    {
+        if(Criteria != null)
+        {
+            query = query.Where(Criteria);
+        }
+        return query;
+    }
 }
 
 
