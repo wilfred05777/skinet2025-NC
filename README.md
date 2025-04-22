@@ -1925,7 +1925,7 @@ public interface IGenericRepository<T> where T : BaseEntity
 public interface ISpecification<T>
 {
     //...
-    IQueryable<T> ApplyCriteria(IQueryable<T> inputQuery);
+    IQueryable<T> ApplyCriteria(IQueryable<T> query);
 }
 ```
 
@@ -1991,3 +1991,4 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ` testing API via Postman Section 5 - Paging, sorting, and filtering : `
    - ` Get Paged Products Page 0 Size 5 -> {{url}}/api/products?pageSize=3&pageIndex=1 `
     - ` not showing count: 0 upon testing the api `
+    
