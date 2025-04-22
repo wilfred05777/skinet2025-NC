@@ -1991,4 +1991,58 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ` testing API via Postman Section 5 - Paging, sorting, and filtering : `
    - ` Get Paged Products Page 0 Size 5 -> {{url}}/api/products?pageSize=3&pageIndex=1 `
     - ` not showing count: 0 upon testing the api `
+
+
+###### 47. Creating a Base API controller
+` create API/Controllers/BaseApiController.cs `
+```
+using API.RequestHelpers;
+using Core.Entities;
+using Core.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class BaseApiController : ControllerBase
+{
+    protected async Task<ActionResult> CreatePageResult<T>(IGenericRepository<T> repo, ISpecification<T> spec, int pageIndex, int pageSize) where T : BaseEntity
+    {
+        var items = await repo.ListAsync(spec);
+        var count = await repo.CountAsync(spec);
+
+        var pagination = new Pagination<T>(pageIndex, pageSize, count, items);        
+        return Ok(pagination);
+        
+    }
+}
+```
+` to use/update in API/Controllers/ProductsController.cs `
+```
+// Derive BaseAPiController
+
+public class ProductsController(IGenericRepository<Product> repo) : BaseApiController
+{
+    /* to the code below update : much more cleaner and modularize/ granularize */
     
+    return await CreatePageResult(repo, spec, specParams.PageIndex, specParams.PageSize);
+
+    /*  update this page below:  
+       var products = await repo.ListAsync(spec);
+       var count = await repo.CountAsync(spec);
+
+       var pagination = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);        
+
+       return Ok(pagination);
+    */  
+}
+```
+` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=2&types=boards `
+` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=1&types=gloves `
+
+   - ` BUG: issue is that count & data : not returning anything. Status: not yet solve !FF `
+   - ` get all products bug not showing after the applying Section 5: Sorting, Filtering, Pagination `
+
+
+
