@@ -6,6 +6,7 @@ namespace Core.Specifications;
 
 public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
 {
+    // empty constructor ProductSpecification
     protected BaseSpecifications() : this(null) {}
 
     public Expression<Func<T, bool>>?  Criteria => criteria;
@@ -18,13 +19,7 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
         OrderBy = orderByExpression;
     }
 
-    public bool IsDistinct {get; private set;}
-
-    public int Take {get; private set;}
-
-    public int Skip {get; private set;}
-
-    public bool IsPagingEnabled { get; private set; }
+    public bool IsDistinct {get; private set;} = false;
 
     protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
     {
@@ -43,14 +38,6 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
         IsPagingEnabled = true;
     }
 
-    public IQueryable<T> ApplyCriteria(IQueryable<T> query)
-    {
-        if(Criteria != null)
-        {
-            query = query.Where(Criteria);
-        }
-        return query;
-    }
 }
 
 
