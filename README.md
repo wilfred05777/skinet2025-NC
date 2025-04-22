@@ -2038,6 +2038,8 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     */  
 }
 ```
+- ` Sect. 5 Issue `
+
 ` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=2&types=boards `
 ` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=1&types=gloves `
 
@@ -2045,4 +2047,41 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
    - ` get all products bug not showing after the applying Section 5: Sorting, Filtering, Pagination `
 
 
+###### 48. Adding the search functionality
 
+` update Core/Specifications/ProductSpecParams.cs `
+```
+public class ProductSpecParams
+{
+
+    //... 
+    private string? _search;
+    public string Search
+    {
+        get => _search ?? "";
+        set => _search = value.ToLower();
+    }
+
+}
+```
+` update Core/Specifications/ProductSpecification.cs `
+```
+public class ProductSpecification : BaseSpecifications<Product>
+{
+
+    public ProductSpecification(ProductSpecParams specParams) : base(x => 
+        // update 
+        (string.IsNullOrEmpty(specParams.Search) || x.Name.ToLower().Contains(specParams.Search)) &&
+
+        //...
+        (specParams.Brands.Any() || specParams.Brands.Contains(x.Brand) ) &&
+        (specParams.Types.Any() || specParams.Types.Contains(x.Type))
+    )
+    {
+        //...
+    }
+}
+```
+` testing in postman GetProducts with search term: {{url}}/api/products?search=red `
+
+` refer back to : Sect. 5 Issue for hints `
