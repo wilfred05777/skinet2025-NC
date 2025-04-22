@@ -1794,7 +1794,7 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
 ###### git learning or re-learning
 
-`git log // show time details of each commits `
-`git certain commit ######`
-`git reset --hard commit ###### //reset back to a certain save point` 
+- `git log // show time details of each commits `
+- `git certain commit ######`
+- `git reset --hard commit ###### //reset back to a certain save point` 
     
