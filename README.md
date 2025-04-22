@@ -1783,3 +1783,18 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
 ` Get Products by Brand and Types ` 
     - `{{url}}/api/products?brands=Angular,React&types=Boots,Gloves `
+
+```
+    !!!! Skinet issue start here:
+    44. Adding pagination part 1: FF
+    commit b5ae77a362185f6f883f3693eba84426b4c8f45c
+    Author: Wilfred Erdo Bancairen <wilfred05777@gmail.com>
+    Date:   Wed Apr 16 03:18:54 2025 +0800
+```
+
+###### git learning or re-learning
+
+`git log // show time details of each commits `
+`git certain commit ######`
+`git reset --hard commit ###### //reset back to a certain save point` 
+    
