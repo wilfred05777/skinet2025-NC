@@ -1659,9 +1659,8 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ` Answer; True for now, but we do now have a repository for every entity we create. Imagine we have 100 or 1000 entities, then we have just creatd repositories for all of them. `
 
 ` its reusable for every across every future project creating all the example are all generic and reuseable. `
-<hr>
 
-### Section 5: Sorting, Filtering, Searching & Pagination
+##### Section 5: Sorting, Filtering, Searching & Pagination
 --- 
 ###### 42. Introduction
 - API Sorting, Search, Filtering, & Paging

@@ -13,7 +13,6 @@ public interface ISpecification<T>
     int Skip { get; }
     bool IsPagingEnabled { get; }
 
-    IQueryable<T> ApplyCriteria(IQueryable<T> query);
 }
 
 public interface ISpecification<T,TResult> : ISpecification<T>
