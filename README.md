@@ -2432,8 +2432,10 @@ public class PagingParams
     - ` npm link @angular/cli`
 
 
-    
 
+###### 58. Reviewing the Angular project files 
+
+- just and overview of basic fundamental files in angular
 
 
 
