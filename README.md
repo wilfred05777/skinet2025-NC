@@ -2170,3 +2170,74 @@ public class BuggyController : BaseApiController
  - ` {{url}}/api/buggy/notfound `
  - ` {{url}}/api/buggy/badrequest `
  - ` {{url}}/api/buggy/validationerror `
+
+###### 52. Exception handling middleware
+
+```
+<!-- https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-9.0 -->
+
+```
+
+` create API/Errors/ApiErrorResponse.cs `
+
+```
+namespace API.Errors;
+
+public class ApiErrorResponse(int statusCode, string message, string? details)
+{
+    public int StatusCode { get; set; } = statusCode;
+    public string Message { get; set; } = message;
+    public string? Details { get; set; } = details;
+}
+```
+` create API/Middleware/ExceptionMiddleware.cs `
+```
+// generate the method for HandleExceptionAsync
+
+namespace API.Middleware;
+
+public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next)
+{
+    public async Task InvokeAsync (HttpContext context)
+    {
+        try
+        {
+            await next(context);
+        }
+        catch (Exception ex)
+        {
+            await HandleExceptionAsync(context, ex, env);
+        }
+    }
+
+    private static Task HandleExceptionAsync(HttpContext context, Exception ex, IHostEnvironment env)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        
+        var response = env.IsDevelopment()
+            ? new ApiErrorResponse(context.Response.StatusCode, ex.Message, ex.StackTrace)
+            : new ApiErrorResponse(context.Response.StatusCode, ex.Message, "Internal Server Error"); 
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+
+        var json = JsonSerializer.Serialize(response, options);
+
+        return context.Response.WriteAsync(json);
+    }
+}
+
+// HandleExceptionAsync make it static
+
+```
+` going back to API/program.cs class to use the functionality forom ExceptionMiddleware.cs `
+```
+// Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionMiddleware>();
+//... 
+```
+
+` postman: Get Internal server error = {{url}}/api/buggy/internalerror `
