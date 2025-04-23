@@ -2107,7 +2107,7 @@ public class ProductSpecification : BaseSpecifications<Product>
 ### 6 Error handling on the API
 <hr>
 
-` 50. Introduction `
+###### 50. Introduction
 
 - Error handling and exceptions
 - Validation errors
@@ -2125,3 +2125,48 @@ public class ProductSpecification : BaseSpecifications<Product>
 
     - 500 Internal server error
 ```
+
+###### 51. Adding a test controller for error handling 
+` create API/Controllers/BuggyControllers.cs `
+```
+using Core.Entities;
+using Microsoft.AspNetCore.Mvc;
+namespace API.Controllers;
+
+public class BuggyController : BaseApiController
+{   
+    [HttpGet("unauthorized")]
+    public IActionResult GetUnauthorized()
+    {
+        return Unauthorized("This is an unauthorized response");
+    }
+
+    [HttpGet("badrequest")]
+    public IActionResult GetBadRequest()
+    {
+        return BadRequest("Not a good request");
+    }
+
+    [HttpGet("notfound")]
+    public IActionResult GetNotFound()
+    {
+        return NotFound();
+    }
+
+    [HttpGet("internalerror")]
+    public IActionResult GetInternalError()
+    {
+        throw new Exception("This is a test exception");
+    }
+
+    [HttpPost("validationerror")]
+    public IActionResult GetValidationError(Product product)
+    {
+        return Ok();
+    }
+}
+```
+` postman checking API: Section 6- Get Notfound , Get Bad Request & Validation Error `
+ - ` {{url}}/api/buggy/notfound `
+ - ` {{url}}/api/buggy/badrequest `
+ - ` {{url}}/api/buggy/validationerror `
