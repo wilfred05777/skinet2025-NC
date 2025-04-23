@@ -2354,3 +2354,34 @@ app.MapControllers();
     - 1-3 minor releases for each major release
     - A patch release build almost every week
     - At time of recording Angular is on v18
+
+###### 57. Creating the angular project
+
+- [angular.dev](https://angular.dev/)
+- [Angular versioning and releases](https://angular.dev/reference/releases)
+- [Version compatibility](https://angular.dev/reference/versions)
+
+- [The Angular CLI](https://angular.dev/tools/cli)
+- [Setting up the local environment and workspace](https://angular.dev/tools/cli/setup-local)
+    - ` npm install -g @angular/cli `
+    - ` node --version or -v // check node version `
+    - ` npm --version or -v // check npm version `
+    - ` ng version // check angular version `
+
+- ###### create angular project 
+    - ` ng new client ` 
+    - ` Would you like to share pseudonymous usage data abou: NO `
+    - ` Would you like to share pseudonymous usage data abou: NO `
+    - ` Which stylesheet format would you like to use?: Sass(SCSS) `
+    - ` Do you want to enable Server-Side Rendering (SSR) and Static Site Generation (SSG/Prerendering)?: No `
+
+    - ` ng serve`
+    - ` ng `
+    - ` npm link @angular/cli`
+
+
+    
+
+
+
+
