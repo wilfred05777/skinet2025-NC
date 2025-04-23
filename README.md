@@ -1798,4 +1798,6 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 - `git log // show time details of each commits `
 - `git certain commit ######`
 - `git reset --hard commit ###### //reset back to a certain save point` 
+- `note: be careful using reset and revert - first you should have branch for it before using the main branch`
     
+
