@@ -2038,7 +2038,7 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
     */  
 }
 ```
-- ` Sect. 5 Issue `
+- ` Sect. 5 Issue : Solution Sect. 5 Issue `
 
 ` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=2&types=boards `
 ` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=1&types=gloves `
@@ -2085,6 +2085,22 @@ public class ProductSpecification : BaseSpecifications<Product>
 ` testing in postman GetProducts with search term: {{url}}/api/products?search=red `
 
 ` refer back to :  Sect. 5 Issue : for hints `
+` S`
+
+` Solution Sect. 5 Issue: is in ProductSpecification.cs `
+```
+public class ProductSpecification : BaseSpecifications<Product>
+{
+    public ProductSpecification(ProductSpecParams specParams) : base(x => 
+        (string.IsNullOrEmpty(specParams.Search) || x.Name.ToLower().Contains(specParams.Search)) &&
+
+         // correction is here .Count == 0
+        (specParams.Brands.Count == 0 || specParams.Brands.Contains(x.Brand) ) &&
+        // correction is here .Count == 0
+        (specParams.Types.Count == 0 || specParams.Types.Contains(x.Type))
+    )
+}
+```
 
 ```
     !!!! Skinet issue start here:
@@ -2347,7 +2363,7 @@ public class ProductSpecParams : PagingParams //<= derive PagingParams.cs>
         set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
     }
     /* remove code end here and move to PaginParams.cs*/
-    
+
     //...
 }
 ```
