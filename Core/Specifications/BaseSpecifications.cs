@@ -19,7 +19,13 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
         OrderBy = orderByExpression;
     }
 
-    public bool IsDistinct {get; private set;} = false;
+    public bool IsDistinct { get; private set; }
+
+    public int Take { get; private set; } 
+
+    public int Skip { get; private set; } 
+
+    public bool IsPagingEnabled { get; private set; } 
 
     protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
     {
@@ -38,7 +44,18 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
         IsPagingEnabled = true;
     }
 
+    public IQueryable<T> ApplyCriteria(IQueryable<T> query)
+    {
+        if(Criteria != null)
+        {
+            query = query.Where(Criteria); // x => x.Brand == brand
+        }
+    return query;
+    
+    }
+
 }
+
 
 
 public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria) : BaseSpecifications<T>(criteria), ISpecification<T, TResult>
