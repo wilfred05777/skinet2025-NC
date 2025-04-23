@@ -2241,3 +2241,59 @@ app.UseMiddleware<ExceptionMiddleware>();
 ```
 
 ` postman: Get Internal server error = {{url}}/api/buggy/internalerror `
+
+###### 53. Validation error responses
+` create API/DTOs/CreateProductDto.cs `
+
+```
+using System.ComponentModel.DataAnnotations;
+namespace API.DTOs;
+public class CreateProductDto
+{   
+    [Required]
+    public string Name { get; set; } = string.Empty;
+    
+    [Required]
+    public string Description { get; set; } = string.Empty;
+
+    [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]    // required doesn't work in number types
+    public decimal Price { get; set; }
+
+    [Required]
+    public string PictureUrl { get; set; } = string.Empty;
+
+    [Required]
+    public string Type { get; set; } = string.Empty;
+
+    [Required]
+    public string Brand { get; set; } = string.Empty;
+
+    [Range(1, int.MaxValue, ErrorMessage = "Quantity in stock must be at least 1")]    // required doesn't work in number types 
+    public int QuantityInStock { get; set; }
+}
+
+//Products.cs
+//copy to CreateProductDto.cs and modify
+/* old code 
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+    public decimal Price { get; set; }
+    public required string PictureUrl { get; set; }
+    public required string Type { get; set; }
+    public required string Brand { get; set; }   
+    public int QuantityInStock { get; set; }
+*/
+```
+` update BuggyController.cs `
+```
+public class BuggyController : BaseApiController
+{   
+
+    [HttpPost("validationerror")]
+    public IActionResult GetValidationError(CreateProductDto product)
+    {
+        return Ok();
+    }
+}
+```
+` Postman: Section 6: Get Validation Error =>  {{url}}/api/buggy/validationerror `

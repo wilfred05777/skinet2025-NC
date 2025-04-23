@@ -17,10 +17,5 @@ public class BaseApiController : ControllerBase
         var pagination = new Pagination<T>(PageIndex, pageSize, count, items);  
 
         return Ok(pagination);
-
-        // var products = await repo.ListAsync(spec);
-        // var count = await repo.CountAsync(spec);
-        // var pagination = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);        
-        // return Ok(pagination);
     }
 }
