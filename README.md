@@ -2438,4 +2438,29 @@ public class PagingParams
 - just and overview of basic fundamental files in angular
 
 
+###### 59. Using HTTPS with the Angular project
 
+- [Mkcertificate](https://github.com/FiloSottile/mkcert) 
+- gitbash: choco install mkcert
+- `cd client`
+- `mkdir ssl`
+- `mkcert localhost`
+
+```
+// optional // switching to MS-Edge browser | chrome to test https works better than firefox
+mkcert -install
+```
+
+- ` client/angular.json `
+```
+"serve":{
+    //..
+    "options":{
+        "ssl": true,
+        "sslCert":"ssl/localhost.pem",
+        "sslKey":"ssl/localhost-key.pem"
+    },
+    //...
+}
+```
+- `ng serve`
