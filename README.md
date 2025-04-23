@@ -2102,3 +2102,26 @@ public class ProductSpecification : BaseSpecifications<Product>
 - `note: be careful using reset and revert - first you should have branch for it before using the main branch`
     
 
+<hr>
+
+### 6 Error handling on the API
+<hr>
+
+` 50. Introduction `
+
+- Error handling and exceptions
+- Validation errors
+- Http response errors
+- Middleware - catching as defense for handling error
+- CORS
+
+```
+ /* Http response codes */
+
+ 200 range => ok
+ 300 range => Redirection
+ 400 range => Client error
+ 500 range => Server error
+
+    - 500 Internal server error
+```
