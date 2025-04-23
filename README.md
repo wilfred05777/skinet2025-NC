@@ -1659,8 +1659,9 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 ` Answer; True for now, but we do now have a repository for every entity we create. Imagine we have 100 or 1000 entities, then we have just creatd repositories for all of them. `
 
 ` its reusable for every across every future project creating all the example are all generic and reuseable. `
+<hr>
 
-##### Section 5: Sorting, Filtering, Searching & Pagination
+### Section 5: Sorting, Filtering, Searching & Pagination
 --- 
 ###### 42. Introduction
 - API Sorting, Search, Filtering, & Paging
@@ -1684,3 +1685,116 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
     - ` Execution:  `
         - ` ToList(), ToArrya(), ToDictionary()  `
         - ` Count() or other singleton queries  `
+
+###### 43. Creating product spec parameters
+
+` create Core/Specifications/ProductSpecParams.cs `
+```
+// prop Full
+using System;
+
+namespace Core.Specifications;
+
+public class ProductSpecParams
+{
+   private List<string> _brands = [];
+   public List<string> Brands
+   {
+        get => _brands; // type=boards, gloves
+        set 
+        {
+            _brands = value.SelectMany(x => x.Split(',', StringSplitOptions.RemoveEmptyEntries)).ToList();
+        }
+   }
+
+   private List<string> _types = [];
+   public List<string> Types
+   {
+        get => _types;
+        set 
+        {
+            _types = value.SelectMany(x => x.Split(',', StringSplitOptions.RemoveEmptyEntries)).ToList();
+        }
+   }
+
+   public string? Sort { get; set; }
+}
+```
+`update Core/Specifications/ProductSpecifications.cs `
+```
+public class ProductSpecification : BaseSpecifications<Product>
+{
+    /* old code
+    public ProductSpecification(string? brand, string? type, string? sort) : base(x => 
+        (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
+        (string.IsNullOrWhiteSpace(type) || x.Type == type))
+     {
+        switch (sort)
+        //...
+    */
+    public ProductSpecification(ProductSpecParams specParams) : base(x => 
+        (specParams.Brands.Any() || specParams.Brands.Contains(x.Brand) ) &&
+        (specParams.Types.Any() || specParams.Types.Contains(x.Type)))
+    {
+        // switch (sort)
+        switch (specParams.Sort)
+        {
+            case "priceAsc":
+                AddOrderBy(x => x.Price);
+                break;
+            case "priceDesc":
+                AddOrderByDescending(x => x.Price);
+                break;
+            default:
+                AddOrderBy(x => x.Name);
+                break;
+        }
+    }    
+}
+```
+` going back to ProductsController.cs`
+```
+[ApiController]
+[Route("api/[controller]")]
+public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
+{
+    [HttpGet]
+    /* old code 
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
+    {
+        // var spec = new ProductSpecification(brand, type, sort);
+    }
+    */
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery]ProductSpecParams specParams)
+    {
+        // var spec = new ProductSpecification(brand, type, sort);
+        var spec = new ProductSpecification(specParams);
+        var products = await repo.ListAsync(spec);
+        return Ok(products);
+
+    }
+
+    //...
+}
+```
+
+` Check api (Postman) at Section 5: Get Products by Brand ` 
+    - `{{url}}/api/products?brands=Angular,React `
+
+` Get Products by Brand and Types ` 
+    - `{{url}}/api/products?brands=Angular,React&types=Boots,Gloves `
+
+```
+    !!!! Skinet issue start here:
+    44. Adding pagination part 1: FF
+    commit b5ae77a362185f6f883f3693eba84426b4c8f45c
+    Author: Wilfred Erdo Bancairen <wilfred05777@gmail.com>
+    Date:   Wed Apr 16 03:18:54 2025 +0800
+```
+
+###### git learning or re-learning
+
+- `git log // show time details of each commits `
+- `git certain commit ######`
+- `git reset --hard commit ###### //reset back to a certain save point` 
+    
