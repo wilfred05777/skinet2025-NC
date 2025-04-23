@@ -2084,7 +2084,7 @@ public class ProductSpecification : BaseSpecifications<Product>
 ```
 ` testing in postman GetProducts with search term: {{url}}/api/products?search=red `
 
-` refer back to : Sect. 5 Issue for hints `
+` refer back to :  Sect. 5 Issue : for hints `
 
 ```
     !!!! Skinet issue start here:
@@ -2289,7 +2289,7 @@ public class CreateProductDto
 public class BuggyController : BaseApiController
 {   
 
-    [HttpPost("validationerror")]
+[HttpPost("validationerror")]
     public IActionResult GetValidationError(CreateProductDto product)
     {
         return Ok();
@@ -2297,3 +2297,31 @@ public class BuggyController : BaseApiController
 }
 ```
 ` Postman: Section 6: Get Validation Error =>  {{url}}/api/buggy/validationerror `
+
+###### 54. Adding CORS support on the API
+` update API/Program.cs class  `
+```
+// Add services to the container.
+//...
+
+builder.Services.AddCors();
+//...
+
+/* next */
+// Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionMiddleware>();
+
+// must in between | below
+
+app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
+    .WithOrigins("http://localhost:4200", "https://localhost:4200"));  
+    
+// must in between | above
+app.MapControllers();
+
+//...
+```
+` Postman testing APi: section 6: Check Cors is enabled => {{url}}/api/products => scripts tab `
+- `Scripts tab then on headers tab will see the Access-Control-Allow-Origin: value: https://localhost:4200 `
+
+- ` Sect. 5 Issue | not showing anything on count & data `
