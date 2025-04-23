@@ -2332,6 +2332,42 @@ app.MapControllers();
     
     - client side of things
 
+` update Core/Specifications/ProductSpecParams.cs`
+```
+public class ProductSpecParams : PagingParams //<= derive PagingParams.cs>
+{
+    /* remove code start here and move to PaginParams.cs*/
+    private const int MaxPageSize = 50;
+    public int PageIndex { get; set; } = 1;
+
+    private int _pageSize = 6;
+    public int PageSize
+    {
+        get => _pageSize;
+        set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+    }
+    /* remove code end here and move to PaginParams.cs*/
+    
+    //...
+}
+```
+` create Core/Specifications/PagingParams.cs `
+```
+namespace Core.Specifications;
+public class PagingParams
+{
+    private const int MaxPageSize = 50;
+    public int PageIndex { get; set; } = 1;
+
+    private int _pageSize = 6;
+    public int PageSize
+    {
+        get => _pageSize;
+        set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+    }
+}
+```
+
 <hr>
 
 ### 7: Angular Setup
