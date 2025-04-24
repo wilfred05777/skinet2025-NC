@@ -2512,3 +2512,8 @@ Code below: No longer works as of this current testing & experimentation
 
 */
 ```
+
+###### 61. Adding VS Code extensions for Angular and Tailwind
+
+- ` Extension : Angular Language Service: by angular.dev `
+- ` Extension : Tailwind CSS IntelliSense: by Tailwind Labs tailwindcss.com `
