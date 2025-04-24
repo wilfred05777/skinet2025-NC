@@ -2464,3 +2464,51 @@ mkcert -install
 }
 ```
 - `ng serve`
+
+##### Angular Styling Configuration:
+
+###### 60. Adding Angular Material and Tailwind CSS
+- [Angular Material UI](https://material.angular.io/)
+- [Angular Material UI](https://material.angular.io/components/categories)
+
+- ` cd client/ then => ng add @angular/material `
+- ` The package @angular/material@19.2.11 will be installed and executed.
+Would you like to proceed? : YES `
+- `Choose a prebuilt theme name, or "custom" for a custom theme: Azure/Blue`
+- `Set up global Angular Material typography styles?: No`
+- `Include the Angular animations module?: Yes`
+
+###### Installing Tailwind CSS In Angular Project
+- [Install Tailwind CSS with Angular](https://tailwindcss.com/docs/installation/framework-guides/angular)
+
+- side note: For Utility Classes 
+- 
+- ` npm install -D tailwindcss postcss autoprefixer // it does not work anymore `
+- ` npx tailwindcss init // it does not work anymore `
+
+
+- [How to set up Angular & Tailwind CSS 4 in VS Code with Intellisense](https://www.youtube.com/watch?v=s-TAV5pQfcU)
+- `npm install tailwindcss @tailwindcss/postcss postcss --force `
+- `create client/.postcssrc.json
+```
+{
+  "plugins": {
+    "@tailwindcss/postcss": {}
+  }
+}
+```
+- `update client/src/style.scss
+```
+@import "tailwindcss"; 
+
+/* code on top is working as of this current try out April 25, 2025 */
+
+/* 
+Code below: No longer works as of this current testing & experimentation
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*/
+```
