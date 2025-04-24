@@ -2516,4 +2516,31 @@ Code below: No longer works as of this current testing & experimentation
 ###### 61. Adding VS Code extensions for Angular and Tailwind
 
 - ` Extension : Angular Language Service: by angular.dev `
-- ` Extension : Tailwind CSS IntelliSense: by Tailwind Labs tailwindcss.com `
+- ` Extension : Tailwind CSS IntelliSense: by Tailwind Labs tailwindcss.com // For some reason - I restarted the extension but I turns off its auto suggestions`
+
+###### 62. Summary
+
+- ` Installing the Angular CLI `
+- ` Creating the Angular project `
+- ` Setting up VS Code for Angular* `
+- ` Setting up Angular to use HTTPS `
+
+<hr>
+
+### Section 8: Angular Basics
+<hr>
+
+- `Adding components`
+- `Http client module`
+- `Observables => note: doesn't use promise base but observables - its benefits, usage; also there is abetter tools SignalR ` 
+- `Typescript: => type safety like C# and Java better for development at earlier stage`
+
+ 
+```
+Goal:
+
+To be able to use the http client to retrieve data from the API.
+
+To understand the basics of observables and Typescript
+
+```
