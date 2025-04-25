@@ -2672,3 +2672,22 @@ $customTheme: mat.define-theme(); /*2*/
 /* add the custom-theme class */
 <html lang="en" class="custom-theme"> 
 ```
+- ` incouter some issue: Visual studio code  : Git: fatal: unable to access 'https:/github.com/wilfred05777/skinet2025-NC.git/': Could not resolve proxy: proxy.server.com`
+```
+@ Git Bash terminal: 
+
+Fix Options:
+
+✅ Option 1: Remove Proxy Configuration in Git
+Run these commands in your terminal to remove the proxy settings:
+
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+
+✅ Option 2: Check Your Git Proxy Settings
+To see if Git is using a proxy:
+
+git config --global --get http.proxy
+git config --global --get https.proxy
+
+```
