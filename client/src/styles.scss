@@ -1,2 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
 @import "tailwindcss";
+
+$customTheme: mat.define-theme();
+
+@include mat.core();
+
+.custom-theme {
+  @include mat.all-component-themes($customTheme);
+
+  // override the button styles
+  .mdc-button, .mdc-raised-button, .mdc-stroke-button, .mdc-flat-button {
+    @apply rounded-md; /* Equivalent to Tailwind's rounded-md */
+  }
+
+}

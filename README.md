@@ -2612,3 +2612,63 @@ export class HeaderComponent {
 
 }
 ```
+
+###### 66. Improving the header component
+
+- ` add images like logo in client/public `
+- ` if a logo recently added would not show - a restart on ng serve will suffice as first step to troubleshoot it `
+
+
+- ` update file header.component.scss `
+```
+//...
+    <div class="flex gap-3 align-middle">
+    <a matBadge="5" matBadgeSize="large" class="custom-badge mt-2 mr-2"> // added class="custom-badge mt-2 mr-2"
+//...
+```
+- ` update file header.component.scss `
+```
+// for styling of number icon sign badge on top of the cart icon
+.custom-badge .mat-badge-content{
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+// for styling the cart icon size 
+.custom-badge .mat-icon{
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+```
+
+- `styling global css in angular  `
+
+- ` client/src/styles.css  `
+```
+@use '@angular/material' as mat; /*1*/
+
+@import "tailwindcss";
+
+$customTheme: mat.define-theme(); /*2*/
+
+@include mat.core(); /*3*/ 
+
+/* 4 */
+.custom-theme {
+  @include mat.all-component-themes($customTheme);
+
+  // override the button styles
+  .mdc-button, .mdc-raised-button, .mdc-stroke-button, .mdc-flat-button {
+    @apply rounded-md; /* Equivalent to Tailwind's rounded-md */
+  }
+}
+```
+- ` then implement it in the entire website/app via top level html  `
+- ` client/src/index.html `
+```
+/* add the custom-theme class */
+<html lang="en" class="custom-theme"> 
+```
