@@ -2544,3 +2544,26 @@ To be able to use the http client to retrieve data from the API.
 To understand the basics of observables and Typescript
 
 ```
+
+###### 64. Setting up the folder structure and creating components
+
+- `create src/app/core/`
+- `create src/app/shared/`
+- `create src/app/features/`
+- `create src/app/layout/`
+
+```
+cd client/
+angular cli commands
+
+- ng help
+- ng generate help
+- ng g c layout/header --dry-run
+- ng g c layout/header --skip-tests // skip the test file
+
+    - `app/layout/header.component.html `
+    - `app/layout/header.component.scss `
+    - `app/layout/header.component.ts `
+
+- vsCode: Explorer: Compact Folders - uncheck
+```
