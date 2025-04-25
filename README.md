@@ -2567,3 +2567,48 @@ angular cli commands
 
 - vsCode: Explorer: Compact Folders - uncheck
 ```
+###### 65. Adding a Header component
+- ` udpate client/src/app/layout/header.component.html `
+```
+<header class="border-b p-3 w-full ">
+  <div class="flex align-middle items-center justify-between max-w-screen-2xl mx-auto">
+     <img src="/images/logo.png" alt="app logo" class="max-h-16" />
+     <nav class="flex gap-3 my-2 uppercase text-xl">
+      <a>Home</a>
+      <a>Shop</a>
+      <a>Contact</a>
+     </nav>
+     <div class="flex gap-3 align-middle">
+       <a matBadge="5" matBadgeSize="large">
+         <mat-icon>shopping_cart</mat-icon>
+        </a>
+      <button mat-stroked-button>Login</button>
+      <button mat-stroked-button>Login</button>
+     </div>
+  </div>
+</header>
+```
+
+- ` udpate client/src/app/layout/header.component.ts `
+```
+import { Component } from '@angular/core';
+/* in oder to use the material ui components it need to be importe first then*/
+import { MatIcon} from '@angular/material/icon'; 
+import { MatButton } from '@angular/material/button';
+import { MatBadge } from '@angular/material/badge';
+
+@Component({
+  selector: 'app-header',
+  imports: [
+    /* then add the import here but there should be a auto add imports if vs-code extension works well*/
+    MatIcon,
+    MatButton,
+    MatBadge
+  ],
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.scss'
+})
+export class HeaderComponent {
+
+}
+```
