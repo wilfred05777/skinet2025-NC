@@ -3040,3 +3040,10 @@ To understand the basics of obeservables and Typescript
     Only with great difficulty. 
     This is heavily intergrated into the app.
 ```
+- ` fixing Tailwind Compile issue at global style.scss`
+```
+/* Fixing tailwind import issue = FF Solution with chatgpt's help */
+
+// @import "tailwindcss";
+@use "tailwindcss" as *; 
+```
