@@ -3062,3 +3062,90 @@ To understand the basics of obeservables and Typescript
     -Input properties - child components
 
 ```
+
+###### 74. Introduction to Angular services
+
+- ` create angular service for reusable logic, ng service is a singleton, `
+- ` ' ng g service core/services/shop.services.ts ' => go to core component <---/* working */ ` 
+- ` ' ng g service core/services/shop.services.ts ' --dry-run <- this command will generate service at app/core/services/shop <---/* not working */`
+- ` ' ng g service core/services/shop.services.ts '  --dry-run --skip-tests <---/* not working */ <- this command will generate service at app/core/services/shop.services.ts`
+
+- ` create client/src/app/core/services/shop.services.ts`
+
+```
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ShopService {
+  baseUrl = 'https://localhost:5001/api/'
+  private http = inject(HttpClient);
+
+  constructor() { }
+}
+```
+- ` update app/app.component.ts`
+```
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from "./layout/header/header.component";
+import { Product } from './shared/models/products';
+import { ShopService } from './core/services/shop.service';
+import { Pagination } from './shared/models/pagination';
+import { HttpClient } from '@angular/common/http';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, HeaderComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent implements OnInit {
+  /* implement shop service */
+  private shopService = inject(ShopService);
+
+  /* refactor the code for service method
+  baseUrl = 'https://localhost:5001/api/'
+  private http = inject(HttpClient);
+  */
+  title = 'Skinet';
+  products: Product[] = [];
+
+  ngOnInit():void {
+
+    // this.http.get<Pagination<Product>>(this.baseUrl + 'products').subscribe({
+
+    this.shopService.getProducts().subscribe({
+      // return service from shop.service.ts to fix the error
+      next: response => this.products = response.data,
+      error: error => console.log(error),
+
+      // complete: () => console.log('Complete')
+    })
+  }
+}
+
+```
+- ` update client/src/app/core/services/shop.services.ts`
+```
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { Pagination } from '../../shared/models/pagination';
+import { Product } from '../../shared/models/products';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ShopService {
+  baseUrl = 'https://localhost:5001/api/'
+  private http = inject(HttpClient);
+
+  getProducts() {
+    // add a return to make the method be identified in the app.component.ts
+    return this.http.get<Pagination<Product>>(this.baseUrl + 'products')
+  }
+}
+
+```
