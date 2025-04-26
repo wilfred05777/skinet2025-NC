@@ -22,6 +22,6 @@ function toggleTodo(id) {
 }
 addTodo("Learn TypeScript");
 addTodo("Publish app");
-toggleTodo(a);
+toggleTodo(1);
 console.log(todos);
-" to compile it  npx tsc src/demo.ts ";
+// ` to compile it  npx tsc src/demo.ts `

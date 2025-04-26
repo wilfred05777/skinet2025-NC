@@ -2924,3 +2924,88 @@ console.log(todos);
 // ` to compile it  - npx tsc src/demo.ts
 
 ```
+
+###### 71. Using Types in our Project
+
+- ` creating Product models -> client/src/app/shared/models/products.ts `
+```
+export type Product = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  pictureUrl: string;
+  brand: string;
+  type: string;
+  quantityInStock: number;
+}
+
+// in interface Product
+export interface Product1 {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  pictureUrl: string;
+  brand: string;
+  type: string;
+  quantityInStock: number;
+  rating: number;
+  reviewsCount: number;
+  isFavorite: boolean;
+}
+```
+- ` creating Paginantion models -> client/src/app/shared/models/pagination.ts `
+```
+//<T> is a generics the same with c# but it can also be used in Typescript
+export type Pagination<T> = { 
+  pageIndex: number;
+  pageSize: number;
+  count: number;
+  data: T[];
+}
+```
+- ` update src/app/app.component.ts `
+```
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from "./layout/header/header.component";
+import { HttpClient } from '@angular/common/http'; 
+import { Product } from './shared/models/products';
+import { Pagination } from './shared/models/pagination';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, HeaderComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent implements OnInit {
+  baseUrl = 'https://localhost:5001/api/'
+  private http = inject(HttpClient);
+  title = 'Skinet';
+  // products:any[] = [];
+
+    /* instead of any[] we will be using/implementing the Product[] model */
+  products: Product[] = [];
+
+  ngOnInit():void {
+    /* implementing Pagination and Product models */
+    this.http.get<Pagination<Product>>(this.baseUrl + 'products').subscribe({
+      
+      // next: data => console.log(data),
+      
+      /* reponse. will give as access to data, count, pageIndex, pageSize */
+      next: response => this.products = response.data,
+      
+      error: error => console.log(error),
+      
+      complete: () => console.log('Complete')
+    })
+  }
+}
+```
+- ` update client/src/app/app.component.html `
+```
+
+```
