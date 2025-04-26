@@ -2740,6 +2740,7 @@ ngOnInit():void {
 ```
 - ` to test go broswer console `
 - ` encounter error - Cross Origin Request Blocked: on laptop`
+- `update note: working sa desktop node --version 22.13.1` 
 
 - ` /* Display actual product from API to UI(client - angular project) */`
 - `update app.component.ts`
