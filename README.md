@@ -3007,5 +3007,36 @@ export class AppComponent implements OnInit {
 ```
 - ` update client/src/app/app.component.html `
 ```
+<app-header></app-header>
+<router-outlet></router-outlet>
 
+<div class="container mt-6">
+  <h2 class="text-3xl font-bold underline">Welcome to {{ title }}</h2>
+  <ul>
+    @for (product of products; track product.id){
+      <li>{{ product.name }}</li>
+    }
+  </ul>
+</div>
+```
+
+###### 72. Summary
+
+- `Goal:` 
+```
+Goal:
+To be able to use the http client to retrieve data from the API
+
+To understand the basics of obeservables and Typescript
+```
+
+- ` FAQs `
+```
+    Question: 
+    Can I use <CssFramework>
+    instead of Angular Material and Tailwind?
+
+    Answer: 
+    Only with great difficulty. 
+    This is heavily intergrated into the app.
 ```
