@@ -2691,3 +2691,91 @@ git config --global --get http.proxy
 git config --global --get https.proxy
 
 ```
+
+###### 67. Making http requests in Angular
+
+- ["Installing Node using NVM"](https://gist.github.com/MichaelCurrin/5c2d59b2bad4573b26d0388b05ab560e)
+- ` nvm list `
+- ` npm install 22.15 `
+- ` nvm use 22.5 `
+
+- ` update client/src/app/app.config.ts ` 
+```
+import { provideHttpClient } from '@angular/common/http';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    //...
+    provideHttpClient(),  
+  ],
+};
+```
+- `update client/src/app/app.component.ts`
+
+```
+//...
+import { Component, inject, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+//...
+export class AppComponent {
+  //...
+  baseUrl = 'https://localost:5001/api/'
+  private http = inject(HttpClient);
+  //... 
+
+}
+
+``` 
+- /* implementing observable app.components.ts*/
+
+```
+ngOnInit():void {
+  this.http.get(this.baseUrl + 'products').subscribe({
+    next: data => console.log(data),
+    error: error => console.log(error),
+    complete: () => console.log('complete')
+  })
+}
+```
+- ` to test go broswer console `
+- ` encounter error - Cross Origin Request Blocked: on laptop`
+
+- ` /* Display actual product from API to UI(client - angular project) */`
+- `update app.component.ts`
+```
+export class AppComponent implement OnInit{
+  //...
+  products: any[] = [];
+
+  //ngOnInit()...
+  this.http.get<any>(this.baseUrl + 'products').subscribe({
+    next: response => this.products = response.data,
+  })
+
+}
+```
+
+- ` update client/src/app/app.component.html ` 
+```
+/* container will be used connect the global styling*/
+<div class="container mt-6">
+  <h2 class="text-3xl font-bold underline">Welcome to {{ title }}</h2>
+  
+  <ul>
+    /* it will loop the product and display each using li*/
+
+    @for(product of products; track product.id){
+      <li>{{ product.name }}</li>
+    }
+
+  </ul>
+</div>
+``` 
+- ` update client/src/styles.scss ` 
+```
+//...
+.container {
+  @apply mx-auto max-w-screen-2xl
+}
+``` 

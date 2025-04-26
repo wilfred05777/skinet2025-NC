@@ -14,5 +14,8 @@ $customTheme: mat.define-theme();
   .mdc-button, .mdc-raised-button, .mdc-stroke-button, .mdc-flat-button {
     @apply rounded-md; /* Equivalent to Tailwind's rounded-md */
   }
+}
 
+.container {
+  @apply mx-auto max-w-screen-2xl
 }
