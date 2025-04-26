@@ -2780,3 +2780,65 @@ export class AppComponent implement OnInit{
   @apply mx-auto max-w-screen-2xl
 }
 ``` 
+
+###### 68. Introduction to observables
+- `Note:`
+```
+Observable - 
+A sequence of items that arrive asynchronously over time.
+- counter part of promises in javascript
+
+    Promises                vs          Obeservables
+    -Has one pipeline                   - Are cancellable
+    -Typically used with                - Stream data in multiple pipelines
+    -async data return                  - Arrays like operations
+    -Not easy to cancle                 - Can be created from other sources like events
+                                        - They can be subscribed to
+
+Promises
+                         ------->  Succeed(data)
+                        /
+==================< Then
+                        \
+                         ------->  Fail
+
+
+Observables                  Cancel
+                         -------X  
+                        /
+==================< Then ======================
+                        \  Fail             
+                          --------------|------------|-------|--> data                   
+                           Succeed   subscribe()   map()  filter()
+
+```
+- ` Observable `
+```
+ _____________________      GET api/products            ________________
+|                     |------------------------------->|               | 
+| Angular HTTP Client |                                |      API      | 
+|_____________________|<-------------------------------|_______________|
+ Observable of Products[]  HTTP Response: Products[]
+            \
+             \
+              \  Subscribe
+               \ __________________                 ____________________
+                |                  |                |                   | 
+                | Shop Component   |                | Displays data in  |
+                |__________________|                |   the Browser     |
+                                                    |___________________|
+``` 
+- ` HTTP, Observables and RxJS `
+```
+1. HTTP Get request from ShopService
+2. Receive the Observable and cast it into a Products Array
+3. Subscribe to the Obeservable from the component
+4. Assign the Products array to a local variable for use in the components template
+```
+- ` RxJS `
+```
+    -Reactive Extensions for JavaScript
+    -Utility library for working with observables, similar to lodash or
+     underscore for javascript objects and arrays.
+    -Uses the pipe() method to chain RxJS operators together
+```
