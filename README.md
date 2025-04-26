@@ -3047,3 +3047,18 @@ To understand the basics of obeservables and Typescript
 // @import "tailwindcss";
 @use "tailwindcss" as *; 
 ```
+<hr>
+
+### Section 9: Building the User Interface for the shop
+<hr>
+
+- ` 73. Introduction : Client Building the UI`
+```
+    -Angular services (AS) - Singleton, for this project we don't redux (state management) to remember things utilize AS for this project but we can if we want to.
+    -Building the UI for the shop
+    -Material components
+    -Pagination
+    -Filtering, Sorting & Search
+    -Input properties - child components
+
+```
