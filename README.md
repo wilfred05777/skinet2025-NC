@@ -2842,3 +2842,16 @@ Observables                  Cancel
      underscore for javascript objects and arrays.
     -Uses the pipe() method to chain RxJS operators together
 ```
+###### 69. Introduction to TypeScript
+-   ` Typescript ` 
+```
+    Pros - Typescript Rocks!        and             Cons - Typescript is Annoying!
+    -Strong Typing                                  -More upfront code
+    -Object Oriented                                -3rd party libraries
+    -Better intellisense                            -Strict mode is...strict! (insurance)
+    -Access Modifiers                               
+    -Future Javascript features                     
+    -Catches silly mistakes in                      
+    development
+    -3rd party libraries
+```
