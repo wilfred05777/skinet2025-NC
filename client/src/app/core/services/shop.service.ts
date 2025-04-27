@@ -11,7 +11,6 @@ export class ShopService {
   private http = inject(HttpClient);
 
   getProducts() {
-    // add a return to make the method be identified in the app.component.ts
-    return this.http.get<Pagination<Product>>(this.baseUrl + 'products')
+    return this.http.get<Pagination<Product>>(this.baseUrl + 'products?pageSize=20')
   }
 }

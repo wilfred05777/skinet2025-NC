@@ -1,0 +1,7 @@
+<div class="grid grid-cols-5 gap-4">
+  @for (product of products; track product.id) {
+    <mat-card appearance="raised">
+      <img src="{{  product.pictureUrl }}" alt="alt imge of {{ product.name }}" class="w-full h-48 object-cover" />
+    </mat-card>
+  }
+</div>

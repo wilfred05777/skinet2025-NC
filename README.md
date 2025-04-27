@@ -3147,5 +3147,144 @@ export class ShopService {
     return this.http.get<Pagination<Product>>(this.baseUrl + 'products')
   }
 }
+```
 
+###### 75. Designing the shop page
+
+- ` create features/shop.component.ts`
+- ` ng g component features/shop --dry-run / --skip-tests `
+- ` shop.component.ts`
+```
+import { Component, inject } from '@angular/core';
+import { ShopService } from '../../core/services/shop.service';
+import { Product } from '../../shared/models/products';
+
+@Component({
+  selector: 'app-shop',
+  imports: [],
+  templateUrl: './shop.component.html',
+  styleUrl: './shop.component.scss'
+})
+export class ShopComponent {  /* implement shop service */
+  private shopService = inject(ShopService);
+  products: Product[] = [];
+
+  ngOnInit():void {
+    this.shopService.getProducts().subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+}
+```
+- ` update src/app/app.component.ts `
+```
+// cutting code below:
+/* implement shop service */
+
+  private shopService = inject(ShopService);
+
+  title = 'Skinet';
+  products: Product[] = [];
+
+  ngOnInit():void {
+    this.shopService.getProducts().subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+```
+- ` update app.component.html `
+
+```
+<app-header></app-header>
+<router-outlet></router-outlet>
+
+<div class="container mt-6">
+  <app-shop></app-shop>
+</div>
+
+<!-- old code below -->
+<!-- <div class="container mt-6">
+  <app-shop></app-shop>
+  <h2 class="text-3xl font-bold underline">Welcome to {{ title }}</h2>
+  <ul>
+    @for (product of products; track product.id){
+      <li>{{ product.name }}</li>
+    }
+  </ul>
+</div> -->
+```
+
+- ` update src/app/app.component.ts `
+```
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from "./layout/header/header.component";
+import { Product } from './shared/models/products';
+import { ShopService } from './core/services/shop.service';
+import { ShopComponent } from "./features/shop/shop.component";
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, HeaderComponent, ShopComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss'
+})
+export class AppComponent {
+  title = "Skinet";
+}
+```
+- ` client/src/app/features/shop/shop.component.ts`
+```
+
+```
+- ` client/src/app/features/shop/shop.component.html`
+```
+                /* grid-cols-5 display five columns in UI*/
+<div class="grid grid-cols-5 gap-4">
+  @for (product of products; track product.id) {
+    <mat-card appearance="raised">
+      <img src="{{  product.pictureUrl }}" alt="alt imge of {{ product.name }}" class="w-full h-48 object-cover" />
+    </mat-card>
+  }
+</div>
+```
+
+- ` update shop.component.ts`
+```
+import { Component, inject } from '@angular/core';
+import { ShopService } from '../../core/services/shop.service';
+import { Product } from '../../shared/models/products';
+import { MatCard } from '@angular/material/card';
+
+@Component({
+  selector: 'app-shop',
+  imports: [
+    MatCard
+  ],
+  templateUrl: './shop.component.html',
+  styleUrl: './shop.component.scss'
+})
+export class ShopComponent {  /* implement shop service */
+  private shopService = inject(ShopService);
+  products: Product[] = [];
+
+  ngOnInit():void {
+    this.shopService.getProducts().subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+}
+```
+- ` update client/src/app/core/services/shop.services.ts `
+```
+    getProducts() {
+
+    new return this.http.get<Pagination<Product>>(this.baseUrl + 'products?pageSize=20')
+    
+    <!--old return this.http.get<Pagination<Product>>(this.baseUrl + 'products') -->
+
+  }
 ```
