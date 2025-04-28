@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { ShopService } from '../../core/services/shop.service';
 import { Product } from '../../shared/models/products';
+import { ProductItemComponent } from "./product-item/product-item.component";
 import { MatCard } from '@angular/material/card';
 
 @Component({
   selector: 'app-shop',
   imports: [
-    MatCard
-  ],
+    ProductItemComponent
+],
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss'
 })

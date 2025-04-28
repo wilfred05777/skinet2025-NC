@@ -3288,3 +3288,104 @@ export class ShopComponent {  /* implement shop service */
 
   }
 ```
+
+###### 76. Adding a product item component
+
+- `ng g c features/shop/product-item --skip-tests`
+
+```
+    - src/app/features/shop/product-item/product-item.component.ts
+    - src/app/features/shop/product-item/product-item.component.scss
+    - src/app/features/shop/product-item/product-item.component.html
+```
+- `src/app/features/shop/product-item/product-item.component.ts`
+```
+import { Component, Input } from '@angular/core';
+import { Product } from '../../../shared/models/products';
+
+@Component({
+  selector: 'app-product-item',
+  imports: [
+
+  ],
+  templateUrl: './product-item.component.html',
+  styleUrl: './product-item.component.scss'
+})
+export class ProductItemComponent {
+  @Input() product?: Product;
+}
+```
+- `update product-item.component.html`
+```
+@if (product) {
+  <mat-card appearance="raised">
+    <img src="{{  product.pictureUrl }}" alt="alt imge of {{ product.name }}" class="w-full h-48 object-cover" />
+  </mat-card>
+}
+```
+- ` update import @ shop.component.ts`
+```
+@Component({
+  selector: 'app-shop',
+  imports: [
+    MatCard,
+    ProductItemComponent // <-- import to shop.component.ts
+],
+```
+- ` update product-item.component.ts`
+```
+import { MatCard, MatCardContent } from '@angular/material/card';
+
+@Component({
+  selector: 'app-product-item',
+  imports: [
+    MatCard, // <-- import 
+    MatCardContent, // <-- import 
+    CurrencyPipe, // <-- import 
+    MatCardActions, // <-- import 
+    MatButton, // <-- import 
+    MatIcon // <-- import 
+  ],
+})
+```
+- `updae product-item.component.html`
+```
+@if (product) {
+  <mat-card appearance="raised">
+    <img src="{{  product.pictureUrl }}" alt="alt imge of {{ product.name }}" class="w-full h-48 object-cover" />
+
+    <!-- udpated code start -->
+    <mat-card-content class="text-sm font-semibold uppercase">
+      {{ product.name }}
+      <p class="font-light">{{ product.price | currency }}</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-stroked-button class="w-full">
+        <mat-icon>add_shopping_cart</mat-icon>
+        Add to cart
+      </button>
+    </mat-card-actions>
+    <!-- udpated code end -->
+
+  </mat-card>
+}
+```
+
+
+
+- `API/Program.cs`
+```
+/*
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://localhost:5001/api/products?pageSize=20. (Reason: CORS request did not succeed). Status code: (null)
+*/
+//// desktop working and not working in laptop
+// app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
+//     .WithOrigins("http://localhost:4200", "https://localhost:4200")); 
+    
+// laptop testing config 
+app.UseCors(x => x
+    .WithOrigins("http://localhost:4200", "https://localhost:4200")
+    .AllowAnyHeader()
+    .AllowAnyMethod());   
+
+```
