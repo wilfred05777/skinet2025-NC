@@ -2696,7 +2696,7 @@ git config --global --get https.proxy
 
 - ["Installing Node using NVM"](https://gist.github.com/MichaelCurrin/5c2d59b2bad4573b26d0388b05ab560e)
 - ` nvm list `
-- ` npm install 22.15 `
+- ` nvm install 22.15 `
 - ` nvm use 22.5 `
 
 - ` update client/src/app/app.config.ts ` 
