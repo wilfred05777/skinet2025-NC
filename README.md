@@ -3430,3 +3430,66 @@ export class ShopComponent implements OnInit {
     }
 }
 ```
+
+###### 78. Adding the filtering functionality using Material Dialog
+[Angular MAterial Ui Dialog](https://material.angular.io/components/dialog)
+
+- ` create dialog cd client - ng g c features/shop/filters-dialog --skip-tests `
+
+- ` client/src/app/features/shop/filters-dialog/filters-dialog.components.ts `
+```
+//...
+import { ShopService } from '../../../core/services/shop.services';
+import { MatDivider } from '@angular/material/divider';
+import { MatListOption, MatSelectionList } from '@angular/material/list';
+import { MatButton } from '@angular/material/button';
+
+@Component({
+    //...
+    imports:[
+        MatDivider,
+        MatSelectionList,
+        MatListOption,
+        MatButton
+    ]
+})
+//...
+export class FiltersDialogComponent {
+    shopService = inject(shopService)
+} 
+```
+
+- ` update filters-dialog.components.html  `
+```
+<div>
+    <h3 class="text-3xl text-center pt-6 mb-3"> Filters</h3>
+    <mat-divider></mat-divider>
+    <div class="flex p-4">
+        <div class="w-1/2>
+            <h4 class="font-semibold text-xl text-primary">
+                Brands
+            </h4>
+            <mat-selection-list>
+                @for (brand of shopService.brands; track $index) {
+                    <mat-list-option>{{brand}}</mat-list-option>
+                }
+            </mat-selection-list>
+        </div>
+
+        <div class="w-1/2>
+            <h4 class="font-semibold text-xl text-primary">
+                Types
+            </h4>
+            <mat-selection-list>
+                @for (type of shopService.types; track $index) {
+                    <mat-list-option>{{ type}}</mat-list-option>
+                }
+            </mat-selection-list>
+        </div>
+    </div>
+
+    <div class="flex justify-end p-4">
+        <button mat-flat-butotn>Apply Filters</button>
+    </div>
+</div>
+```
