@@ -1,10 +1,9 @@
 @if (product) {
   <mat-card appearance="raised">
     <img src="{{  product.pictureUrl }}" alt="alt imge of {{ product.name }}" class="w-full h-48 object-cover" />
-
-    <mat-card-content class="text-sm font-semibold uppercase">
-      {{ product.name }}
-      <p class="font-light">{{ product.price | currency }}</p>
+    <mat-card-content class="mt-2">
+      <h2 class="text-sm font-semibold uppercase">{{product.name}}</h2>
+      <p class="font-light">{{product.price | currency}}</p>
     </mat-card-content>
     <mat-card-actions>
       <button mat-stroked-button class="w-full">

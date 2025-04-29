@@ -3430,6 +3430,35 @@ export class ShopComponent implements OnInit {
     }
 }
 ```
+- `second update client/src/app/features/shop/shop.components.ts` 
+```
+export class ShopComponent{
+
+    //...
+    
+    ngOnInit():void{
+        this.initializeShop(); /* <-- insert the initializeShop() function here */
+
+        /* this will be move to initializeShop(){} see below
+        this.shopService.getProducts().subscribe({
+         next: response => this.products = response.data,
+        error: error => console.log(error)
+        })
+    }
+
+    initializeShop(){
+        this.shopService.getBrands();
+        this.shopService.getTypes();
+
+        /* this code below comes from ngOnInit from the top */
+        this.shopService.getProducts().subscribe({
+        next: response => this.products = response.data,
+        error: error => console.log(error)
+        })
+    }
+
+}
+```
 
 ###### 78. Adding the filtering functionality using Material Dialog
 [Angular MAterial Ui Dialog](https://material.angular.io/components/dialog)

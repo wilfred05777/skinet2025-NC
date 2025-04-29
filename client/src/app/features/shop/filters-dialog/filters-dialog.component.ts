@@ -17,7 +17,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   styleUrl: './filters-dialog.component.scss'
 })
 export class FiltersDialogComponent {
-  shopService = inject(ShopService)
+  shopService = inject(ShopService);
 
   private dialogRef = inject(MatDialogRef<FiltersDialogComponent>);
   data = inject(MAT_DIALOG_DATA);
