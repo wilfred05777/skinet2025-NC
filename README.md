@@ -3579,3 +3579,95 @@ export class ShopComponent{
 </div>
 //...
 ```
+
+###### 80. Hooking up the filters to the service
+- `update filters-dialog.component.ts`
+```
+//...
+import { FormsModule } from '@angular/forms';
+
+@component({
+    //...
+    imports:[
+        //...
+        FormsModule
+    ]
+})
+```
+- `update filters-dialog.components.html`
+```
+/*
+    # notes: about square brackets & parenthesis in angular
+    #1 square brackets in angular [] represents input properties *
+    #2 parethesis represents output properties or events in angular *
+*/
+
+<div class="flex p-4">
+    <div class="w-1/2">
+        //...
+        <mat-selection-list [(ngModel)]="selectedBrands" [multiple]="true">
+            @for (brand of shopService.brands; track $index){
+            <mat-list-option [value]="brand">{{brand}}</mat-list-option>
+            }
+        </mat-selection-list>
+        //...
+
+    <div class="w-1/2">
+            //...
+        <mat-selection-list [(ngModel)]="selectedTypes" [multiple]="true">
+                @for (type of shopService.types; track $index){
+                    <mat-list-option [value]="type">{{type}}</mat-list-option>
+                }
+        </mat-selection-list>
+    //...
+
+    //...
+    <div class="flex justify-end p-4">
+                            /* (click)="applyFilters()" here for click event */
+        <button mat-flat-button (click)="applyFilters()">Apply Filter</button>
+    </div>
+</div>
+```
+- ` update shop.service.ts `
+```
+    //...
+    getProducts(brands?: string[], types?: string[]) {
+        let params = new HttpParams();
+
+        if (brands && brands.length > 0 ) {
+        params = params.append('brands', brands.join(','));
+        }
+
+        if (types && types.length > 0 ) {
+        params = params.append('types', types.join(','));
+        }
+        params = params.append('pageSize', 20 ) //  filters to show 20 items with angular params
+
+        return this.http.get<Pagination<Product>>(this.baseUrl + 'products', {params})
+        // return this.http.get<Pagination<Product>>(this.baseUrl + 'products?pageSize=20') // filters to show 20 items with api usage i'm not really sure what to call this ATM
+    }
+    //...
+```
+- ` update shop.components.ts`
+```
+    //...
+
+    openFiltersDialog(){
+        
+        //...
+        dialogRef.afterClosed().subscribe({
+            next: result =>{
+                if(result) {
+                    //...
+                    //apply filters
+                    this.shopService.getProducts(this.selectedBrands, this.selectedTypes).subscribe({
+                        next: response => this.products = response.data,
+                        error: error => console.log(error)
+                    })
+                }
+            }
+        })
+    }
+    //...
+    
+```
