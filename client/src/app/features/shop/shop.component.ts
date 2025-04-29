@@ -22,4 +22,13 @@ export class ShopComponent {  /* implement shop service */
       error: error => console.log(error)
     })
   }
+
+  initializeShop(){
+    this.shopService.getBrands();
+    this.shopService.getTypes();
+    this.shopService.getProducts().subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
 }

@@ -3389,3 +3389,44 @@ app.UseCors(x => x
     .AllowAnyMethod());   
 
 ```
+
+###### 77. Getting the types and brands lists
+- ` update client/src/app/core/services/shop.services.ts `
+
+```
+export class ShopService {
+    //... 
+    types: sting[] = [];
+    brands: string[] = []
+
+    //...
+    getBrands(){
+        if(this.brands.length > 0) return;
+        return this.http.get<string[]>(this.baseUrl + 'products/brands').subscribe({
+            next: response => this.brands = response
+        })
+    }
+
+    getTypes(){
+        if(this.types.length > 0) return;
+        return this.http.get<string[]>(this.baseUrl + 'products/types/').subscribe({
+            next: response => this.types = reponse
+        })
+    }
+}
+```
+- ` update client/src/app/features/shop/shop.components.ts` 
+```
+export class ShopComponent implements OnInit {
+
+    //...
+    initializeShop() {
+        this.shopService.getBrands();
+        this.shopService.getTypes();
+        this.shopService.getProducts().subscribe({
+            next: response => this.products = response.data,
+            error: error => console.log(error)
+        })
+    }
+}
+```
