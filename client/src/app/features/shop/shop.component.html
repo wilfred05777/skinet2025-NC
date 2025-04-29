@@ -1,13 +1,16 @@
-<div class="grid grid-cols-5 gap-4">
-  @for (product of products; track product.id) {
-    <!-- updated code below -->
-    <app-product-item [product]="product"></app-product-item>
+<div class="flex flex-col gap-3">
+  <div class="flex justify-end">
+    <button mat-stroked-button (click)="openFiltersDialog()">
+      <mat-icon>filter_list</mat-icon>
+      Filters
+    </button>
+  </div>
 
-    <!-- old code below -->
-    <!-- <mat-card appearance="raised">
-      <img src="{{  product.pictureUrl }}" alt="alt imge of {{ product.name }}" class="w-full h-48 object-cover" />
-    </mat-card> -->
-  }
+  <div class="grid grid-cols-5 gap-4">
+    @for (product of products; track product.id) {
+      <app-product-item [product]="product"></app-product-item>
+    }
+  </div>
 </div>
 
 

@@ -3493,3 +3493,60 @@ export class FiltersDialogComponent {
     </div>
 </div>
 ```
+
+###### 79. Adding the filtering functionality using Material Dialog part 2: FF
+
+- ` update shop.components.ts `
+```
+//...
+import { MatDialog } from '@angular/material/dialog';
+import { FiltersDialogComponent } from './filters-dialog/filters-dialog.component';
+import { MatButton } from '@angular/material/butotn';
+import { MatIcon } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
+
+@component({
+    //...
+    imports: [
+        //...
+        ProductItemComponent,
+        MatButton,
+        MatIcon
+    ]
+})
+
+//...
+export class ShopComponent{
+    //...
+    private dialogService = inject(MatDialog)
+    //...
+
+    //...
+    openFiltersDialog(){
+        const dialogRef = this.dialogSerice.open(FiltersDialogComponent, {
+            minWidth: '500px'
+        })
+    }
+}
+```
+- ` update shop.component.html `
+- ` google search: Material Symbols and Icons ` 
+[Material Design Icon](https://fonts.google.com/icons)
+
+```
+<div class="flex flex-col gap-3">
+    <div class="flex justify-end>
+        <button mat-stroked-button (click)="openFiltersDialog()">
+            <mat-icon>filter_list</mat-icon>
+            Filters
+        </button>
+    </div>
+
+    <div class="grid grid-cols-5 gap-4">
+        @for (product of products; track product.id){
+            <app-product-item [product]="product"></app-product-item>
+        }
+    </div>
+</div>
+//...
+```
