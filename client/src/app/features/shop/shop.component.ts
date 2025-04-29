@@ -49,7 +49,7 @@ export class ShopComponent {
     dialogRef.afterClosed().subscribe({
       next: result => {
         if(result) {
-          console.log(result);
+          // console.log(result);
           this.selectedBrands = result.selectedBrands;
           this.selectedTypes = result.selectedTypes;
           // apply filters
