@@ -7,39 +7,44 @@ import { Product } from '../../shared/models/products';
   providedIn: 'root'
 })
 export class ShopService {
-  baseUrl = 'https://localhost:5001/api/'
+  baseUrl = 'https://localhost:5001/api/';
   private http = inject(HttpClient);
   types: string[] = [];
   brands: string[] = [];
 
-  getProducts(brands?: string[], types?: string[]) {
+  getProducts(brands?: string[], types?: string[], sort?: string) {
     let params = new HttpParams();
 
-    if (brands && brands.length > 0 ) {
+    if (brands && brands.length > 0) {
       params = params.append('brands', brands.join(','));
     }
 
-    if (types && types.length > 0 ) {
+    if (types && types.length > 0) {
       params = params.append('types', types.join(','));
+    }
+
+    if (sort) {
+      params = params.append('sort', sort);
     }
 
     params = params.append('pageSize', '20');
 
-    return this.http.get<Pagination<Product>>(this.baseUrl + 'products', {params})
+    return this.http.get<Pagination<Product>>(this.baseUrl + 'products', { params });
   }
 
-  getBrands(){
-    if(this.brands.length > 0) return;
+  getBrands() {
+    if (this.brands.length > 0) return;
     return this.http.get<string[]>(this.baseUrl + 'products/brands').subscribe({
-      next: response => this.brands = response,
-    })
+      next: response => (this.brands = response),
+    });
   }
 
-  getTypes(){
-    if(this.types.length > 0) return;
+  getTypes() {
+    if (this.types.length > 0) return;
     return this.http.get<string[]>(this.baseUrl + 'products/types').subscribe({
-      next: response => this.types = response,
-    })
+      next: response => (this.types = response),
+    });
   }
-
 }
+
+

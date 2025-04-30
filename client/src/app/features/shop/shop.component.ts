@@ -7,13 +7,19 @@ import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { FiltersDialogComponent } from './filters-dialog/filters-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
+import { MatListOption, MatSelectionList, MatSelectionListChange } from '@angular/material/list';
 
 @Component({
   selector: 'app-shop',
   imports: [
     ProductItemComponent,
     MatButton,
-    MatIcon
+    MatIcon,
+    MatMenu,
+    MatSelectionList,
+    MatListOption,
+    MatMenuTrigger
 ],
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss'
@@ -24,18 +30,42 @@ export class ShopComponent {
   products: Product[] = [];
   selectedBrands: string[]= [];
   selectedTypes: string[]= [];
+  selectedSort = 'name';
+  sortOptions = [
+    { name: 'Alphabetical', value: 'name' },
+    { name: 'Price: Low-High', value: 'priceAsc' },
+    { name: 'Price: High-Low', value: 'priceDesc' },
+  ];
 
   ngOnInit():void {
     this.initializeShop();
   }
 
   initializeShop(){
-    this.shopService.getBrands();
     this.shopService.getTypes();
-    this.shopService.getProducts().subscribe({
+    this.shopService.getBrands();
+    this.getProducts();
+
+    // this.shopService.getProducts().subscribe({
+    //   next: response => this.products = response.data,
+    //   error: error => console.log(error)
+    // })
+  }
+
+  getProducts(){
+    this.shopService.getProducts(this.selectedBrands, this.selectedTypes, this.selectedSort).subscribe({
       next: response => this.products = response.data,
       error: error => console.log(error)
     })
+  }
+
+  onSortChange(event: MatSelectionListChange){
+    const selectedOption = event.options[0]; // grab the first elemen on the list [0]
+    if(selectedOption){
+      this.selectedSort = selectedOption.value;
+      this.getProducts();
+      console.log(this.selectedSort); /* removable console testing only */
+    }
   }
 
   openFiltersDialog(){
@@ -52,11 +82,7 @@ export class ShopComponent {
           // console.log(result);
           this.selectedBrands = result.selectedBrands;
           this.selectedTypes = result.selectedTypes;
-          // apply filters
-          this.shopService.getProducts(this.selectedBrands, this.selectedTypes).subscribe({
-            next: response => this.products = response.data,
-            error: error => console.log(error)
-          })
+          this.getProducts();
         }
       }
     });

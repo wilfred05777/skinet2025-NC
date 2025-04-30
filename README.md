@@ -3671,3 +3671,131 @@ import { FormsModule } from '@angular/forms';
     //...
     
 ```
+###### 81. Adding the sorting functionality
+
+- ` update shop.components.ts `
+```
+import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
+import { MatSelectionList, MatSelectionList, MatSelectionListChange } from '@angular/material/list';
+
+@Component({
+    imports: [
+        //...
+        MatMenu,
+        MatSelectionList,
+        MatListOption,
+        MatMenuTrigger
+    ]
+})
+
+export class ShopComponent{
+    //...
+    selectedSort: string= 'name';
+    sortOptions =[
+        { name: 'Alphabetical', value: 'name' },
+        { name: 'Price: Low-High', value: 'priceAsc' },
+        { name: 'Price: High-Low', value: 'priceDesc' },
+    ]
+
+    //...
+    //initialiseShop(){
+        this.shopService.getTypes();
+        this.shopService.getBrands();
+        this.getProducts(); // updated code
+
+        //... code from here and move inside getProducts(){ move here code below }
+        // move to getProducts(){ }
+        this.shopService.getProducts().subscribe({
+            next: resonse => this.products = response.data,
+            error: error => console.error(erorr)
+        })
+    }
+
+    /* updated */
+    getProducts(){
+        // these code below comes from initialiseShop(){ // imsert here }
+
+        this.shopService.getProducts(this.selectedBrands, this.selectedTypes, this.selectedSort).subscribe({
+            next: resonse => this.products = response.data,
+            error: error => console.error(erorr)
+        })
+    }
+
+    onSortChange(event: MatSelectionListChange){
+        const selectedOption = event.options[0]; // grab the first elemen on the list [0]
+        if(selectedOption){
+            this.selectedSort = selectedOption.value;
+            this.getProducts(); // updated code
+            console.log(this.selectedSort); /* optional for console testing*/
+        }
+    }
+
+    openFiltersDialog(){
+    const dialogRef = this.dialogService.open(FiltersDialogComponent, {
+      minWidth: '500px',
+      data: {
+        selectedBrands: this.selectedBrands,
+        selectedTypes: this.selectedTypes
+      }
+    });
+    dialogRef.afterClosed().subscribe({
+      next: result => {
+        if(result) {
+          // console.log(result);
+
+          this.selectedBrands = result.selectedBrands;
+          this.selectedTypes = result.selectedTypes;
+          this.getProducts(); /* <-- update code here *********/
+
+          // apply filters
+          /*
+          this.shopService.getProducts(this.selectedBrands, this.selectedTypes).subscribe({
+            next: response => this.products = response.data,
+            error: error => console.log(error)
+          })
+          */
+        }
+      }
+    });
+  }
+}
+```
+- ` update shop.components.html `
+```
+<div class="flex justify-end gap-3">
+   //... 
+
+    <button mat-stroked-button [matMenuTriggerFor]="sortMenu">
+      <mat-icon>swap_vert</mat-icon>
+      Sort
+    </button>
+</div>
+
+<!-- below -->
+<mat-menu #sortMenu="matMenu">
+    <mat-selection-list [multiple]="false" (selectionChange)="onSortChange($event)">
+        @for (sort of sortOptions; track $index){
+            <mat-list-option [value]="sort.value" [selected]="selectedSort === sort.value">
+                {{ sort.name }}
+            </mat-list-option>
+            
+        }
+    <mat-selection-list>
+</mat-menu>
+
+```
+
+- ` update shop.service.ts `
+```
+//...
+getProducts(//..., //..., sort?: string){
+    //...if
+
+    if(sort){
+        params = params.append('sort', sort)
+    }
+    // params
+}
+
+//...
+```
