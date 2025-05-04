@@ -3799,3 +3799,8 @@ getProducts(//..., //..., sort?: string){
 
 //...
 ```
+
+###### 82. Using a class to supply the parameters for the API request
+- ` `
+```
+```
