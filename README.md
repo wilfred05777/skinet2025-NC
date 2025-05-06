@@ -3801,6 +3801,160 @@ getProducts(//..., //..., sort?: string){
 ```
 
 ###### 82. Using a class to supply the parameters for the API request
-- ` `
+- [Angular Paginator](https://material.angular.dev/components/paginator/overview)
+
+- ` create client/src/app/shared/models/shopParams.ts `
+
 ```
+export class ShopParams {
+    brands string[] = []
+    types string[] = []
+    sort ='name';
+    pageNumber = 10;
+    pageSize = 10;
+    search = '';
+}
+```
+
+- ` update client/src/app/features/shop/shop.components.ts `
+```
+
+export class ShopComponents {
+    // selectedBrands: string[] = []; // 4th update removed 
+    // selectedTypes: string[] = []; // 4th update removed 
+    //selectedSort: string = 'name' // 4th update removed 
+
+    //... sortOptions = [...]
+
+    shopParams = new ShopParams(); // 1st update
+
+    //... ngOnInit(){...}
+
+    getProducts(){
+        /* old 
+        this.shopService.getProducts(this.selectedBrands, this.selectedTypes, this.selectedSort)
+        */
+
+        /* 2nd update */
+        this.shopService.getProducts(this.shopParams).subscribe({
+            next: response => this.products = response.data;
+            error: error => console.error(error)
+        })
+    }
+
+    onSortChange(event: MatSelectionListChange){
+        if(selectedOption){
+            this.selectedSort = selectedOption.value;  // <== updated
+            this.getProducts(); 
+            console.log(this.selectedSort); /* removable console testing only */
+        }
+    }
+
+    openFiltersDialog(){
+    const dialogRef = this.dialogService.open(FiltersDialogComponent, {
+      minWidth: '500px',
+      data: {
+        selectedBrands: this.shopParams.brands, 
+        selectedBrands: this.shopParams.types
+        //selectedTypes: this.selectedTypes // 5th update
+        //selectedTypes: this.selectedTypes // 5th update
+      }
+    });
+    dialogRef.afterClosed().subscribe({
+      next: result => {
+        if(result) {
+           this.shopParams.brands = result.selectedBrands;  //3rd update
+           this.shopParams.types = result.selectedTypes;    //3rd update
+        // this.selectedBrands = result.selectedBrands; // old 
+        // this.selectedTypes = result.selectedTypes; // old
+          this.getProducts();
+        }
+      }
+    });
+  }
+}
+```
+
+
+- ` update client/src/app/features/shop/shop.components.html `
+
+```
+<mat-menu #sortMenu="matMenu">
+  <mat-selection-list [multiple]="false" (selectionChange)="onSortChange($event)">
+    @for (sort of sortOptions; track $index){
+
+      <!-- <mat-list-option [value]="sort.value" [selected]="selectedSort === sort.value"> -->
+      mat-list-option [value]="sort.value" [selected]="shopParams.sort === sort.value">
+        {{  sort.name }}
+      </mat-list-option>
+    }
+  </mat-selection-list>
+</mat-menu>
+
+```
+
+- ` update client/src/app/core/services/shop.services.ts `
+```
+
+import { ShopParams } from '../../shared/models/shopParams';
+
+export class ShopService {
+  baseUrl = 'https://localhost:5001/api/';
+  private http = inject(HttpClient);
+  types: string[] = [];
+  brands: string[] = [];
+
+  getProducts(shopParams: ShopParams) { // update
+  // getProducts(brands?: string[], types?: string[], sort?: string) { // old
+
+    let params = new HttpParams();
+
+    if (shopParams.brands && shopParams.brands.length > 0) { // update
+
+//  if ( shopParams.brands.length > 0) { // NC solution - update
+//  if (brands && brands.length > 0) {
+
+      params = params.append('brands', shopParams.brands.join(',')); // update
+      //params = params.append('brands', brands.join(',')); // old
+
+    }
+
+    if (types && types.length > 0) { // updated my solution
+
+    //  if (shopParams.length > 0) { // NC solution update
+    //  if (types && types.length > 0) { // original state
+
+    params = params.append('types', shopParams.types.join(',')); // updated
+    //params = params.append('types', types.join(',')); // old
+
+    }
+
+    if (shopParams.sort) { // updated
+    //if (sort) { // old
+
+    params = params.append('sort', shopParams.sort); // updated
+    //params = params.append('sort', sort); // old
+
+    }
+
+    params = params.append('pageSize', '20');
+
+    return this.http.get<Pagination<Product>>(this.baseUrl + 'products', { params });
+  }
+
+  getBrands() {
+    if (this.brands.length > 0) return;
+    return this.http.get<string[]>(this.baseUrl + 'products/brands').subscribe({
+      next: response => (this.brands = response),
+    });
+  }
+
+  getTypes() {
+    if (this.types.length > 0) return;
+    return this.http.get<string[]>(this.baseUrl + 'products/types').subscribe({
+      next: response => (this.types = response),
+    });
+  }
+}
+
 ```
