@@ -3988,12 +3988,128 @@ import { MatPaginator } from '@angular/material/paginator'; // update
 ```
 - `update client/src/app/features/shop/shop.component.html `
 ``` 
-<div class="flex flex-col"> <!-- update -->
-<!-- <div class="flex flex-col gap-3">  old -->
+<div class="flex flex-col"> 
+ <div class="flex justify-between"> <!--update-->
+    <mat-paginator
+        (page)="handlePageEvent($event)"
+        [length]="products?.count"  // update
+        <!--[lenght]="totalCount" old -->
+
+        [pageSize]="showParams.pageSize" // update
+        [showFirstLastButtons]="true" // update
+        [pageSizeOptions]="pageSizeOptions"  // update
+        [pageIndex]="shopParams.pageNumber - 1 " // update
+        arial-label="Select page" // update
+    >
+    </mat-paginator>    
+
+ <!-- <div class="flex justify-end gap-3"> old-->
+    <mat-paginator
+      (page)="handlePageEvent($event)"
+      [lenght]="totalCount"
+    >
+    
     <div class="flex gap-3">
         <div class="flex justify-between gap-3"> <!-- update -->
         <!-- <div class="flex justify-end gap-3"> old -->
+            <button mat-stroked-button (click)="openFiltersDialog()">
+                <mat-icon>filter_list</mat-icon>
+                    Filters
+            </button>
+            <button mat-stroked-button [matMenuTriggerFor]="sortMenu">
+                <mat-icon>swap_vert</mat-icon>
+                    Filters
+            </button>
         </div>
     </div>
 </div>
+```
+- `update client/src/app/features/shop/shop.component.ts `
+```
+import { MatPaginator, PageEvent } from '@angular/material/paginator'; // 4th update auto import
+
+import { Pagination } from '../../shared/models/pagination'; // 2nd update auto import
+
+export Class ShopComponent {
+    //... private dialogService = inject(MatDialog);
+
+    products?: Pagination<Product>; // 2nd update
+    // old products: Product[] = [];
+
+    //... sortOptions = [...]
+
+    //... shopParams = new ShopParams();
+    pageSizeOptions = [5, 10, 15, 20] // 3rd update
+
+    //...
+    
+    getProducts(){
+        this.shopService.getProducts(this.shopParams).subscribe({
+            next: response => this.products = response, // 1st update
+        //  next: response => this.products = response.data, // legacy 
+            error: error => console.log(error)
+        })
+    }
+
+    // 4th update below
+    handlPageEvent(event: PageEvent){ //4th update
+        this.shopParams.pageNumber = event.pageIndex + 1; //4th update
+        this.shopParams.pageSize = event.pageSize; //4th update
+        this.getProducts(); //4th update
+    } //4th update 
+
+    onSortChange(event: MatSelectionListChange){
+    const selectedOption = event.options[0]; // grab the first elemen on the list [0]
+    if(selectedOption){
+      this.shopParams.sort = selectedOption.value;
+      this.shopParams.pageNumber = 1; // update
+      this.getProducts();
+    }
+  }
+
+  openFiltersDialog(){
+    const dialogRef = this.dialogService.open(FiltersDialogComponent, {
+      minWidth: '500px',
+      data: {
+        selectedBrands: this.shopParams.brands,
+        selectedTypes: this.shopParams.types,
+      }
+    });
+    dialogRef.afterClosed().subscribe({
+      next: result => {
+        if(result) {
+          // console.log(result);
+          this.shopParams.brands = result.selectedBrands;
+          this.shopParams.types = result.selectedTypes;
+          this.shopParams.pageNumber = 1; // update
+          this.getProducts();
+        }
+      }
+    });
+  }
+}
+```
+- `update client/src/app/features/shop/shop.component.html `
+```
+<div class="flex flex-col gap-3">
+    <div class="grid grid-cols-5 gap-4>
+        @for (product of products?.data; track product.id) { /* update */
+        <!-- @for (product of products; track product.id) { old -->
+        <app-product-item [product]="product"></app-product-item>
+    }    
+    </div>
+</div>
+```
+- ` style default bg color of mat-paginator client/tailwind.config.ts `
+```
+module.exports = {
+    content: [
+        "./src/**/*.{html,ts}",
+    ],
+    theme: {
+        extend: {},
+    },
+    plugins: [],
+    important: true // for tailwind to take effect styling overiding material styles
+}
 ```
