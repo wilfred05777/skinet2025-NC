@@ -4199,3 +4199,11 @@ button.match-input-height {
 </button>
 
 ```
+
+###### 85. Summary
+- Angular Services
+- Building the UI for the loop
+- Material components
+- Pagination
+- Filtering, Sorting & Search
+- Input properties
