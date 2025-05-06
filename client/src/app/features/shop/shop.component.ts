@@ -9,6 +9,8 @@ import { FiltersDialogComponent } from './filters-dialog/filters-dialog.componen
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 import { MatListOption, MatSelectionList, MatSelectionListChange } from '@angular/material/list';
+import { MatPaginator } from '@angular/material/paginator';
+
 import { ShopParams } from '../../shared/models/shopParams';
 
 @Component({
@@ -20,7 +22,8 @@ import { ShopParams } from '../../shared/models/shopParams';
     MatMenu,
     MatSelectionList,
     MatListOption,
-    MatMenuTrigger
+    MatMenuTrigger,
+    MatPaginator
 ],
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss'

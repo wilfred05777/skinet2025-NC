@@ -3958,3 +3958,42 @@ export class ShopService {
 }
 
 ```
+
+###### 83. Adding pagination to the client using Material
+- ` update client/src/app/core/services/shop.serives.ts ` 
+```
+export class ShopService{
+    getProducts(shopParams: ShopParams){
+        //... if(shopParams.srot){ ... }
+
+        params = params.append('pageSize', shopParams.pageSize); // update
+        params = params.append('pageIndex', shopParams.pageNumber); // update
+        //params = params.append('pageSize', '20'); // old
+
+        //return this.http.get<Pagination>
+    }
+}
+```
+- `update client/src/app/features/shop/shop.component.ts `
+```
+import { MatPaginator } from '@angular/material/paginator'; // update
+
+@Component({
+    //...
+    imports: [
+        //...,
+        MatPagninator // update
+    ]
+})
+```
+- `update client/src/app/features/shop/shop.component.html `
+``` 
+<div class="flex flex-col"> <!-- update -->
+<!-- <div class="flex flex-col gap-3">  old -->
+    <div class="flex gap-3">
+        <div class="flex justify-between gap-3"> <!-- update -->
+        <!-- <div class="flex justify-end gap-3"> old -->
+        </div>
+    </div>
+</div>
+```
