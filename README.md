@@ -3991,6 +3991,7 @@ import { MatPaginator } from '@angular/material/paginator'; // update
 <div class="flex flex-col"> 
  <div class="flex justify-between"> <!--update-->
     <mat-paginator
+        class="bg-white"
         (page)="handlePageEvent($event)"
         [length]="products?.count"  // update
         <!--[lenght]="totalCount" old -->
