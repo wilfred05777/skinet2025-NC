@@ -4200,6 +4200,20 @@ button.match-input-height {
 
 ```
 
+- `!Issue/Solution for not displaying all items in ui `
+```
+export class ShopParams {
+  brands: string[] = [];
+  types: string[] = [];
+  sort = 'name';
+  pageNumber = 1; // error when it is set to 10; correcting to 1;
+  pageSize = 10;
+  search = '';
+}
+
+```
+
+
 ###### 85. Summary
 - Angular Services
 - Building the UI for the loop
