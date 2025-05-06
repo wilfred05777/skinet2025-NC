@@ -28,3 +28,7 @@ $customTheme: mat.define-theme();
 button.match-input-height {
   height: var(--mat-form-field-container-height) !important;
 }
+
+.mat-mdc-paginator-container-white{
+  background-color: #fff !important;
+}

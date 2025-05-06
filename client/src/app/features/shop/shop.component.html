@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-3">
   <div class="flex justify-between gap-3">
     <mat-paginator
-      class="bg-white"
+      class="bg-white mat-mdc-paginator-container-white"
       (page)="handlePageEvent($event)"
       [length]="products?.count"
       [pageSize]="shopParams.pageSize"
