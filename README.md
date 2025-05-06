@@ -4114,3 +4114,88 @@ module.exports = {
     important: true // for tailwind to take effect styling overiding material styles
 }
 ```
+
+###### 84. Adding the search functionality to the client
+- `Update shop.component.ts  `
+```
+@Component({
+  selector: 'app-shop',
+  imports: [
+    //...
+    FormsModule // update
+],
+})
+
+export class ShopComponent {
+
+    //... getProducts(){...}
+
+    onSearchChange(){
+        this.shopParams.pagenumber = 1
+        this.getProducts();
+    }
+
+    //... handlePageEvent(event: PageEvent){...} 
+}
+```
+- `Update shop.component.html `
+```
+<div class="flex flex-col gap-3">
+  <div class="flex justify-between gap-3">
+
+    //... </mat-paginator>
+
+    <form
+      #searchForm="ngForm"
+      (ngSubmit)="onSearch()"
+      class="relative flex items-center w-full max-w-md mx-4"
+    >
+      <input
+          type="search"
+          class="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg"
+          placeholder="Search"
+          name="search"
+          [(ngModel)]="shopParams.search"
+      />
+      <button mat-icon-button type="submit"
+        class="absolute inset-y-0 right-8 top-2 flex items-center pl-3"
+      >
+        <mat-icon>search</mat-icon>
+      </button>
+    </form>
+
+    // <div class="flex gap-3"></div>
+  </div>
+</div>
+```
+- `Update shop.services.ts`
+```
+    //...if (shopParams.sort) { params = params.append('sort', shopParams.sort);  }
+
+    if(shopParams.search) {
+      params = params.append('search', shopParams.search);
+    }
+
+    //... params = params.append('pageSize', shopParams.pageSize);
+```
+- `update styles.scss`
+```
+.text-primary{
+  color: #7d00fa;
+}
+
+button.match-input-height {
+  height: var(--mat-form-field-container-height) !important;
+}
+
+```
+- ` update shop.component.html`
+```
+// 'match-input-height' = aligns the input and button for search in UI
+<button class="match-input-height" mat-stroked-button (click)="openFiltersDialog()">...
+</button>
+
+<button class="match-input-height" mat-stroked-button [matMenuTriggerFor]="sortMenu">...
+</button>
+
+```
