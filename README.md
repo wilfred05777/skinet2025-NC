@@ -4221,3 +4221,17 @@ export class ShopParams {
 - Pagination
 - Filtering, Sorting & Search
 - Input properties
+
+<hr>
+
+### Section 10: Angular Routing
+
+<hr>
+
+######  : 86. Introduction
+
+- Adding new feature components
+- Setting up routes
+- Nav links 
+- This way to the shop!
+
