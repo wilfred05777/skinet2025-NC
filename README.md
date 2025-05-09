@@ -4274,3 +4274,45 @@ export const routes: Routes = [
 - https://localhost:4200/
 - https://localhost:4200/shop
 - https://localhost:4200/shop/none
+
+###### 88. Setting up the links in the app
+
+- ` update client/src/app/layout/header/header.component.html ` 
+```
+<!-- ...  -->
+    <img routerLink="/" src="/images/logo.png" alt="app logo" class="max-h-16" />
+     <nav class="flex gap-3 my-2 uppercase text-2xl">
+      <a routerLink="/" 
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: true}"
+        >Home</a>
+      <a routerLink="/shop" routerLinkActive="active">Shop</a>
+      <a routerLink="/contact" routerLinkActive="active">Contact</a>
+     </nav>
+<!-- ... -->
+```
+- ` update client/src/app/layout/header/header.component.ts ` 
+```
+import { RouterLink, RouterLinkActive } from '@angular/router';
+@Component({
+    .../,
+    imports:[
+        RouterLink,
+        RouterLinkActive
+    ]
+})
+```
+- ` update client/src/app/layout/header/header.component.scss ` 
+```
+a {
+    &.active{
+        color: #7d00fa;
+    }
+}
+```
+-` client/src/app/features/shop/shop.component.html flickering issue `
+```
+@if(products) {
+    //... insert all entire component code here and remove ? from products?.count
+}
+```
