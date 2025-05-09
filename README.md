@@ -4235,3 +4235,42 @@ export class ShopParams {
 - Nav links 
 - This way to the shop!
 
+###### 87. Creating components and routes
+
+- ` cd client create 'ng g c features/home --skip-tests' ` 
+- ` cd client create 'ng g c features/shop/product-detail --skip-tests' ` 
+
+- ` client/src/app/app.routes.ts `
+```
+export const routes: Routes = [
+    { path: '', component: HomeCompnent },
+    { path: 'shop', component: ShopCompnent },
+    { path: 'shop/:id', component: ProductDetailsCompnent },
+    { path: '**', redirectTo: '', pathMatch: 'full' },
+]
+```
+- ` tracing client/src/app/app.component.ts `
+```
+// 
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, HeaderComponent, ShopComponent],
+  templateUrl: './app.component.html', // right click 'go to defination' in vs code
+  styleUrl: './app.component.scss'
+})
+```
+- ` tracing client/src/app/app.component.ts `
+```
+<app-header></app-header>
+<div class="container mt-6">
+  <router-outlet></router-outlet> // <!-- update here -->
+</div>
+```
+- ` client/src/app/app.config.ts `
+```
+// nothing to change here but its a good way to understand the structure for routes in angular
+```
+- for testing the routes
+- https://localhost:4200/
+- https://localhost:4200/shop
+- https://localhost:4200/shop/none
