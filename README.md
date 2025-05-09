@@ -4316,3 +4316,90 @@ a {
     //... insert all entire component code here and remove ? from products?.count
 }
 ```
+###### 89. Getting an individual product using Route params
+- ` update shop.service.ts `
+```
+//... getProducts(shopParams: ShopParams){}
+
+getProduct(id: number){
+    return this.http.get<Product>(this.baseUrl + 'products/' + id);
+}
+
+//... getBrands(){... }
+``` 
+- ` update product-details.components.ts `
+```
+import { Component, inject, OnInit } from '@angular/core';
+
+export class ProductDetailsComponent implements OnInit {
+
+    // update
+    /* 1st */
+    private shopService = Inject(ShopService); 
+    private activatedRoute = Inject(ActivatedRoute);
+    product?: Product;
+
+    /* 3rd */
+    ngOninit(): void {
+        this.loadProduct();
+    }
+    
+     /* 2nd */
+    loadProduct(){
+        const id = this.activatedRoute.snapshot.paramMap.get('id'); // its refering to id in app.routes.ts
+        if(!id) return;
+        this.shopService.getProduct(+id).subscribe({
+            next: product => this.product = product,
+            error: error => console.log(error)
+        })
+    }
+}
+```
+- ` connection with app.routes.ts from produc-details.component.ts `
+```
+export const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'shop', component: ShopComponent },
+  { path: 'shop/:id', component: ProductDetailsComponent }, // its refering to this id
+  { path: '**', redirectTo: '', pathMatch: 'full' },
+];
+```
+
+- ` update product-details.components.html `
+```
+@if(product){
+    <h1 class="text-2xl">{{ product?.name }}</h1>
+}
+    <h1 class="text-2xl">{{ product?.name }}</h1> // product?. is called optional chaining
+
+```
+- ` update product-item.component.ts `
+```
+@Component({
+  selector: 'app-product-item',
+  imports: [
+    //...MatIcon, 
+    RouterLink // add
+  ],
+ //....
+})
+```
+- ` update product-item.component.html `
+```
+@if (product) {
+  <mat-card appearance="raised" routerLink="/shop/{{ prdouct.id }}" class="product-card"> //  update code
+  </mat-card>
+  //... 
+}
+```
+- ` update product-item.component.scss `
+```
+.product-card{
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.product-card:hover{
+    transform: translateY(-10px);
+    box-shadow: 0 4px 8px rgba(0, 0 , 0, 0.2);
+    cursor: pointer;
+}
+```
