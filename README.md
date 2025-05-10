@@ -4403,3 +4403,75 @@ export const routes: Routes = [
     cursor: pointer;
 }
 ```
+###### 90. Designing the product details page
+- ` update product-details.component.ts `
+```
+@if(product){
+    <section class="py-8">
+        <div class="max-w-screen-2xl px-4 mx-auto">
+            <div class="grid grid-cols-2 gap-8">
+                <div class="max-w-xl mx-auto">
+                    <img class="w-full" src={{product.pictureUrl}} alt="product image">
+                </div>
+
+                <div>
+                    <h1 class="text-2xl font-semibold text-gray-900" >{{ product.name }}</h1>
+                    <div class="mt-4 items-center gap-4 flex">
+                        <p class="text-3xl font-extrabold text-gray-900"> 
+                            {{  product.price | currency }}
+                        </p>
+                    </div>
+
+                    <div class="flex gap-4 mt-6">
+                        <button mat-flat-button class="match-input-height">
+                            <mat-icon> shopping_cart </mat-icon>
+                            Add to cart
+                        </button>
+
+                        <mat-form-field apperance="outline" class="flex">
+                            <mat-label> Quantity </mat-label>
+                            <input matInput type="number">
+                        </mat-form-field>
+                    </div>
+
+                    <mat-divider></mat-divider>
+
+                    <p class="mt-6 text-gray-500">
+                        {{  product.description }}
+                    </p>
+                </div>
+ 
+            </div>
+        </div>
+    </section>
+}
+```
+- ` Update product-details.component.ts `
+```
+import { CurrencyPipe } from '@angular/common';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/materila/icon';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+
+@components({
+    //...
+    imports:[
+        CurrencyPipe,
+        MatButton,
+        MatIcon,
+        MatFormField,
+        MatInput,
+        MatLabel, 
+        MatDivider,
+    ]
+})
+```
+- ` update styles.scss `
+```
+//... button.match-input-height{...}
+
+.mdc-notched=outline__notch{
+    border-right-style: none !important;
+}
+```
