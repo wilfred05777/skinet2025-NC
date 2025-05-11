@@ -4475,3 +4475,10 @@ import { MatInput } from '@angular/material/input';
     border-right-style: none !important;
 }
 ```
+###### 91. Summary
+- Adding new feature components
+- Setting up routes 
+- Nav links
+- Q: What about lazy loading?
+    - A: Optimization comes at the end, not the beginning
+
