@@ -4482,3 +4482,23 @@ import { MatInput } from '@angular/material/input';
 - Q: What about lazy loading?
     - A: Optimization comes at the end, not the beginning
 
+<hr>
+
+### Section 11: Client Side error handling and loading
+<hr>
+
+###### 92. Introduction
+- `Error handling in Angular`
+- `Http interceptors`
+- `Adding toast notifications`
+- `Adding loading indicators`
+- `Goal`
+```
+Goal: 
+
+To handle errors we receive from the API 
+centrally and handled by the Http interceptor.
+
+To understand how to troubleshoot API Errors
+
+```
