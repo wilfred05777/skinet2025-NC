@@ -4502,3 +4502,95 @@ centrally and handled by the Http interceptor.
 To understand how to troubleshoot API Errors
 
 ```
+###### 93. Creating a test error component
+
+- ` @ client create new component = ng g c features/test-erorr --skip-tests ` 
+
+- `update app.routes.ts`
+```
+//...
+import { TestErrorComponent } from './features/test-error/test-error.component';
+
+export const routes: Route =[
+    {...},
+    {path: 'test-error', component: TestErrorComponent},
+    {...},
+]
+```
+- ` update header.component.html`
+```
+    <a routerLink="/test-error" routerLinkActive="active">Errors</a> //for testing purposes only
+    <!-- <a routerLink="/contact">Contact</a>// old -->
+```
+- ` update test-components.ts` 
+```
+@Component({
+    ...
+    imports:[
+        MatButton
+    ],
+    ....
+})
+
+export class TestErrorComponent{
+    baseUrl = 'https://localhost:5001/api/';
+    private http = inject(HttpClient);
+
+    get404Error(){
+        this.http.get(this.baseUrl + 'buggy/notfound').subscribe({
+            next: response => console.log(reponse), 
+            error: error =>  console.log(error)
+        })
+    }
+
+    get400Error(){
+        this.http.get(this.baseUrl + 'buggy/badrequest').subscribe({
+            next: response => console.log(reponse), 
+            error: error =>  console.log(error)
+        })
+    }
+    
+    get401Error(){
+    this.http.get(this.baseUrl + 'buggy/unauthorized').subscribe({
+      next: response => console.log(response),
+      error: error => console.log(error)
+        })
+    }
+
+    get500Error(){
+        this.http.get(this.baseUrl + 'buggy/internalerror').subscribe({
+            next: response => console.log(reponse), 
+            error: error =>  console.log(error)
+        })
+    }
+
+     // old
+    get400ValidationError(){
+        this.http.get(this.baseUrl + 'buggy/validationerror').subscribe({
+            next: response => console.log(reponse), 
+            error: error =>  console.log(error)
+        })
+    }
+
+    // update 
+    get400ValidationError(){
+        this.http.post(this.baseUrl + 'buggy/validationerror', {}).subscribe({
+            next: response => console.log(reponse), 
+            error: error =>  console.log(error)
+        })
+    }
+}
+```
+- ` refer to BuggyControllers.cs API `
+
+- ` update test-error.component.html `
+```
+<div class="mt-5 flex justify-center gap-4">
+    <button mat-stroked-button (click)="get500Error()">Test 500 error</button>
+    <button mat-stroked-button (click)="get404Error()">Test 404 error</button>
+    <button mat-stroked-button (click)="get400Error()">Test 400 error</button>
+    <button mat-stroked-button (click)="get401Error()">Test 401 error</button>
+    <button mat-stroked-button (click)="get400ValidationError()">Test validation error</button>
+</div>
+```
+
