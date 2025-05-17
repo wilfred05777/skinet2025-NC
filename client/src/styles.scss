@@ -34,5 +34,17 @@ button.match-input-height {
 }
 
 .mdc-notche-outline__notch{
-  boder-right-style: none !important;
+  border-right-style: none !important;
+}
+
+.mat-mdc-snack-bar-container.snackbar-error{
+  --mdc-snackbar-container-color: red;
+  --mat-snackbar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+.mat-mdc-snack-bar-container.snackbar-success{
+  --mdc-snackbar-container-color: green;
+  --mat-snackbar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
 }

@@ -4663,3 +4663,69 @@ export const appConfig: ApplicationConfig = {
   ],
 };
 ```
+###### 96. Adding toast (snackbar) notifications
+[Angular Snackbar](https://material.angular.dev/components/snack-bar/overview)
+
+- ` create new service 'ng g s core/services/snackbar --skip-tests'`
+```
+import { inject, Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SnackbarService {
+  private snackbar = inject(MatSnackBar);
+
+  error(message: string) {
+    this.snackbar.open(message, 'Close', {
+      duration: 5000,
+      panelClass: ['snackbar-error'],
+    })
+  }
+
+  success(message: string) {
+    this.snackbar.open(message, 'Close', {
+      duration: 5000,
+      panelClass: ['snackbar-success'],
+    })
+  }
+}
+```
+- ` update style.scss` 
+```
+//... .mdc-notche-outline__notch{...}
+
+.mat-mdc-snack-bar-container.snackbar-error{
+  --mdc-snackbar-container-color: red;
+  --mat-snackbar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+.mat-mdc-snack-bar-container.snackbar-success{
+  --mdc-snackbar-container-color: green;
+  --mat-snackbar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+```
+- ` update error.interceptor.ts `
+```
+export const errorInterceptor: HttpInterceptorFn = (req, next) =>{
+    ...
+    const snackbar = inject(SnackbarService);
+
+    return next(req).pipe(
+    catchError((err: HttpErrorResponse) => {
+      if(err.status === 400){
+        snackbar.error(err.error.title || err.error);
+      }
+      if(err.status === 401){
+        snackbar.error(err.error.title || err.error);
+      } 
+       
+      //...
+    })
+  );
+}
+```
