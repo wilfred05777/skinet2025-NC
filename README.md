@@ -4594,3 +4594,28 @@ export class TestErrorComponent{
 </div>
 ```
 
+###### 94. Creating a NotFound and Server Error component
+
+- `ng g c shared/components/not-found --skip-tests `
+```
+<div class="container mt-5 ">
+    <h1 class="text-3xl"> Not found </h1>
+</div>
+```
+- `ng g c shared/components/server-error --skip-tests `
+```
+<div class="container mt-5 ">
+    <h1 class="text-3xl"> Internal server error </h1>
+</div>
+```
+
+- ` update app.routes.ts `
+```
+//...
+export const routes: Routes =[
+    {...},
+    { path: 'test-error', component: TestErrorComponent },
+    { path: 'not-found', component: NotFoundComponent },
+    { path: '**', redirectTo: 'not-found', pathMatch: 'full' },
+]
+```
