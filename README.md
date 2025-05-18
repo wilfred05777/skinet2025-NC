@@ -4729,3 +4729,57 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) =>{
   );
 }
 ```
+###### 97. Handling validation errors from the API
+- ` update error.interceptor.ts `
+```
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  //....
+
+  return next(req).pipe(
+    catchError((err: HttpErrorResponse) => {
+      if(err.status === 400){
+        // update starts here =================
+        if(err.error.errors){
+            const modelStateErrors = [];
+            for ( const key in err.error.errors){
+                if (err.error.errors[key]){
+                    modelStateErrors.push(err.error.errors[key])
+                }
+            }
+            throw modelStateErrors.flat();
+        } else { 
+            snackbar.error(err.error.title || err.error);
+        }
+        // update ends here ===================
+      }
+    //....
+```
+- ` update test-error.components.ts`
+```
+export class TestErrorComponent {
+    //....
+    validationErrors?: string[];
+
+    //...
+    get400ValidationError(){
+        this.http.post(this.baseUrl + 'buggy/validationerror', {}).subscribe({
+        next: response => console.log(response),
+        error: error => this.validationErrors = error // update here
+        })
+    }
+}
+```
+- ` update test-error.components.html template `
+```
+
+//...
+@if(validationErrors){
+    <div class="mx-auto max-w-lg mt-5 bg-red-100">
+        <ul class="space-y-2 p-2">
+            @for ( error of validationErrors; track $index){
+                <li class="text-red-800">{{ error }} </li>
+            }
+        </ul>
+    </div>
+}
+```

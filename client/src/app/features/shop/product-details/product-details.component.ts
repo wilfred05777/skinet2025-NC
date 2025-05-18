@@ -19,7 +19,7 @@ import { MatDivider } from '@angular/material/divider';
     MatFormField,
     MatInput,
     MatLabel,
-    MatDivider
+    // MatDivider
   ],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.scss'
