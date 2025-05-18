@@ -4783,3 +4783,77 @@ export class TestErrorComponent {
     </div>
 }
 ```
+###### 98. Configuring the server error page
+
+- ` update error-interceptor.ts `
+```
+//...
+
+import { NavigationExtras, Router } from '@angular/router';
+
+export const errorInterceptor: HttpInteceptorFn = (req, next) =>{
+    catchError((err.HttpErrorResponse)) =>{
+        //...
+
+        if(err.status == 500){
+            //update starts here =============
+            const navigationExtras: NavigationExtras = { state: {error: err.error}} 
+            router.navigationByUrl('/sever-error', navigationExtras);
+            //update ends here =============
+        }
+
+        return throwError(()=>err)
+    }
+}
+```
+
+- ` update server-error-components.ts `
+```
+import { HttpErrorReponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+
+//...
+@Component({
+    selector: 'app-server-error',
+    standalone: true,
+    imports: [
+        MatCard
+    ],
+    //...
+})
+
+export class ServerComponent {
+    <!-- error?: HttpErrorResponse -->
+    error?: any;
+
+    constructor(private router: Router){
+        const navigation = this.router.getCurrentNavigation();
+        this.error = navigation?.extras.state?.['error'];
+    }
+}
+```
+- ` update server-error.component.html template`
+```
+<div class="container mt-5 p-4 bg-gray-100 rounded shadow-lg">
+    <h1 class="text-2xl font-semibold mb-4">
+        Interna server error
+    </h1>
+
+    @if (error) {
+        <h5 class="text-red-600"> Error: {{  error.message }}</h5>
+        <p class="font-bold mb-2"> This error comes from the server, not Angular</p>
+        <p class="mb-2"> What to do next? </p>
+        <ol class="list-decimal ml-5 mb-4">
+            <li class="mb-1"> Check the network tab in chrome dev tools </li>
+            <li class="mb-1"> Reproduce the error in postman. If same error, don't waste time in troubleshooting angular code. </li>
+        </ol>
+        <h5 class="text-lg font-semibold mb-2"> Stack trace</h5>
+        <mat-card class="p4 -bg-white">
+            <code class="block whitespace-pre-wrap">
+                {{  error.details }}
+            </code>
+        </mat-card>
+    }
+</div>
+```
+
