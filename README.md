@@ -4957,3 +4957,35 @@ export class BusyService {
   }
 }
 ```
+###### 101. Adding a progress bar to indicate loading
+[Material UI - Progressbar](https://material.angular.dev/components/progress-bar/overview)
+
+- ` update header.component.ts `
+```
+import { MatProgressBar } from '@angular/material/progress-bar'; // update 
+
+@Component({
+  selector: 'app-header',
+  imports: [
+    //...
+    MatProgressBar // update 
+  ],
+  templateUrl: './header.component.html',
+  styleUrl: './header.component.scss'
+})
+
+export class HeaderComponent {
+  busyService = inject(BusyService); // update 
+}
+```
+- ` update header.component.html `
+```
+<header>
+...
+</header>
+
+// update below code
+@if(busyService.loading){
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
+```
