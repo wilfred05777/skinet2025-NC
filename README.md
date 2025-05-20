@@ -4857,3 +4857,42 @@ export class ServerComponent {
 </div>
 ```
 
+###### 99. Configuring the Not found page
+
+- ` update not-found-component.html `
+```
+<div class="flex items-center justify-center min-h-96 bg-gray-100">
+    <div class="text-center">
+      <mat-icon class="text-purple-700 icon-display"> error_ outline</mat-icon>
+      <h1 class="text-4xl font-bold text-gray-800 mt-4">404</h1>
+      <p class="text-lg text-gray-600 mt-2">
+        Page not found
+      </p>
+      <button routerLink="/shop" mat-flat-button class="mt-4">Back to shop</button>
+    </div>
+</div>
+```
+- ` update not-found-component.ts `
+```
+//...
+import { MatButton } from '@angular/material/button'; // update here
+import { MatIcon } from '@angular/material/icon'; // update here
+import { RouterLink } from '@angular/router'; // update here
+
+@Component({
+  selector: 'app-not-found',
+  imports: [
+    MatIcon, // update here
+    MatButton, // update here
+    RouterLink // update here
+  ],
+  templateUrl: './not-found.component.html',
+  styleUrl: './not-found.component.scss'
+})
+```
+- ` update not-found-component.scss`
+```
+.icon-display{
+  transform: scale(3);
+}
+```
