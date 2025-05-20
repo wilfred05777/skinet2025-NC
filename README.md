@@ -5005,3 +5005,15 @@ export class HeaderComponent {
 <div class="container mt-24"> // update from mat-6 to mat-24
 </div>
 ```
+###### 103. Summary
+
+```
+Goal:
+
+To handle errors we receive from the API centrally and handled by the Http interceptor.
+To understand how to troubleshoot API errors
+
+```
+- Question: Would we create an errors component in a 'real' app?
+- Answer: Probably not, but it is helpful
+
