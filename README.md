@@ -4896,3 +4896,64 @@ import { RouterLink } from '@angular/router'; // update here
   transform: scale(3);
 }
 ```
+
+###### 100. Adding an HTTP Interceptor for loading
+- ` create "ng g interceptor core/interceptors/loading --skip-tests" `
+```
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { delay, finalize } from 'rxjs';
+import { BusyService } from '../services/busy.service';
+
+export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
+  const busyService = inject(BusyService); // needs busy-services
+
+  busyService.busy();
+
+  return next(req).pipe(
+    delay(500),
+    finalize(() => busyService.idle())
+  );
+};
+```
+- ` app.config.ts`
+```
+import { loadingInterceptor } from './core/interceptors/loading.interceptor';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient(
+      withInterceptors([
+        errorInterceptor,
+        loadingInterceptor // UPDATE HERE
+    ])),
+  ],
+};
+```
+- `create "ng g s core/services/busy --skip-tests " `
+```
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class BusyService {
+  loading = false;
+  busyRequestCount = 0;
+
+  busy(){
+    this.busyRequestCount++;
+    this.loading = true;
+  }
+
+  idle(){
+    this.busyRequestCount--;
+    if(this.busyRequestCount <= 0){
+      this.busyRequestCount = 0;
+      this.loading = false;
+    }
+  }
+}
+```
