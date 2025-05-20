@@ -5017,3 +5017,54 @@ To understand how to troubleshoot API errors
 - Question: Would we create an errors component in a 'real' app?
 - Answer: Probably not, but it is helpful
 
+<hr>
+
+### Module 12 - API - Shopping Cart
+
+<hr>
+
+###### 104. Introduction
+
+In this module
+
+```
+- Where to 'store' the cart
+- Adding Redis to the API
+- Creating the Cart service & controller
+```
+
+Goal:
+```
+To set up and configure Redis to
+store the customer cart in server
+memory and create the supporting 
+service and controller
+```
+
+Where to store the basket?
+```
+Options:
+    - Database ()
+    - Local Storage (downside: on client side)
+    - Cookie (can stor cart data not typically use this days)
+    - Redis ( for storing our shopping cart's item in memory data store 'fast' and persistence, also in has service side features )
+```
+What is Redis?
+```
+- In-memory data structure store 
+    - and Ideal for caching 
+    
+- Suppors strings, hashes, lists, sets, etc.
+
+- Key/Value store
+
+- Fast
+
+- Perists data by using snapshots every minute
+
+- Data can be given time to live
+
+- Great for caching data
+```
+
+
