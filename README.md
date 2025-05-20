@@ -4989,3 +4989,19 @@ export class HeaderComponent {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 }
 ```
+##### 102. Making the header fixed to the top
+- ` update header.component.html`
+```
+<header class="border-b shadow-md p-3 w-full fixed top-0 z-50 bg-white">
+</header>
+
+@if(busyService.loading){
+  <mat-progress-bar mode="indeterminate" class="fixed top-20 z-50"></mat-progress-bar>
+}
+
+```
+- ` update app.component.html`
+```
+<div class="container mt-24"> // update from mat-6 to mat-24
+</div>
+```
