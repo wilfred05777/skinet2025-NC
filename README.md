@@ -5285,3 +5285,20 @@ Delete Cart =
 - ` add redis extension in VSCode - Redis by Dunn` 
 - ` redis explorer - click Add button`
 
+###### 111. Summary
+
+Goal
+```
+To setup and configure Redis to
+store the customer cart in server
+memory and create the supporting
+service and controller
+
+FAQs
+
+Question: Isn't Redis overkill here? 
+            (over engineer?)
+
+Answer: Maybe, but we will use it for 
+        something else later.
+```
