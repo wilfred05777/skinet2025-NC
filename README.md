@@ -5321,3 +5321,69 @@ To add the cart feature to the
 angular app. 
 To understand the usage of signals in Angular
 ```
+
+###### 113. Creating the cart components
+
+- ` cd client 'ng g s core/services/cart --skip-tests `
+```
+
+```
+- ` 'ng g c features/cart --skip-tests `
+```
+
+```
+
+- ` update app.routes.ts `
+```
+import { cartComponent } from './features/cart/cart.component';
+
+export const routes: Routes =[
+    //... 'shop/:id'
+    {path: 'cart', component: CartComponent}
+    //...
+]
+```
+- ` update header.component.html `
+```
+//...
+     <div class="flex gap-3 align-middle">
+       <a 
+            routerLink="/cart"          // update
+            routerLinkActive="active"   // update
+            matBadge="5" 
+            matBadgeSize="large" 
+            class="custom-badge mt-2 mr-2">
+                <mat-icon>shopping_cart</mat-icon> 
+        </a>
+        //...
+        //...
+     </div>
+//...
+```
+- ` client/src/app/shared/models/cart.ts `
+```
+import { nanoid } from 'nanoid';
+
+export type CartType = {
+  id: string;
+  items: CartItem[];
+}
+
+export type CartItem = {
+  productId: number;
+  productName: string;
+  price: number;
+  quantity: number;
+  pictureUrl: string;
+  brand: string;
+  type: string;
+}
+
+export class Cart implements CartType {
+  // id = ''; // generate a random id in this example nanoid package
+  id = nanoid(); // implment nanoid package to generate a random id
+  items: CartItem[] = []; // CartItem[] is an array while = [] is an empty array
+}
+```
+- ` install a utility packages that generate a random id `
+- ` npm install nanoid `
