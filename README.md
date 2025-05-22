@@ -5067,4 +5067,33 @@ What is Redis?
 - Great for caching data
 ```
 
+###### 105. Creating a Redis instance to use in our app
 
+- ` update docker-compose.yml `
+```
+services:
+  sql:
+    image: mcr.microsoft.com/azure-sql-edge
+    environment:
+      ACCEPT_EULA: "1"
+      MSSQL_SA_PASSWORD: "Password@1"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql-data:/var/opt/mssql # update persist data to redis
+  redis: # persist data to redis
+    image: redis:latest
+    ports: 
+      - "6379:6379" # update persist data to redis
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:
+  sql-data:  
+```
+- ` terminal cmd: cd root folder `
+- ` docker compose down ` // delete only the current container and doesn't include the volumes
+- ` docker compose up -d ` // restarts container and volumes 
+- ` docker compose down `
+- ` docker compose down -v ` // delete the volumes
