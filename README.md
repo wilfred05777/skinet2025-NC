@@ -5134,3 +5134,34 @@ using StackExchange.Redis;
 
 ```
 - ` restart api 'dotnet watch' `
+
+###### 107. Creating the Cart classes
+
+- ` Redis is not relational database and for this project app use as a key value and store `
+
+- ` create new class API/Core/Entities/ShoppingCart.cs  `
+```
+namespace Core.Entities;
+
+public class ShoppingCart
+{
+    public required string Id { get; set; }
+    public List<CartItem> Items {get; set;} = [];
+}
+```
+
+- ` create new class API/Core/Entities/CartItem.cs  `
+```
+namespace Core.Entities;
+
+public class CartItem
+{
+    public int ProductId { get; set; }
+    public required string ProductName { get; set; }
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
+    public required string PictureUrl { get; set; }
+    public required string Brand { get; set; }
+    public required string Type { get; set; }
+}
+```
