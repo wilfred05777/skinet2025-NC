@@ -5097,3 +5097,40 @@ volumes:
 - ` docker compose up -d ` // restarts container and volumes 
 - ` docker compose down `
 - ` docker compose down -v ` // delete the volumes
+
+###### 106. Using Redis with .Net
+
+- ` update API Program.cs `
+```
+using StackExchange.Redis; // add this library and run ' dotnet add package StackExchange.Redis '
+
+//...builder.Services.AddCors();
+// update code below: 
+builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+{
+    var connString = builder.Configuration.GetConnectionString("Redis");
+    /**if (connString == null) throw new Exception("Cannot get redis connection string"); // Use coalesce expression below is ther conversion */
+    var connString = builder.Configuration.GetConnectionString("Redis") ?? throw new Exception("Cannot get redis connection string");
+    
+    var configuration = ConfigurationOptions.Parse(connString, true);
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
+//...builder.Services.AddOpenApi();
+```
+
+- ` in API folder install ' dotnet add package StackExchange.Redis ' `
+- ` update Program.cs`
+```
+//... using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+```
+- ` update appsettings.Development.json`
+```
+"ConnectionStrings": {
+    "DefaultConnection":"...",
+    "Redis": "localhost" // update
+}
+
+```
+- ` restart api 'dotnet watch' `
