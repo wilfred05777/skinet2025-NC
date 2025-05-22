@@ -5234,3 +5234,39 @@ builder.Services.AddSingleton<ICartService, CartService>();
     - install redis via nuget -> Infrastructure.csproject [-]`
 
 ```
+###### 109. Creating the Cart controller
+- ` API/Controllers/CartController.cs`
+```
+    public class Controller(ICartService cartService): BaseApiController
+    {
+        [HttpGet]
+        public async Task<ActionResult<ShoppingCart>> GetCartById(string id) // generate id on the client side
+        {
+            var cart = await cartService.GetCartAsync(id); // we get the cart if it lives in the redis database
+                                                           // if it does returning the shopping cart 
+            return Ok(cart ?? new ShoppingCart{Id = id}); // then it sets the id in the client side
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ShoppingCart>> UpdateCart(ShoppingCart cart)
+        {
+            var updatedCart = await cartService.SetCartAsync(cart);
+
+            if(updatedCart == null) return BadRequest("Problem with cart");
+
+            return updatedCart;
+
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult> DeleteCart(string id)
+        {
+            var result = await cartService.DeleteCartAsync(id);
+
+            if(!result) return BadRequest("Problem deleting cart");
+
+            return Ok();
+        }
+    }
+```
+
