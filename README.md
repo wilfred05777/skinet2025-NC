@@ -5302,3 +5302,22 @@ Question: Isn't Redis overkill here?
 Answer: Maybe, but we will use it for 
         something else later.
 ```
+<hr>
+
+### Section 13 - Client - Shopping Cart
+<hr>
+
+###### 112. Introduction
+
+```
+- Adding the cart feature
+- Angular signals = added in angular v16 - react to an update a value in NG
+- Environment variables - 
+```
+
+- Goal
+```
+To add the cart feature to the
+angular app. 
+To understand the usage of signals in Angular
+```
