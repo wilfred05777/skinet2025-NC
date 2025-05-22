@@ -5269,4 +5269,19 @@ builder.Services.AddSingleton<ICartService, CartService>();
         }
     }
 ```
+###### 110. Testing the Cart in Postman
+
+- At postman
+
+```
+Get Cart = {{url}}/api/cart?id=cart1
+
+Update Cart = {{url}}/api/cart 
+     - think of this as a client side storage and focus on productId and quantity because we are going to validate this in our API, for checking 'Get Cart'
+
+Delete Cart = 
+
+```
+- ` add redis extension in VSCode - Redis by Dunn` 
+- ` redis explorer - click Add button`
 
