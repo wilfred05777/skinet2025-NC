@@ -5387,3 +5387,33 @@ export class Cart implements CartType {
 ```
 - ` install a utility packages that generate a random id `
 - ` npm install nanoid `
+
+###### 114. Introduction to Angular Signals
+```
+- State that can be observed and reacted to 
+
+- Clean API for state management 
+
+- Avoid the complexity of observables
+
+=====================================
+Signal      Computed        Effect
+=====================================
+const count = signal(0);
+
+//  Signals are getter functions - calling them reads their value.
+console.log('The count is:' + count());
+
+//  Set a new value
+count.set(3)
+
+//  Update a value
+count.update(value => value + 2)
+
+
+Pros                    Cons
+- Simplicity            - Limited flexibility
+- Performance           - Scalability
+- Readability           - 
+
+```
