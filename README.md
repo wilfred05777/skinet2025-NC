@@ -5466,3 +5466,57 @@ export const environment = {
   apiUrl: 'api/'
 };
 ```
+
+
+###### 116. Adding an item to the cart
+
+- ` update cart.service.ts `
+```
+export class CartService {
+    //...setCart(cart: Cart) {...}
+
+    addItemToCart(item: CartItem | Product, quantity = 1){
+    const cart = this.cart() ?? this.createCart();
+    if (this.isProduct(item)) {
+      item = this.mapProductToCartItem(item);
+    }
+    cart.items = this.addOrUpdateItem(cart.items, item, quantity);
+    this.setCart(cart);
+  }
+
+  private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {
+    const index = items.findIndex( x=> x.productId === item.productId);
+    if (index === -1) {
+      item.quantity = quantity;
+      items.push(item);
+    } else {
+      items[index].quantity += quantity;
+    }
+    return items;
+  }
+
+  private mapProductToCartItem(item: Product): CartItem {
+    return {
+      productId: item.id,
+      productName: item.name,
+      price: item.price,
+      quantity: 0,
+      pictureUrl: item.pictureUrl,
+      brand: item.brand,
+      type: item.type,
+    }
+  }
+
+  private isProduct(item: CartItem | Product): item is Product{
+    return (item as Product).id !== undefined;
+  }
+
+  private createCart(): Cart {
+    const cart = new Cart();
+    // persist in the local storage
+    localStorage.setItem('cart_id', cart.id);
+    return cart;
+  }
+
+}
+```
