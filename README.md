@@ -5520,3 +5520,47 @@ export class CartService {
 
 }
 ```
+
+###### 117. Using the add item functionality in the product item
+- ` update product-item.component.ts `
+```
+import { Component, inject, Input } from '@angular/core';
+import { CartService } from '../../../core/services/cart.service';
+
+export class ProductItemComponent {
+  @Input() product?: Product;
+  cartService = inject(CartService);
+}
+
+```
+- ` update product-item.component.html `
+
+```
+//...
+    <button mat-stroked-button class="w-full" (click)="cartService.addItemToCart(product)">
+        <mat-icon>add_shopping_cart</mat-icon>
+        Add to cart
+    </button>
+//...
+```
+- 
+``` 
+note to check it: 
+in the browser, 
+
+- go to network tab 
+- click 'cart' post 
+- requerst tab ( payload ) -> you will see details from there
+```
+- Issue: About after clicking 'Add to cart' button in shop page
+- ` update product-item.component.html `
+```
+<mat-card-actions (click)="$event.stopPropagation()"> // prevents from interfere to redirect kay inside may sya sa routerLink which is <mat-card></mat-card> 
+
+    // ignore the code below for now, focus on the top commented code.
+    <button mat-stroked-button class="w-full" (click)="cartService.addItemToCart(product)">
+        <mat-icon>add_shopping_cart</mat-icon>
+        Add to cart
+    </button>
+</mat-card-actions>
+```
