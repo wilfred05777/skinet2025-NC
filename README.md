@@ -5417,3 +5417,31 @@ Pros                    Cons
 - Readability           - 
 
 ```
+
+###### 115. Adding the Cart service methods
+
+- ` update cart.service.ts `
+```
+export class CartService {
+  baseUrl = ''; // update
+
+  //...
+}
+```
+- ` ng g --help `
+- ` ng g environments `
+- ` create client/src/environment.development.ts `
+
+```
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:5000/api/'
+};
+```
+- ` create client/src/environment.ts `
+```
+export const environment = {
+  production: true,
+  apiUrl: 'api/'
+};
+```
