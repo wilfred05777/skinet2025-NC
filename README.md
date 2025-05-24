@@ -5564,3 +5564,108 @@ in the browser,
     </button>
 </mat-card-actions>
 ```
+
+###### 118. Persisting the cart
+- ` to check go to browser tools `
+- ` storage-> Local Storage ` 
+- ` app initializer `
+- ` update app.config.ts `
+```
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient(
+      withInterceptors([
+        errorInterceptor,
+        loadingInterceptor
+    ])),
+    // {
+    //   provider: APP_INITIALIZER,
+    //   userFactory
+    // }
+  ],
+};
+```
+- `create new server 'ng g s core/services/init --skip-tests' => init.service.ts ` 
+```
+import { inject, Injectable } from '@angular/core';
+import { CartService } from './cart.service';
+import { of } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class InitService {
+
+ private cartService = inject(CartService);
+
+ init(){
+  const cartId = localStorage.getItem('cart_id');
+  const cart$ = cartId ? this.cartService.getCart(cartId) : of(null);
+
+  return cart$;
+ }
+}
+```
+- ` update cart.service.ts `
+```
+  getCart(id: string)
+  {
+    return this.http.get<Cart>(this.baseUrl + 'cart?id=' +id)
+        .pipe(map( cart => { // update
+        this.cart.set(cart);  // update
+        return cart;  // update in init.services this will resolve the issue to observable instead of Subscription
+    })
+    )
+
+    /**  // old
+    return this.http.get<Cart>(this.baseUrl + 'cart?id=' +id).subscribe({
+      next: cart => this.cart.set(cart),
+    }) **/
+  }
+
+```
+- ` update app.config.ts`
+```
+//...
+import { InitService } from './core/services/init.service';
+import { lastValueFrom } from 'rxjs';
+
+function initializeApp(initService: InitService){
+  return () => lastValueFrom(initService.init()).finally(() =>{
+    const splash = document.getElementById('initial-splash'); // this will reflect on html browser
+    if (splash) {
+      splash.remove();
+    }
+  })
+}
+
+//... 
+export const appConfig: ApplicationConfig = {
+    providers: [
+        providerZoneChangeDetection({ eventCoalescing: true }),
+        //...
+        {
+            provide: APP_INITIALIZER,
+            useFactory: initializeApp,
+            multi: true,
+            deps: [InitService]
+        }
+    ]
+}
+```
+
+- ` update index.html`
+```
+<body>
+  <div id="initial-splash">
+    <div class="flex items-center justify-center h-screen">
+      <div class="flex-col items-center align-middle">
+        <img src="../images/logo.png" alt="logo">
+      </div>
+    </div>
+  </div>
+  <app-root></app-root>
+  //...
+```
