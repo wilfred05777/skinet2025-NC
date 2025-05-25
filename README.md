@@ -5723,3 +5723,133 @@ export class HeaderComponent{
 //...</div>
 
 ```
+
+###### 120. Styling the cart
+
+- ` update cart.component.ts `
+```
+import { Component, inject } from '@angular/core';
+import { CartService } from '../../core/services/cart.service';
+
+export class CartComponent{
+   cartService = inject(CartService);
+}
+```
+- ` update cart.component.html `
+```
+<section>
+  <div class="max-auto max-w-screen-xl">
+    <div class="flex w-full items-start gap-6 mt-32">
+      <div class="w-full">
+        @for(item of cartService.cart()?.items; track item.productId){
+          <div>{{ item.productName }} - {{ item.quantity }}</div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+```
+- ` ng g c features/cart/cart-item --skip-tests `
+
+- ` update cart-item.component.ts`
+```
+import { Component, input } from '@angular/core';
+import { CartItem } from '../../../shared/models/cart';
+import { RouterLink } from '@angular/router';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { CurrencyPipe } from '@angular/common';
+
+@Component({
+  //...
+  imports:[
+    RouterLink, // this is needed by routerLink in the template
+    MatButton,
+    MatIcon,
+    CurrencyPipe
+  ]
+})
+
+export class CartItemComponent {
+  item = input.required<CartItem>();
+}
+```
+- ` update cart-item.component.html`
+```
+<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm mb-4">
+  <div class="flex items-center justify-between gap-6">
+    <a
+      routerLink="/shop/{{ item().productId }}" // routerLink needs RouterLink at .ts file
+      class="shrink order-1"
+      >
+      <img
+        [src]="item().pictureUrl"
+        alt="product image"
+        class="h-20 w-20"
+        />
+    </a>
+    <div class="flex items-center justify-between order-3">
+      <div class="flex items-center align-middle gap-3">
+        <button mat-icon-button>
+            <mat-icon class="text-red-600">remove</mat-icon>
+        </button>
+        <div class="font-semibold text-xl mb-1">{{ item().quantity }}</div>
+
+        <button mat-icon-button>
+            <mat-icon class="text-green-600">add</mat-icon>
+        </button>
+      </div>
+
+      <div class="text-end order-4 w-32">
+          <p class="font-bold text-xl">{{ item().price | currency }}</p>
+      </div>
+    </div>
+
+    <div class="w-full flex-1 space-y-4 order-2 max-w-md">
+      <a
+        routerLink="/shop/{{ item().productId }}"
+        class="font-medium"
+      >
+        {{ item().productName }}
+      </a>
+
+      <div class="flex items-center gap-4">
+        <button
+          mat-button color="warn">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+```
+- ` update cart.component.html`
+
+```
+<section>
+  <div class="max-auto max-w-screen-xl">
+    <div class="flex w-full items-start gap-6 mt-32">
+      <div class="w-full">
+
+        @for(item of cartService.cart()?.items; track item.productId) {
+
+          <app-cart-item [item]="item"></app-cart-item> // update
+          
+          <!-- <div>{{ item.productName }} - {{ item.quantity }}</div> --> // old
+        }
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+- ` update cart.component.ts`
+```
+@Component({
+  //...
+  imports: [CartItemComponent],
+  //...
+})
+```

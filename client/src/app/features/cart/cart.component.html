@@ -1,1 +1,12 @@
-<p>cart works!</p>
+<section>
+  <div class="max-auto max-w-screen-xl">
+    <div class="flex w-full items-start gap-6 mt-32">
+      <div class="w-full">
+        @for(item of cartService.cart()?.items; track item.productId) {
+          <app-cart-item [item]="item"></app-cart-item>
+          <!-- <div>{{ item.productName }} - {{ item.quantity }}</div> -->
+        }
+      </div>
+    </div>
+  </div>
+</section>
