@@ -5669,3 +5669,57 @@ export const appConfig: ApplicationConfig = {
   <app-root></app-root>
   //...
 ```
+###### 119. Updating the nav bar with the cart item count
+
+- ` update cart.service.ts`
+```
+import { 
+  computed, // update
+  inject, 
+  Injectable, 
+  signal 
+} from '@angular/core';
+
+//...
+
+export class CartService{
+  //... cart = signal ...
+  itemCount = computed(() => {
+
+    return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0);
+
+    // - reduce() method will reduce an array of items into a number
+    // (sum, item)  sum is an accumulator keeps the running total and in this case it start at 0
+    // each time we use this call back function in one of the items in the array it executes `sum + item.quantity` the current sum + item.quantity
+    
+  })
+}
+```
+- ` update header.component.ts`
+```
+import { CartService } from '../../core/services/cart.service';
+
+//... @Component({..})
+
+export class HeaderComponent{
+  //... busyService
+  cartService = inject(CartService);
+}
+```
+- ` update header.component.html`
+```
+//...
+      <div class="flex gap-3 align-middle">
+         <a routerLink="/cart" routerLinkActive="active"
+            matBadge="{{ cartService.itemCount() }}" // and its because its a signal we need to include () parenthesis
+            matBadgeSize="large" 
+            class="custom-badge mt-2 mr-2">
+         <mat-icon>shopping_cart</mat-icon>
+        </a>
+      <button mat-stroked-button>Login</button>
+      <button mat-stroked-button>Register</button>
+     </div>
+
+//...</div>
+
+```
