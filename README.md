@@ -6055,3 +6055,41 @@ export class OrderSummaryComponent {
 ```
 Discovered: bug @ cart-item.component.html visual issue on visual minus sign in cart should be red and plus sign should be green, my theory is the tailwind is not detected.
 ```
+
+- ` update cart.service.ts `
+```
+// addItemToCart(item: CartItem | Product, quantity = 1){...}
+
+  removeItemFromCart(productId: number, quantity = 1) {
+    const cart = this.cart();
+    if(!cart) return;
+    
+    const index = cart.items.findIndex(x => x.productId === productId);
+    if (index !== -1) {
+      if (cart.items[index].quantity > quantity){
+        cart.items[index].quantity -= quantity;
+      } else {
+        cart.items.splice(index, 1);
+      }
+
+      //
+      if(cart.items.length === 0){
+        this.deleteCart();
+      } else{
+        this.setCart(cart);
+      }
+    };
+  }
+
+// removal of cart items from local storage and redis server
+  deleteCart() {
+    this.http.delete(this.baseUrl + 'cart?id=' + this.cart()?.id).subscribe({
+      next: () => {
+        localStorage.removeItem('cart_id');
+        this.cart.set(null);
+      }
+    })
+  }
+
+  private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {...}
+```
