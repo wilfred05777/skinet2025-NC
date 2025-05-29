@@ -6051,7 +6051,7 @@ export class OrderSummaryComponent {
 //...
 ```
 
-- !!Bug - cart-item.component.html visual issue - minor
+- !!Bug - cart-item.component.html issue - visual issue - minor = status: !resolve
 ```
 Discovered: bug @ cart-item.component.html visual issue on visual minus sign in cart should be red and plus sign should be green, my theory is the tailwind is not detected.
 ```
@@ -6063,7 +6063,7 @@ Discovered: bug @ cart-item.component.html visual issue on visual minus sign in 
   removeItemFromCart(productId: number, quantity = 1) {
     const cart = this.cart();
     if(!cart) return;
-    
+
     const index = cart.items.findIndex(x => x.productId === productId);
     if (index !== -1) {
       if (cart.items[index].quantity > quantity){
@@ -6093,3 +6093,54 @@ Discovered: bug @ cart-item.component.html visual issue on visual minus sign in 
 
   private addOrUpdateItem(items: CartItem[], item: CartItem, quantity: number): CartItem[] {...}
 ```
+
+###### 125. Adding these functions to the cart
+- `update cart-item.component.ts `
+
+```
+import { ..., inject, ... } from '@angular/core';
+import { CartService } from '../../../core/services/cart.service';
+
+export class CartItemComponent {
+  //... item = input.required<CartItem>();
+
+  // update starts here
+  cartService = inject(CartService); 
+  incrementQuantity(){
+    this.cartService.addItemToCart(this.item());
+  }
+
+  decrementQuantity(){
+    this.cartService.removeItemFromCart(this.item().productId);
+  }
+
+  removeItemFromCart(){
+    this.cartService.removeItemFromCart(this.item().productId, this.item().quantity);
+  }
+  // update ends here
+}
+```
+- ` update cart-item.component.html`
+```
+//...
+<div class="flex items-center align-middle gap-3">
+  <button mat-icon-button (click)="decrementQuantity()"> // add click event
+      <mat-icon class="text-red-600">remove</mat-icon>
+  </button>
+  <div class="font-semibold text-xl mb-1">{{ item().quantity }}</div>
+
+  <button mat-icon-button (click)="incrementQuantity()"> // add click event
+      <mat-icon class="text-green-600">add</mat-icon>
+  </button>
+</div>
+//...
+
+//...
+<div class="flex items-center gap-4">
+<button
+  mat-button color="warn" (click)="removeItemFromCart()"> // add click event
+  <mat-icon>delete</mat-icon>
+  Delete
+</button>
+```
+- ` check or test in https://localhost:4200/cart `
