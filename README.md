@@ -5963,3 +5963,95 @@ import { RouterLink } from '@angular/router';
   styleUrl: './order-summary.component.scss'
 })
 ```
+
+###### 123. Creating the order totals
+
+- ` update cart.service.ts `
+```
+export class CartService {
+  //itemCount...
+
+  //update below
+  totals = computed(() => {
+    const cart = this.cart();
+    if(!cart) return null;
+    const subTotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shipping = 0;
+    const discount = 0;
+
+    return {
+      subTotal,
+      shipping,
+      discount,
+      total: subTotal + shipping - discount
+    }
+  })
+
+  //...
+}
+```
+- ` update order-summary.component.ts`
+```
+import { Component, inject } from '@angular/core';
+import { CartService } from '../../../core/services/cart.service';
+import { CurrencyPipe } from '@angular/common';
+
+@component({
+  ...,
+  imports: [
+    MatButton,
+    RouterLink,
+    MatFormField,
+    MatLabel,
+    MatInput,
+    CurrencyPipe // update
+  ],
+  ...
+})
+
+export class OrderSummaryComponent {
+  cartService = inject(CartService);
+}
+```
+
+- ` update order-summary.component.html`
+```
+//...
+  <div class="space-y-4">
+    <div class="space-y-2">
+        <dl class="flex items-center justify-between gap-4">
+          <dt class="font-medium text-gray-500">Subtotal</dt>
+          <dd class="font-medium text-gray-900">
+            {{ cartService.totals()?.subTotal | currency}} // update
+          </dd>
+        </dl>
+
+        <dl class="flex items-center justify-between gap-4">
+          <dt class="font-medium text-gray-500">Discount</dt>
+          <dd class="font-medium text-green-500">
+            {{ cartService.totals()?.discount | currency}} // update
+          </dd>
+        </dl>
+
+        <dl class="flex items-center justify-between gap-4">
+          <dt class="font-medium text-gray-500">Delivery fee</dt>
+          <dd class="font-medium text-gray-900">
+            {{ cartService.totals()?.shipping | currency }} // update
+          </dd>
+        </dl>
+
+        <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2">
+          <dt class="font-medium text-gray-500">Total</dt>
+          <dd class="font-medium text-gray-900">
+            {{ cartService.totals()?.total | currency }} // update
+          </dd>
+        </dl>
+      </div>
+  </div>
+//...
+```
+
+- !!Bug - cart-item.component.html visual issue - minor
+```
+Discovered: bug @ cart-item.component.html visual issue on visual minus sign in cart should be red and plus sign should be green, my theory is the tailwind is not detected.
+```

@@ -15,6 +15,20 @@ export class CartService {
   itemCount = computed(() =>{
     return this.cart()?.items.reduce((sum, item) => sum + item.quantity, 0);
   })
+  totals = computed(() => {
+    const cart = this.cart();
+    if(!cart) return null;
+    const subTotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shipping = 0;
+    const discount = 0;
+
+    return {
+      subTotal,
+      shipping,
+      discount,
+      total: subTotal + shipping - discount
+    }
+  })
 
   getCart(id: string)
   {
