@@ -5853,3 +5853,56 @@ export class CartItemComponent {
   //...
 })
 ```
+
+###### 121. Creating the order summary component
+- ` create 'ng g c shared/components/order-summary --skip-tests `
+
+- ` update order-summary.component.html`
+```
+<div class="mx-auto max-w-4xl flex-1 space-y-6 w-full">
+  <div class="space-y-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+    <p class="text-xl font-semi-bold">Order Summary</p>
+    <div class="space-y-4">
+      <div class="space-y-2">
+        <dl class="flex items-center justify-between gap-4">
+          <dt class="font-medium text-gray-500">Subtotal</dt>
+          <dd class="font-medium text-gray-900">$200.00</dd>
+        </dl>
+
+        <dl class="flex items-center justify-between gap-4">
+          <dt class="font-medium text-gray-500">Discount</dt>
+          <dd class="font-medium text-gray-900">-$0.00</dd>
+        </dl>
+
+        <dl class="flex items-center justify-between gap-4">
+          <dt class="font-medium text-gray-500">Delivery fee</dt>
+          <dd class="font-medium text-gray-900">$10.00</dd>
+        </dl>
+
+        <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2">
+          <dt class="font-medium text-gray-500">Total</dt>
+          <dd class="font-medium text-gray-900">$210.00</dd>
+        </dl>
+
+      </div>
+    </div>
+  </div>
+</div>
+```
+- ` update cart.component.html `
+```
+<section>
+  <div class="max-auto max-w-screen-xl">
+    <div class="flex w-full items-start gap-6 mt-32">
+      <div class="w-full"> // update to class="w-3/4"
+      // ...
+      </div>
+      // update starts here
+      <div class="w-1/4">
+        <app-order-summary></app-order-summary>
+      </div>
+      // update ends here
+    </div>
+  </div>
+</section>
+```
