@@ -5906,3 +5906,60 @@ export class CartItemComponent {
   </div>
 </section>
 ```
+
+###### 122. Creating the order summary component part 2
+
+- ` update order-summary.component.html `
+```
+<div class="mx-auto max-w-4xl flex-1 space-y-6 w-full">
+  <div class="space-y-4 rounded-lg border border-gray-200 p-4 bg-white shadow-sm"> // adding p-4
+    <div class="space-y-4">
+    //...
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-medium text-gray-500">Discount</dt>
+        <dd class="font-medium text-green-500">-$0.00</dd> // update to green-500
+      </dl>
+    // <dl> = definition list
+    </div>
+
+    // add button
+    <div class="flex flex-col gap-2">
+        <button routerLink="/checkout" mat-flat-button>Checkout</button>
+        <button routerLink="/shop" mat-button>Continue Shopping</button>
+      </div>
+  </div>
+
+  // voucher code 
+<div class="space-y-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+    <form class="space-y-2 flex flex-col p-2">
+      <label class="mb-2 block text-sm font-medium">
+        Do you have a voucher code?
+      </label>
+      <mat-form-field appearance="outline">
+        <mat-label>Voucher code</mat-label>
+        <input type="text" matInput> // has issue on the UI there is a vertical line on it.
+      </mat-form-field>
+      <button mat-flat-button> Apply Code</button>
+    </form>
+  </div>
+```
+
+- ` update order-summary.component.ts `
+```
+import { MatButton } from '@angular/material/button';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-order-summary',
+  imports: [
+    MatButton, // update
+    RouterLink, // update
+    MatFormField, // update
+    MatLabel, // update
+  ],
+  templateUrl: './order-summary.component.html',
+  styleUrl: './order-summary.component.scss'
+})
+```
