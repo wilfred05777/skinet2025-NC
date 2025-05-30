@@ -6257,7 +6257,11 @@ export const routes: Routes = [
 ```
 - ` to test go to e.g: https://localhost:4200/checkout `
 
+###### 128. Summary
 ```
-//checkout.services.ts
+Goal:
+
+To add the cart feature to the angular app. 
+To understand the usage of signals in Angular
 
 ```
