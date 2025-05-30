@@ -6236,4 +6236,28 @@ export class ProductDetailsComponent implements OnInit {
 ```
 - ` To test you go to e.g https://localhost:4200/shop/1 `
 
+###### 127. Creating the checkout components
+- ` cd client/ ng g s core/services/checkout --skip-tests `
+- ` cd client/ ng g c features/checkout --skip-tests `
 
+- ` update app.routes.ts`
+```
+import { CheckoutComponent } from './features/checkout/checkout.component';
+
+export const routes: Routes = [
+  //...{ path: 'cart', component: CartComponent },
+  { path: 'checkout', component: CheckoutComponent }, // update
+];
+```
+- `update checkout.component.html `
+```
+<div class="mt-5">
+  <h1 class="text-2xl"> Only authorized users should be able to see this!</h1>
+</div>
+```
+- ` to test go to e.g: https://localhost:4200/checkout `
+
+```
+//checkout.services.ts
+
+```
