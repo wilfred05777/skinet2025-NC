@@ -1,10 +1,11 @@
-namespace Infrastructure.Data;
-using Core.Entities; // Ensure the Core project is referenced in the Infrastructure project
+using Core.Entities;
 using Infrastructure.Config;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+// namespace Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 
-public class StoreContext(DbContextOptions options) : DbContext(options)
+public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
 {
     public DbSet<Product> Products { get; set; }
 

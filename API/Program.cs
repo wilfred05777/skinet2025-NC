@@ -1,9 +1,11 @@
 using API.Middleware;
+using Core.Entities;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
     return ConnectionMultiplexer.Connect(configuration);
 });
 builder.Services.AddSingleton<ICartService, CartService>();
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+.AddEntityFrameworkStores<StoreContext>();
 
 builder.Services.AddOpenApi();
 
@@ -40,7 +45,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x
     .WithOrigins("http://localhost:4200", "https://localhost:4200")
     .AllowAnyHeader()
-    .AllowAnyMethod());   
+    .AllowAnyMethod());
 
 // if (app.Environment.IsDevelopment())
 // {
@@ -52,6 +57,7 @@ app.UseCors(x => x
 // app.UseAuthorization();
 
 app.MapControllers();
+app.MapIdentityApi<AppUser>();
 
 try
 {

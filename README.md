@@ -6306,3 +6306,50 @@ in the API.
 - on the other hand if it is mobile we use diferently like: json base (which i have no idea yet.)
 
 ```
+
+###### 130. Setting up identity
+
+[How to use Identity to secure a Web API backend for SPAs](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-9.0)
+
+- ` alternative: Azure Identity`
+
+- ` Nuget -> search: microsoft.extensions.identity.stores (Note: 9.0.3 currently development) -> add to: Core.csproj`
+- ` Nuget -> search: microsoft.aspnetcore.identity.EntityFrameworkCore (Note: 9.0.3 currently development) -> add to: Infrastructure.csproj `
+
+- ` API/Core/Entities/AppUser.cs `
+
+```
+using Microsoft.AspNetCore.Identity;
+
+namespace Core.Entities;
+
+public class AppUser : IdentityUser
+{
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+}
+
+```
+
+- ` update StoreContenxt.cs `
+
+```
+// instead of DBContext derive to IdentityDBContext()
+// public class StoreContext(DbContextOptions options) : DbContext(options)
+public class StoreContext(DbContextOptions options) : IdentityDBContext<AppUser>(options)
+{
+  //...
+}
+```
+
+- ` update Program.cs `
+```
+//... builder.Services.AddSingleton<ICartService, CartService>();
+
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+.AddEntityFrameworkStores<StoreContext>();
+
+//... app.MapControllers();
+app.MapIdentityApi<AppUser>();
+```
