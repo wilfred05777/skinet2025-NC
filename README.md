@@ -6265,3 +6265,44 @@ To add the cart feature to the angular app.
 To understand the usage of signals in Angular
 
 ```
+<hr>
+
+### Section 14: API - Identity
+<hr>
+
+###### 129. Introduction
+```
+In this module
+
+- Setting up ASP.NET Identity
+- Using the UserManager & SignInManager
+- Claims
+- Extension methods
+
+--Storing user accounts in the app - why do it?
+  --- Full control
+  --- Customization
+  --- No dependencies
+  --- Cost
+
+--Storing user accounts in the app - cons?
+  --- Security risks
+  --- Compliance
+  --- Overhead  -.Net Identity API Endpoints
+                - The MapIdentityApi<TUser> endpoints 
+                - The call to MapIdentityApi<TUser> adds the following endpoints to the app: 
+                e.g POST /register; /login; /refresh
+
+Goal:
+
+To implement ASP.NET Identity to
+allow clients to login and register
+to our app and receive a Cookie 
+which can be used to authenticate
+against certain classes/methods
+in the API.
+
+- we used cookie base because we are using a browser,
+- on the other hand if it is mobile we use diferently like: json base (which i have no idea yet.)
+
+```
