@@ -6144,3 +6144,96 @@ export class CartItemComponent {
 </button>
 ```
 - ` check or test in https://localhost:4200/cart `
+
+###### 126. Adding the update cart functionality to the product details
+
+- ` update product-details.component.ts `
+
+```
+import { CartService } from '../../../core/services/cart.service'; // update import
+import { FormsModule } from '@angular/forms'; // update import
+
+@Component({
+  selector: 'app-product-details',
+  imports: [
+    // MatLabel,
+    FormsModule // update import
+  ],
+  templateUrl: './product-details.component.html',
+  styleUrl: './product-details.component.scss'
+})
+
+export class ProductDetailsComponent implements OnInit {
+  //...
+  private cartService = inject(CartService);
+  //...product?: Product;
+  quantityInCart = 0;
+  quantity = 1;
+
+  loadProduct(){
+    const id = this.activatedRoute.snapshot.paramMap.get('id');
+    if (!id) return;
+      {
+      this.shopService.getProduct(+id).subscribe({
+        next: product => {  // update
+          this.product = product; // update
+          this.updateQuantityInCart(); // update
+        }, // update
+        error: error => console.error(error),
+      });
+    }
+  }
+
+  // update starts here
+  updateCart(){
+    if( !this.product) return;
+
+    if(this.quantity > this.quantityInCart){
+      const itemsToAdd = this.quantity - this.quantityInCart;
+      this.quantityInCart += itemsToAdd;
+      this.cartService.addItemToCart(this.product, itemsToAdd);
+    } else {
+      const itemsToRemove = this.quantityInCart - this.quantity;
+      this.quantityInCart -= itemsToRemove;
+      this.cartService.removeItemFromCart(this.product.id, itemsToRemove);
+    }
+  }
+
+  updateQuantityInCart() {
+    this.quantityInCart = this.cartService.cart()?.items.find(x => x.productId === this.product?.id)?.quantity || 0;
+    this.quantity = this.quantityInCart || 1;
+
+  }
+
+  getButtonText() {
+    return this.quantityInCart > 0 ? 'Update Cart' : 'Add to Cart';
+  }
+  // update ends here
+
+}
+```
+- ` update product-details.component.html `
+```
+//...
+    <div class="flex gap-4 mt-6">
+      <button
+          [disabled]="quantity=== quantityInCart"
+          (click)="updateCart()"
+          mat-flat-button class="match-input-height">
+          <mat-icon> shopping_cart </mat-icon>
+          {{ getButtonText() }}
+      </button>
+
+      <mat-form-field apperance="outline" class="flex">
+          <mat-label> Quantity </mat-label>
+          <input matInput min="0"
+          [(ngModel)]="quantity"
+          type="number"
+          >
+      </mat-form-field>
+    </div>
+//...
+```
+- ` To test you go to e.g https://localhost:4200/shop/1 `
+
+
