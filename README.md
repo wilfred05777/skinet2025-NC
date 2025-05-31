@@ -6370,3 +6370,79 @@ for testing the Identity API go to postman section 14
 
 
 ```
+
+###### 132. Adding a custom register endpoint
+
+- ` create API/DTO/RegisterDto.cs `
+```
+using System.ComponentModel.DataAnnotations;
+
+namespace API.DTOs;
+
+public class RegisterDto
+{
+    [Required]
+    public string FirstName { get; set; } = string.Empty;
+    [Required]
+    public string LastName { get; set; } = string.Empty;
+    [Required]
+    public string Email { get; set; } = string.Empty;
+    [Required]
+    public string Password { get; set; } = string.Empty;
+    
+}
+```
+- ` create API/Controllers/AccountController.cs`
+```
+using API.DTOs;
+using Core.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers;
+
+public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
+{
+    [HttpDelete("register")]
+    public async Task<IActionResult> Register(RegisterDto registerDto)
+    {
+        var user = new AppUser
+        {
+            FirstName = registerDto.FirstName,
+            LastName = registerDto.LastName,
+            Email = registerDto.Email,
+            UserName = registerDto.Email,
+        };
+
+        var result = await signInManager.UserManager.CreateAsync(user, registerDto.Password);
+
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok();
+    }
+}
+```
+- ` update Program.cs `
+```
+//...app.MapControllers();
+app.MapGroup("api").MapIdentityApi<AppUser>(); // api/login //update with app.MapGroup("api").
+```
+
+- Test in postman
+```
+Register as Tom {{url}}/api/account/register
+Body: raw: 
+
+{
+	"firstName": "Tom",
+    "lastName": "Smith",
+	"email": "tom@test.com",
+	"password": "Pa$$w0rd"
+}
+
+Login as Bob - get token
+Login as Bob - get cookie
+
+```
+
+- `!BUG: 404 not found upon testing at Postman ( desktop workstation ) `

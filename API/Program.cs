@@ -57,7 +57,7 @@ app.UseCors(x => x
 // app.UseAuthorization();
 
 app.MapControllers();
-app.MapIdentityApi<AppUser>();
+app.MapGroup("api").MapIdentityApi<AppUser>();
 
 try
 {
