@@ -6353,3 +6353,20 @@ builder.Services.AddIdentityApiEndpoints<AppUser>()
 //... app.MapControllers();
 app.MapIdentityApi<AppUser>();
 ```
+###### 131. Updating the DB and testing the endpoints
+
+- `root folder new or re-migration "dotnet ef migrations add IdentityAdded -s API -p Infrastructure" `
+
+```
+for testing the Identity API go to postman section 14
+
+
+- Defualt endpoints - register => POST {{url}}/register
+- Default endpoints -> Login => POST {{url}}/login
+  - blots a token 
+
+- Default endpoints - login with cookie => POST {{url}}/login?useCookies=true
+  - cookie link in postman
+
+
+```
