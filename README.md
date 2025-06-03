@@ -6477,4 +6477,6 @@ public class BuggyContoller : BaseApiController{
 - step 1: Login as Bob - get cookie - to test -> remove cookies - manage cookies/x or clear all cookies
 - step 2: Get Secret from buggy - {{url}}/api/buggy/secret - 401 upon delatiom of cookie
 - repeat step 1 & 2
+
+note: Postman console for more detail
 ``` 
