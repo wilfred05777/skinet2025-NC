@@ -7,7 +7,7 @@ namespace API.Controllers;
 
 public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
 {
-    [HttpDelete("register")]
+    [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto registerDto)
     {
         var user = new AppUser

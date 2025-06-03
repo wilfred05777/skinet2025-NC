@@ -6446,3 +6446,11 @@ Login as Bob - get cookie
 ```
 
 - `!BUG: 404 not found upon testing at Postman ( desktop workstation ) `
+```
+// find the bug here AccountController.cs
+public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
+{
+    [HttpPost("register")] <== HttpDelete to HttpPost 
+    //...
+}
+```
