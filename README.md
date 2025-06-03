@@ -6480,3 +6480,66 @@ public class BuggyContoller : BaseApiController{
 
 note: Postman console for more detail
 ``` 
+###### 134. Creating additional user endpoints
+```
+Note: 
+at this current stage we don't have a way to delete our cookie from the users browsers when a user logs out and 
+what we are going to do next is to create a method that will do that 
+
+```
+- ` update AccountController.cs`
+```
+using System.Security.Claims;
+
+public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
+{
+  //...
+  // [Authorize]
+  [HttpPost("logout")] // it should be [HttpPost] and not [HttpGet]
+  public async Task<ActionResult> Logout()
+  {
+      await signInManager.SignOutAsync();
+
+      return NoContent();
+  }
+
+  [HttpGet("user-info")]
+    public async Task<ActionResult> GetUserInfo()
+    {
+        if (User.Identity?.IsAuthenticated == false) return NoContent();
+
+        var user = await signInManager.UserManager.Users
+            .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+
+        if (user == null) return Unauthorized();
+        
+        return Ok( new
+        {
+            user.FirstName,
+            user.LastName,
+            user.Email,
+        });
+    }
+
+    [HttpGet]
+    public ActionResult GetAuthState()
+    {
+        return Ok( new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
+    }
+
+}
+```
+[Use the GET /manage/info endpoint](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-9.0#use-the-get-manageinfo-endpoint)
+
+- 
+```
+To Test => Postman
+- Get Current User => {{url}}/api/account/user-info
+- Post Logout => {{url}}/api/account/logout => [body] to remove the cookie -> !405 Bug not working |
+                  it should remove the cookie on this endpoint and 204 error should fixed it.
+                  (solution:  [HttpPost("logout")] // it should be [HttpPost] and not [HttpGet] )
+                  
+- Login as Tom => {{url}}/api/login?useCookies=true => to get a new cookie
+- Get Secret from Buggy => {{url}}/api/buggy/secret => 
+- Logout - to verify the cookie has been deleted. 
+```
