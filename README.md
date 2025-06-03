@@ -6454,3 +6454,27 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     //...
 }
 ```
+###### 133. Testing the authentication
+- ` update BuggyController.cs `
+```
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
+public class BuggyContoller : BaseApiController{
+
+  [Authorize]
+  [HttpGet("secrete")]
+  public IActionResult GetSecret()
+    {
+        var name = User.FindFirst(ClaimTypes.Name)?.Value;
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Ok("Hello " + name + " with the id of " + id);
+    }
+}
+```
+- ` test at postman `
+```
+- step 1: Login as Bob - get cookie - to test -> remove cookies - manage cookies/x or clear all cookies
+- step 2: Get Secret from buggy - {{url}}/api/buggy/secret - 401 upon delatiom of cookie
+- repeat step 1 & 2
+``` 
