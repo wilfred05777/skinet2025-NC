@@ -6543,3 +6543,84 @@ To Test => Postman
 - Get Secret from Buggy => {{url}}/api/buggy/secret => 
 - Logout - to verify the cookie has been deleted. 
 ```
+
+###### 135. Creating extension methods
+
+- ` create API/Extensions/ClaimsPrincipleExtensions.cs ` 
+
+```
+using System.Security.Authentication;
+using System.Security.Claims;
+using Core.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+namespace API.Extensions;
+
+public static class ClaimsPrincipleExtensions // we typically use static when don't want a new instance of it
+{
+  
+public static async Task<AppUser> GetUserByEmail(this UserManager<AppUser> userManager,
+      ClaimsPrincipal user)
+  {
+      var userToReturn = await userManager.Users.FirstOrDefaultAsync(x =>
+          x.Email == user.GetEmail());
+
+      if (userToReturn == null) throw new AuthenticationException("User not found");
+      
+      return userToReturn;
+
+  }
+
+  public static string GetEmail(this ClaimsPrincipal user)
+  {
+
+    var email = user.FindFirstValue(ClaimTypes.Email);
+
+    // use coalasce expression in if
+    // if (email == null) throw new AuthenticationException("Email claim not found");
+
+    // use coalasce expression in if = transform to these code below: 
+    var email = user.FindFirstValue(ClaimTypes.Email)
+    ?? throw new AuthenticationException("Email claim not found");
+    
+    return email;
+
+  }
+}
+```
+- ` update AccountController.cs `
+```
+public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
+{
+    //...
+
+    [HttpGet("user-info")]
+    public async Task<ActionResult> GetUserInfo()
+    {
+        if (User.Identity?.IsAuthenticated == false) return NoContent();
+
+        var user = await signInManager.UserManager
+            .GetUserByEmail(User);
+            // .Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+        
+        // because the var user - in no longer a null we don't need the if check condition below:
+        // if (user == null) return Unauthorized(); 
+        return Ok(new
+        {
+            user.FirstName, // 'user' is not null here by hovering the user.
+            user.LastName, // 'user' is not null here
+            user.Email, // 'user' is not null here
+        });
+    }
+    //...
+}
+```
+- `Postman Checking`
+``` 
+test in Postman
+
+- Get - Get Secret from buggy = {{url}}/api/buggy/secret
+- Get - Get Current User = {{url}}/api/account/user-info
+
+``` 
