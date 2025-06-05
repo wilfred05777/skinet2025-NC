@@ -6624,3 +6624,73 @@ test in Postman
 - Get - Get Current User = {{url}}/api/account/user-info
 
 ``` 
+
+###### 136. Validation errors
+
+```
+- go to postman
+- Register with weak password {{ url }}/api/account/register
+- 
+  {
+    "firstName": "Bob",
+      "lastName": "Bobbity",
+    "email": "bob@test.com",
+    "password": "letmein" // weak password
+  }
+
+- Login as Tom bad password  {{url}}/api/login
+
+```
+- ` update AccountController.cs `
+```
+//... BaseApiController has default error generation which is why we can call ModelState.AddModelError 
+// AddModelError
+
+  public async Task<IActionResult> Register(RegisterDto registerDto)
+  {
+  
+  // if (!result.Succeeded) return BadRequest(result.Errors); // before
+
+    if (!result.Succeeded)
+    {
+      foreach (var error in result.Errors)
+      {
+          ModelState.AddModelError(error.Code, error.Description);
+      }
+      return ValidationProblem();
+    }
+  }
+//...
+```
+
+- Postman testing
+```
+// Register with weak password
+// {{url}}/api/account/register
+
+{
+	"firstName": "Bob",
+    "lastName": "Bobbity",
+	"email": "bob@test.com",
+	"password": "letmein" // weak password
+}
+```
+```
+{
+    "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title": "One or more validation errors occurred.",
+    "status": 400,
+    "errors": {
+        "PasswordRequiresDigit": [
+            "Passwords must have at least one digit ('0'-'9')."
+        ],
+        "PasswordRequiresUpper": [
+            "Passwords must have at least one uppercase ('A'-'Z')."
+        ],
+        "PasswordRequiresNonAlphanumeric": [
+            "Passwords must have at least one non alphanumeric character."
+        ]
+    },
+    "traceId": "00-5c7d991a0f472322c71f965ea80c20b4-cdde6aa8ec4af742-00"
+}
+```
