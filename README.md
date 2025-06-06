@@ -6694,3 +6694,44 @@ test in Postman
     "traceId": "00-5c7d991a0f472322c71f965ea80c20b4-cdde6aa8ec4af742-00"
 }
 ```
+
+###### 137. Adding a user address class
+- ` create Core/Entities/Address.cs`
+```
+namespace Core.Entities;
+
+public class Address : BaseEntity
+{
+    public required string Line1 { get; set; }
+    public string? Line2 { get; set; }
+    public required string City { get; set; }
+    public required string State { get; set; }
+    public required string PostalCode { get; set; }
+    public required string Country { get; set; }
+}
+// note: later gamiton ni para sa stripe payment
+```
+- `then connect to AppUser.cs`
+```
+public class AppUser : IdentityUser
+{
+  //... public string? LastName { get; set; }
+
+  public Address? Address { get; set; } // connect here
+}
+```
+- ` update StoreContext.cs`
+
+```
+public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
+{
+    //... public DbSet<Product> Products { get; set; }
+
+    public DbSet<Address> Addresses { get; set; } // connnect here; 
+    // option to query the Address w/out involving the AppUser
+}   
+
+// note: if there a new entity need to update the database via migration
+// cd .. root
+// dotnet ef migrations add AddressAdded -s API -p Infrastructure
+```
