@@ -6735,3 +6735,150 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
 // cd .. root
 // dotnet ef migrations add AddressAdded -s API -p Infrastructure
 ```
+
+###### 138. Adding an endpoint to update the user address
+
+- ` update API/DTOs/AddressDto.cs`
+```
+using System.ComponentModel.DataAnnotations;
+
+namespace API.DTOs;
+
+public class AddressDto
+{
+    [Required] // its a required anotation
+    public string Line1 { get; set; } = string.Empty;
+
+    [Required] // its a required anotation
+    public string? Line2 { get; set; }
+
+    [Required] // its a required anotation
+    public string City { get; set; } = string.Empty;
+
+    [Required] // its a required anotation
+    public string State { get; set; } = string.Empty;
+
+    [Required] // its a required anotation
+    public string PostalCode { get; set; } = string.Empty;
+
+    [Required] // its a required anotation
+    public string Country { get; set; } = string.Empty;
+}
+
+```
+- ` then update AccountController.cs `
+
+```
+public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
+{
+  //... public ActionResult GetAuthState(){...}
+
+    [Authorize]
+    [HttpGet("address")]
+    public async Task<ActionResult<Address>> CreateOrUpdateAddress(AddressDto addressDto)
+    {
+        var user = await signInManager.UserManager.GetUserByEmail(User);
+
+        // for this approach - creating an extension method approach
+        // ` create Extension API/Extensions/AddressMappingExtensions.cs `
+
+        if (user.Address == null)
+        {
+            user.Address = addressDto.ToEntity();
+        }
+        else
+        {
+            user.Address.UpdateFromDto(addressDto);
+        }
+
+        var result = await signInManager.UserManager.UpdateAsync(user);
+
+        if (!result.Succeeded) return BadRequest("Problem updating user address");
+
+        return Ok(user.Address.ToDto());            
+        }        
+    }  
+}
+```
+- ` update ClaimsPrincipleExtensions.cs`
+
+```
+public static class ClaimsPrincipleExtensions
+{
+    //...public static async Task<AppUser> GetUserByEmail(this UserManager<AppUser> userManager,
+        ClaimsPrincipal user)
+    {...}
+
+    // update below code: 
+    public static async Task<AppUser> GetUserByEmailWithAddress(this UserManager<AppUser> userManager,
+        ClaimsPrincipal user)
+    {
+        var userToReturn = await userManager.Users
+            .Include(x => x.Address)
+            .FirstOrDefaultAsync(x => x.Email == user.GetEmail());
+
+        if (userToReturn == null) throw new AuthenticationException("User not found");
+        
+        return userToReturn;
+    }
+}
+```
+- ` create Extension API/Extensions/AddressMappingExtensions.cs ` 
+```
+// auto-mapper is has shakey reputation 
+// so we are using the Method Extension approach
+using API.DTOs;
+using Core.Entities;
+
+namespace API.Extensions;
+
+public static class AddressMappingExtensions
+{   
+    // 1st extension method
+    public static AddressDto ToDto(this Address address)
+    {
+        if (address == null) throw new ArgumentNullException(nameof(address));
+
+        return new AddressDto
+        {
+            Line1 = address.Line1,
+            Line2 = address.Line2,
+            City = address.City,
+            State = address.State,
+            Country = address.Country,
+            PostalCode = address.PostalCode
+        };
+    }
+
+    // 2nd extension method
+    public static Address ToEntity(this AddressDto addressDto)
+    {
+        if (addressDto == null) throw new ArgumentNullException(nameof(addressDto));
+
+        return new Address
+        {
+            Line1 = addressDto.Line1,
+            Line2 = addressDto.Line2,
+            City = addressDto.City,
+            State = addressDto.State,
+            Country = addressDto.Country,
+            PostalCode = addressDto.PostalCode
+        };
+    }
+
+    // 3rd extension method
+    public static void UpdateFromDto(this Address address, AddressDto addressDto)
+    {
+        if (addressDto == null) throw new ArgumentNullException(nameof(addressDto));
+        if (address == null) throw new ArgumentNullException(nameof(address));
+
+        address.Line1 = addressDto.Line1;
+        address.Line2 = addressDto.Line2;
+        address.City = addressDto.City;
+        address.State = addressDto.State;
+        address.Country = addressDto.Country;
+        address.PostalCode = addressDto.PostalCode;
+
+    }
+}
+```

@@ -33,10 +33,10 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
 
             return ValidationProblem();
         }
-        
+
         // if (!result.Succeeded) return BadRequest(result.Errors);
 
-            return Ok();
+        return Ok();
     }
 
     [Authorize]
@@ -56,7 +56,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
 
         var user = await signInManager.UserManager
             .GetUserByEmail(User);
-            // .Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+        // .Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
 
         // if (user == null) return Unauthorized();
 
@@ -71,6 +71,29 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     [HttpGet]
     public ActionResult GetAuthState()
     {
-        return Ok( new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
+        return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
     }
+
+    [Authorize]
+    [HttpGet("address")]
+    public async Task<ActionResult<Address>> CreateOrUpdateAddress(AddressDto addressDto)
+    {
+        var user = await signInManager.UserManager.GetUserByEmailWithAddress(User);
+
+        if (user.Address == null)
+        {
+            user.Address = addressDto.ToEntity();
+        }
+        else
+        {
+            user.Address.UpdateFromDto(addressDto);
+        }
+
+        var result = await signInManager.UserManager.UpdateAsync(user);
+
+        if (!result.Succeeded) return BadRequest("Problem updating user address");
+
+        return Ok(user.Address.ToDto());
+    }
+
 }
