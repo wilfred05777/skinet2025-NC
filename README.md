@@ -6882,3 +6882,90 @@ public static class AddressMappingExtensions
     }
 }
 ```
+
+###### 139. Updating the user address part 2
+
+- ` update AccountController.cs `
+```
+public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
+{
+  //...
+
+  public static Address ToEntity(this AddressDto addressDto)
+  {
+    //...
+
+    return Ok(new
+      {
+          user.FirstName,
+          user.LastName,
+          user.Email,
+          Address = user.Address?.ToDto()
+      });
+  }
+
+}
+
+```
+- ` update AddressMappingExtensions.cs` 
+```
+public static class AddressMappingExtensions
+{   
+    // 1st extension method
+
+    // set to nullable AddressDto?
+    public static AddressDto? ToDto(this Address? address) 
+    // enable Address to optional by adding ?
+
+    { 
+      if (address == null) return null; // update to this
+      // if (address == null) throw new ArgumentNullException(nameof(address));
+
+    }
+}
+```
+
+- Bug - !FF not working need to recheck all of the files here
+
+- ` postman testing | Add User Address (tom) - {{ url }}/api/account/address `
+
+```
+- Add User Address (tom) - {{ url }}/api/account/address
+- 
+```
+
+- ` update AddressDto.cs`
+```
+// accidentally set to required that prevents  
+public class AddressDto
+{
+    //...
+
+    //[Required] // removed this 
+    public string? Line2 { get; set; } // because string is set to optional string? 
+    //the question mark, data anotation
+
+    //...
+}
+
+```
+
+- Postman - Get Current User {{ url }}/api/account/user-info
+
+- ` update AcountController.cs`
+```
+// ...
+       var user = await signInManager.UserManager
+            .GetUserByEmailWithAddress(User); // update .GetUserByEmail(User) to  .GetUserByEmailWithAddress(User);
+
+//...
+```
+
+- ` update Program.cs ` 
+```
+app.UseCors(x => x
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials() // update and add
+    .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+```

@@ -6,9 +6,9 @@ namespace API.Extensions;
 public static class AddressMappingExtensions
 {   
     // 1st extension method
-    public static AddressDto ToDto(this Address address)
+    public static AddressDto? ToDto(this Address? address)
     {
-        if (address == null) throw new ArgumentNullException(nameof(address));
+        if (address == null) return null;
 
         return new AddressDto
         {

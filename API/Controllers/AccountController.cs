@@ -55,7 +55,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
         if (User.Identity?.IsAuthenticated == false) return NoContent();
 
         var user = await signInManager.UserManager
-            .GetUserByEmail(User);
+            .GetUserByEmailWithAddress(User);
         // .Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
 
         // if (user == null) return Unauthorized();
@@ -65,6 +65,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
             user.FirstName,
             user.LastName,
             user.Email,
+            Address = user.Address?.ToDto()
         });
     }
 

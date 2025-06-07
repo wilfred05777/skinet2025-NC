@@ -43,9 +43,10 @@ app.UseMiddleware<ExceptionMiddleware>();
     
 // laptop testing config 
 app.UseCors(x => x
-    .WithOrigins("http://localhost:4200", "https://localhost:4200")
     .AllowAnyHeader()
-    .AllowAnyMethod());
+    .AllowAnyMethod()
+    .AllowCredentials()
+    .WithOrigins("http://localhost:4200", "https://localhost:4200"));
 
 // if (app.Environment.IsDevelopment())
 // {
