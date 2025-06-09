@@ -76,7 +76,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     }
 
     [Authorize]
-    [HttpGet("address")]
+    [HttpPost("address")]
     public async Task<ActionResult<Address>> CreateOrUpdateAddress(AddressDto addressDto)
     {
         var user = await signInManager.UserManager.GetUserByEmailWithAddress(User);

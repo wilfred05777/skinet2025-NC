@@ -6774,7 +6774,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
   //... public ActionResult GetAuthState(){...}
 
     [Authorize]
-    [HttpGet("address")]
+    [HttpGet("address")] // correct =>[HttpPost("address")] and wrong=>[HttpGet] this one causes 401 error 
     public async Task<ActionResult<Address>> CreateOrUpdateAddress(AddressDto addressDto)
     {
         var user = await signInManager.UserManager.GetUserByEmail(User);
@@ -6968,4 +6968,10 @@ app.UseCors(x => x
     .AllowAnyMethod()
     .AllowCredentials() // update and add
     .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+```
+
+- ` Bug fixed `
+```
+[Authorize]
+[HttpGet("address")] // correct =>[HttpPost("address")] and wrong=>[HttpGet] this one causes 401 
 ```
