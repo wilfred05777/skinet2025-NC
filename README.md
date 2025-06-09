@@ -6992,3 +6992,20 @@ A:  Yes, but the general consesus
     user authentication there
 
 ```
+<hr>
+
+### Module 15: Client - Identity
+<hr>
+
+###### 141: Introduction
+
+```
+In this module
+
+- Adding an Account feature
+- Forms in Angular
+- Reactive forms
+- Reusable form components
+- Client side validation
+
+```
