@@ -6975,3 +6975,20 @@ app.UseCors(x => x
 [Authorize]
 [HttpGet("address")] // correct =>[HttpPost("address")] and wrong=>[HttpGet] this one causes 401 
 ```
+###### 140. Summary
+```
+Goal: 
+To implement ASP.NET Identity to 
+allow clients to login and register
+to our app and recieve a Cookie 
+which can be used to authenticate
+against certain classes/methods
+in the API
+
+Q:  Is this secure?
+A:  Yes, but the general consesus
+    is what we should use 3rd party
+    identity providers and offload the
+    user authentication there
+
+```
