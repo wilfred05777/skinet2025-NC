@@ -7009,3 +7009,98 @@ In this module
 - Client side validation
 
 ```
+
+###### 142. Creating the account components
+
+- ` cd client  'ng g s core/services/account --skip-tests' `
+- ` client 'ng g c features/account/login --skip-tests' `
+- ` client 'ng g c features/account/register --skip-tests' `
+
+- `create routes for each at app.routes.ts`
+
+```
+//... 
+import { LoginComponent } from './features/account/login/login.component';
+import { RegisterComponent } from './features/account/register/register.component';
+
+export const routes: Routes = [
+  //..., 
+  { path: 'account/login', component: LoginComponent },
+  { path: 'account/register', component: RegisterComponent },
+  //...
+];
+```
+- ` update header.component.html`
+```
+  //...
+
+    <button routerLink="/account/login" mat-stroked-button>Login</button>
+    <button routerLink="/account/register"  mat-stroked-button>Regiser</button>
+
+  //...
+```
+
+- ` create client/src/app/shared/models/user.ts `
+```
+export type User = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  address: Address;
+}
+
+export type Address = {
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+```
+
+- ` update account.service.ts`
+```
+import { inject, Injectable, signal } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Address, User } from '../../shared/models/user';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AccountService {
+  baseUrl = environment.apiUrl;
+  private http = inject(HttpClient)
+  currentUser = signal<User | null>(null);
+
+  login(values: any){
+    let params = new HttpParams();
+    params = params.append('useCookies', true);
+    return this.http.post<User>(this.baseUrl + 'login', values, {params});
+  }
+
+  register(values: any){
+    return this.http.post(this.baseUrl + 'account/register', values);
+  }
+
+  getUserInfo(){
+    return this.http.get<User>(this.baseUrl + 'account/user-info').subscribe({
+      next: user => this.currentUser.set(user)
+    })
+  }
+
+  logout(){
+    return this.http.post(this.baseUrl + 'account/logout', {});
+  }
+
+  updateAddress(address: Address){
+    return this.http.post(this.baseUrl + 'account/address', address);
+  }
+}
+```
+- ` Take-away and realization`
+```
+- API can be only tested or trace bugs using postman or other api tester
+- 401 or other issue regarding http verbs - kay sa api ang issue maybe the httpGet is dapat httpPost something ingon ani na mga issue 
+```
