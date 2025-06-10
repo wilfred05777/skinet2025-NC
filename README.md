@@ -7104,3 +7104,29 @@ export class AccountService {
 - API can be only tested or trace bugs using postman or other api tester
 - 401 or other issue regarding http verbs - kay sa api ang issue maybe the httpGet is dapat httpPost something ingon ani na mga issue 
 ```
+
+###### 143. Introduction to Angular forms
+
+- Angular Forms
+```
+______________________                    _______________________    
+|                     |                   |                     |
+| Forms Module        |                   | ReactiveFormsModule |
+| (Template-driven)   |                   |     (Reactive)      |
+|_____________________|                   |_____________________| 
+  - Template driven                             - Flexible
+  - Easy to use                                 - Immutable data model
+  - 2 way binding                               - Uses observable operators
+  - NgModule directive                          - More component code
+  - Minimal component code                      - Easier to test
+  - Automatic tracking by Angular               - Reactive transformations (debounce)  
+  - Testing is difficult                        
+
+
+______________________      ______________________    __________________    
+|                     |    |                     |    |                 |
+|    FormControl      |    |      FormGroup      |    |     FormArray   |
+|                     |    |                     |    |                 |
+|_____________________|    |_____________________|    |_________________|
+  
+```
