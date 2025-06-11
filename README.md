@@ -7130,3 +7130,111 @@ ______________________      ______________________    __________________
 |_____________________|    |_____________________|    |_________________|
   
 ```
+
+###### 144. Creating the login form
+
+- ` update login.component.ts `
+```
+import { Component, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { AccountService } from '../../../core/servies/account.service';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-login',
+  imports: [
+    ReactiveFormsModule,
+    MatCard,
+    MatFormField,
+    MatInput,
+    MatLabel,
+    MatButton
+  ],
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss'
+})
+export class LoginComponent {
+  private fb = inject(FormBuilder);
+  private accountService = inject(AccountService);
+  private router = inject(Router);
+
+  loginForm = this.fb.group({
+    email: [''], // '' empty string
+    password: ['']
+  })
+
+  onSubmit(){
+    this.accountService.login(this.loginForm.value).subscribe({
+      next: () =>{
+        this.accountService.getUserInfo();
+        this.router.navigateByUrl('/shop');
+      }
+    })
+  }
+}
+```
+- ` update login.component.html`
+```
+<mat-card class="max-w-lg mx-auto mt-32 p-8 bg-white">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-semibold text-primary">Login</h1>
+    </div>
+    <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Email</mat-label>
+      <input formControlName="email" type="email" placeholder="name@example.com" matInput/>
+    </mat-form-field>
+
+     <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Password</mat-label>
+      <input formControlName="password" type="password" placeholder="Password" matInput/>
+    </mat-form-field>
+    <button mat-flat-button type="submit" class="w-full py-2">Sign in</button>
+  </form>
+</mat-card>
+```
+- `update account.services.ts `
+
+```
+login(values: any){
+  //...
+                                                              // add withCredentials: true
+  return this.http.post<User>(this.baseUrl + 'login', values, {params, withCredentials: true});
+
+}
+
+getUserInfo(){
+                                                            // add {withCredentials: true}
+return this.http.get<User>(this.baseUrl + 'account/user-info', {withCredentials: true}).subscribe({
+      next: user => this.currentUser.set(user)
+    })
+ }
+
+  logout(){
+  return this.http.post(this.baseUrl + 'account/logout', {}, {withCredentials: true});
+  }
+
+```
+
+- ` to test login client `
+
+```
+- https://localhost:4200/account/login
+- "email": "tom@test.com",
+	"password": "Pa$$w0rd"
+
+Browser: 
+check network tab: 
+Chrome: Application Tab => cookies
+Firefox: Storage tab => cookies
+
+- 201 has issue or test has failed 
+- 200 server reponse is successfully getting something and working good upon login
+- at Network tab 
+  - user-info 
+  - preview and Reponse = 200 means good or successful test
+```
