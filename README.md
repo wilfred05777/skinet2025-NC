@@ -8193,5 +8193,12 @@ FAQs:
 Q:  Why don't you convert template forms?
 A:  They don't give us any functionality we can't have in
     Reactive forms. Reactive forms are more powerful.
-    
+
 ```
+
+<hr>
+
+### API & Client Checkout : Module 16
+
+<hr>
+
