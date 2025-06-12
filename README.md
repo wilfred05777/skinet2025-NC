@@ -8177,3 +8177,21 @@ import { EmptyStateComponent } from "../../shared/components/empty-state/empty-s
   styleUrl: './cart.component.scss'
 })
 ```
+
+###### 158. Summary
+```
+  - ability to login and register
+
+- Adding an Account feature
+- Forms in Angular
+- Reactive forms
+- Reusable form components
+- Client side validation
+
+FAQs:
+
+Q:  Why don't you convert template forms?
+A:  They don't give us any functionality we can't have in
+    Reactive forms. Reactive forms are more powerful.
+    
+```
