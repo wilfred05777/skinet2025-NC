@@ -7586,6 +7586,7 @@ export class RegisterComponent {
 ```
 
 ###### 150. Form validation part 1
+- ` client side validation`
 
 - ` update register.component.ts`
 ```
@@ -7627,4 +7628,85 @@ export class RegisterComponent {
     // update ends here
 
     <button mat-flat-button type="submit" class="w-full py-2">Register</button>
+```
+
+###### 151. Form validation part 2
+- ` client side validation `
+- ` update register.component.ts`
+```
+import { MatError, ..., ... } from '@angular/material/form-field';
+
+@Component({
+  selector: 'app-register',
+  imports: [
+    MatError
+  ],
+    templateUrl: './register.component.html',
+  styleUrl: './register.component.scss'
+})
+
+  // updated code below
+  registerForm = this.fb.group({
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    email: ['', [Validators.required]],
+    password: ['', Validators.required], // we can explore this Valditor.pattern later
+  })
+
+  // old
+    registerForm = this.fb.group({
+    firstName: [''],
+    lastName: [''],
+    email: [''],
+    password: [''],
+  })
+```
+- test the UI here https://localhost:4200/account/register
+
+- ` update register.component.html`
+```
+//...
+  <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>First name</mat-label>
+      <input formControlName="firstName" type="text" placeholder="John" matInput/>
+
+        // update code below:
+
+        @if (registerForm.get('firstName')?.hasError('required')) {
+          <mat-error>First name is required</mat-error>
+        }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Last name</mat-label>
+      <input formControlName="lastName" type="text" placeholder="Smith" matInput/>
+
+        // update code below:
+        @if (registerForm.get('lastName')?.hasError('required')){
+          <mat-error>Last name is required</mat-error>
+        }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Email address</mat-label>
+      <input formControlName="email" type="email" placeholder="name@example.com" matInput/>
+        
+        // update code below:
+        @if (registerForm.get('email')?.hasError('required')) {
+          <mat-error>Email is required</mat-error>
+        }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Password</mat-label>
+      <input formControlName="password" type="password" placeholder="Password" matInput/>
+      
+        // update code below:
+        @if(registerForm.get('password')?.hasError('required')) {
+          <mat-error>Password is required</mat-error>
+        }
+    </mat-form-field>
+//...
+
+// Note: naa pay better way sa akoang solution para ma-manage ang mga validators
 ```
