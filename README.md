@@ -7888,7 +7888,7 @@ client side security using auth guard
 - ` ' ng g g core/guards/auth --dry-run ' testing `
 - ` select: CanActivate `
 
-- ` create ' ng g g core/guards/auth --skip-test ' `
+- ` creating guard ' ng g g core/guards/auth --skip-test ' `
 - ` select: CanActivate `
 ```
 // auth.gaurd.ts
@@ -8051,5 +8051,42 @@ export const authGuard: CanActivateFn = (route, state) => {
 ```
 - ` update checkout.component.html`
 ```
+<div class="mt-5">
+  <h1 class="text-2xl"> Only authorized users and those with something in the cart should be able to see this!</h1>
+</div>
+```
 
+###### 156. Challenge solution
+- ` creating guard ' ng g g core/guards/empty-cart --skip-test ' `
+```
+import { CanActivateFn, Router } from '@angular/router';
+import { CartService } from '../services/cart.service';
+import { inject } from '@angular/core';
+import { SnackbarService } from '../services/snackbar.service';
+
+export const emptyCartGuard: CanActivateFn = (route, state) => {
+  const cartService = inject(CartService);
+  const router = inject(Router);
+  const snack = inject(SnackbarService);
+
+  if (!cartService.cart() || cartService.cart()?.items.length === 0) {
+    snack.error("Your cart is empty. Please add items to your cart before proceeding.");
+    router.navigate(['/cart']);
+    return false;
+  }
+  return true;
+};
+
+// then use it app.router.ts
+```
+- `update app.router.ts`
+```
+//...
+import { emptyCartGuard } from './core/guards/empty-cart.guard';
+
+export const routes: Routes = [
+  //...
+  { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard, emptyCartGuard] },
+  //...
+]
 ```
