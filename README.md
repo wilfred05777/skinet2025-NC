@@ -8090,3 +8090,90 @@ export const routes: Routes = [
   //...
 ]
 ```
+
+###### 157. Adding an empty state component
+```
+Note: better approach when we don't have anything to display in cart
+```
+
+- ` create ' ng g c shared/components/empty-state --skip-test ' `
+- ` empty-state.component.ts`
+```
+import { Component } from '@angular/core';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-empty-state',
+  imports: [
+    MatIcon,
+    MatButton,
+    RouterLink
+  ],
+  templateUrl: './empty-state.component.html',
+  styleUrl: './empty-state.component.scss'
+})
+export class EmptyStateComponent {
+
+}
+```
+- ` update empty-state.component.html`
+```
+<div class="max-w-screen-xl mx-auto mt-32 px-10 py-4 bg-white rounded-lg shadow-md w-full">
+  <div class="flex flex-col items-center justify-center py-12 w-full">
+    <mat-icon class="icon-display mb-8">shopping_cart</mat-icon>
+    <p class="text-gray-600 text-lg font-semibold mb-4">
+      Your shopping cart is empty
+    </p>
+    <button mat-flat-button>Go Shopping!</button>
+  </div>
+</div>
+```
+- `empty-state.component.scss`
+```
+.icon-display{
+  transform: scale(3);
+}
+```
+
+- `  update cart.component.html - important`
+```
+<section>
+  // wierd issue on this part (cartService.cart()?.items?.length > 0 ) 
+  // to solve go to cart.services.ts
+  // if sometimes typescript is showin silly error you can override it. by adding ! at cartService.cart()?.items?.length! > 0 
+  @if (cartService.cart()?.items?.length! > 0 ) {
+
+    <div class="max-auto max-w-screen-xl">
+      <div class="flex w-full items-start gap-6 mt-32">
+        <div class="w-3/4">
+          @for(item of cartService.cart()?.items; track item.productId) {
+            <app-cart-item [item]="item"></app-cart-item>
+            <!-- <div>{{ item.productName }} - {{ item.quantity }}</div> -->
+          }
+        </div>
+        <div class="w-1/4">
+          <app-order-summary></app-order-summary>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <app-empty-state></app-empty-state>
+  }
+</section>
+```
+
+- ` not so important in this lecture:  update cart.component.ts`
+```
+import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
+@Component({
+  selector: 'app-cart',
+  imports: [
+    //...OrderSummaryComponent, 
+    EmptyStateComponent // import this 
+  ],
+  templateUrl: './cart.component.html',
+  styleUrl: './cart.component.scss'
+})
+```
