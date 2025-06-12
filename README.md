@@ -7238,3 +7238,46 @@ Firefox: Storage tab => cookies
   - user-info 
   - preview and Reponse = 200 means good or successful test
 ```
+
+###### 145. Updating the header component 
+
+- ` update header.component.ts`
+
+```
+//...
+import { Router, ... , ...} from '@angular/router';
+import { AccountService } from '../../core/servies/account.service';
+
+
+export class HeaderComponent {
+  //...
+  accountService = inject(AccountService);
+  private router = inject(Router);
+
+  logout(){
+    this.accountService.logout().subscribe({
+      next: () =>{
+        this.accountService.currentUser.set(null);
+        this.router.navigateByUrl('/');
+      }
+    })
+  }
+}
+
+```
+- ` update header.component.html`
+```
+  <a> ... </a>
+  @if (accountService.currentUser() ) {
+    <button mat-stroked-button (click)="logout()">Logout</button>
+  } @else {
+    <button routerLink="/account/login" mat-stroked-button>Login</button>
+    <button routerLink="/account/register" mat-stroked-button>Register</button>
+  }
+```
+- `key take away sa 145: Updating header`
+```
+- kani kay pag erase lang sa cookie
+- pero wala pay persist pag i-refresh sa user ang browser 
+- dili ma-disable ang login bisan pag naka login na
+```
