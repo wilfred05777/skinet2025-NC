@@ -7855,6 +7855,7 @@ export class TextInputComponent implements ControlValueAccessor {
 - ` to test localhost:4200/account/register `
 
 - ` update register.component.ts `
+```
 @Component({
   selector: 'app-register',
   imports: [
@@ -7871,3 +7872,93 @@ export class TextInputComponent implements ControlValueAccessor {
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
+```
+
+###### 153. Creating an auth guard
+
+```
+all about:
+
+client side security using auth guard
+- hide things from the user on the clien side, active a route or deactivate a route
+- example: hey you need to be login first
+```
+
+- ` ng g help `
+- ` ' ng g g core/guards/auth --dry-run ' testing `
+- ` select: CanActivate `
+
+- ` create ' ng g g core/guards/auth --skip-test ' `
+- ` select: CanActivate `
+```
+// auth.gaurd.ts
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AccountService } from '../servies/account.service';
+
+export const authGuard: CanActivateFn = (route, state) => {
+  const accountService = inject(AccountService);
+  const router = inject(Router);
+
+  if (accountService.currentUser()){
+    return true;
+  } else {
+    router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
+    return false;
+  }
+};
+
+// note: to use this go to app.routes.ts
+```
+
+- ` update app.routes.ts`
+```
+//... 
+import { authGuard } from './core/guards/auth.guard';
+
+export const routes: Routes = [
+  //...
+  { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
+  //...  
+]
+
+// next we go to login.component.ts
+```
+
+- ` update login.component.ts `
+```
+import { AccountService } from '../../../core/servies/account.service';
+import { ActivatedRoute, Router } from '@angular/router';
+
+export class LoginComponent {
+  //...
+    private accountService = inject(AccountService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  returnUrl = '/shop';
+
+  constructor(){
+    const url = this.activatedRoute.snapshot.queryParams['returnUrl'];
+    if (url) this.returnUrl = url;
+  }
+
+    onSubmit(){
+    this.accountService.login(this.loginForm.value).subscribe({
+      next: () =>{
+        this.accountService.getUserInfo().subscribe();
+        this.router.navigateByUrl(this.returnUrl);
+        // this.router.navigateByUrl('/shop');
+      }
+    })
+  }
+}
+
+```
+- ` to test`
+```
+- go to https://localhost:4200/cart then checkout button
+- you will be redirected here if not login: https://localhost:4200/account/login?returnUrl=%2Fcheckout
+
+- logout and refresh and login again 
+- there is weird issue: after that it won't redirect (this is using signal)
+```
