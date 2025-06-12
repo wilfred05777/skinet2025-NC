@@ -8042,3 +8042,14 @@ export const authGuard: CanActivateFn = (route, state) => {
       //... return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
     }
 ```
+
+###### 155. Challenge - empty cart guard
+
+```
+- what if the basket is empty? because currently right now the checkout section is showing/displaying the order summary
+- Objective is to hide it if its empty and show if there is something on the cart/basket.
+```
+- ` update checkout.component.html`
+```
+
+```
