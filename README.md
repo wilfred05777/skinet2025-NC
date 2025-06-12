@@ -7425,3 +7425,66 @@ provideHttpClient(
     //return this.http.post(this.baseUrl + 'account/logout', {}, {withCredentials: true}); // old
   }
 ```
+
+###### 148. Adding an Angular Material Menu
+
+- ` material.angular.io/components/menu/overview `
+[Angular Menu Docs](https://material.angular.dev/components/menu/overview)
+
+- ` update header.components.ts`
+```
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { MatDivider } from '@angular/material/divider';
+
+@Component({
+  selector: 'app-header',
+  imports: [
+    //...,
+    MatMenuTrigger,
+    MatMenu,
+    MatDivider,
+    MatMenuItem
+  ],
+  //...
+
+  }) 
+```
+- ` update header.component.html`
+```
+// ...
+        @if (accountService.currentUser() ) {
+          
+          // update code 
+          <button mat-button [matMenuTriggerFor]="menu" >
+            <mat-icon> arrow_drop_down</mat-icon>
+            <span>{{ accountService.currentUser()?.email }}</span>
+          </button>
+
+          // old 
+          // <button mat-stroked-button (click)="logout()">Logout</button>
+        } @else {
+          <button routerLink="/account/login" mat-stroked-button>Login</button>
+          <button routerLink="/account/register" mat-stroked-button>Register</button>
+        }
+//...
+
+// lower part
+
+<mat-menu #menu="matMenu" class="px-5">
+  <button mat-menu-item class="px-3" routerLink="/cart">
+    <mat-icon>shopping_cart</mat-icon>
+    My cart
+  </button>
+
+  <button mat-menu-item class="px-3" routerLink="/orders">
+    <mat-icon>history</mat-icon>
+    My orders
+  </button>
+
+  <mat-divider></mat-divider>
+  <button mat-menu-item class="px-3" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    Logout
+  </button>
+</mat-menu>
+```
