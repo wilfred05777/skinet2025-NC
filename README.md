@@ -7962,3 +7962,83 @@ export class LoginComponent {
 - logout and refresh and login again 
 - there is weird issue: after that it won't redirect (this is using signal)
 ```
+
+###### 154. Updating the auth guard to use observables
+
+```
+- signal is a synchronous it about timing issue
+
+- observable is asynchronous
+```
+- ` update auth.guard.ts `
+```
+import { of } from 'rxjs';
+export const authGuard: CanActivateFn = (route, state) => {
+  //...
+  if (accountService.currentUser()){
+    return of(true);
+  } else {...}
+}
+```
+
+- `API - AccountController.cs = explain and connected with the timing issue`
+```
+    public ActionResult GetAuthState()
+    {
+        return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
+    }
+```
+- ` update account.service.ts `
+```
+export class AccountService {
+
+  //... updateAddress(...){...}
+
+  getAuthSate(){
+    return this.http.get<{isAuthenticated: boolean}>(this.baseUrl + 'account/auth-status');
+  }
+}
+
+// back to the auth.guard.ts
+```
+- ` update auth.guard.ts`
+```
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AccountService } from '../servies/account.service';
+import { map, of } from 'rxjs';
+
+export const authGuard: CanActivateFn = (route, state) => {
+  const accountService = inject(AccountService);
+  const router = inject(Router);
+
+  if (accountService.currentUser()){
+    return of(true);
+  } else {
+    return accountService.getAuthSate().pipe(
+      map(auth => {
+        if (auth.isAuthenticated) {
+          return true;
+        } else{
+          router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
+          return false;
+        }
+      })
+    )
+  }
+};
+
+// issue encounter during the testing
+// to fix it go to account.service.ts
+// then AccountController.cs
+```
+-  ` update AccountController.cs`
+```
+    // no router here [HttpGet()] should add "auth-status"
+    [HttpGet("auth-status")] 
+    
+    public ActionResult GetAuthState()
+    {
+      //... return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
+    }
+```
