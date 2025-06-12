@@ -7488,3 +7488,99 @@ import { MatDivider } from '@angular/material/divider';
   </button>
 </mat-menu>
 ```
+
+###### 149. Adding the register form
+
+- ` update register.component.ts`
+```
+import { Component, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { AccountService } from '../../../core/servies/account.service';
+import { Router } from '@angular/router';
+import { SnackbarService } from '../../../core/services/snackbar.service';
+import { JsonPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-register',
+  imports: [
+    ReactiveFormsModule, // update
+    MatCard,  // update
+    MatFormField,  // update
+    MatLabel,  // update
+    MatInput,  // update
+    MatButton,  // update
+    JsonPipe    // update
+  ],
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss'
+})
+export class RegisterComponent {
+
+  // inject the services here below
+  private fb = inject(FormBuilder);  // update
+  private accountService = inject(AccountService);  // update
+  private router = inject(Router);  // update
+  private snack = inject(SnackbarService);   // update
+
+  // create registerForm method 
+  registerForm = this.fb.group({
+    fristName: [''],
+    lastName: [''],
+    email: [''],
+    password: [''],
+  })
+
+  // create onSubmit method 
+  onSubmit(){
+    this.accountService.register(this.registerForm.value).subscribe({
+        next: () => {
+          this.snack.success('Registration successful - you can now log in');
+          this.router.navigateByUrl('/account/login');
+        },
+      })
+    }
+}
+
+```
+
+- ` update register.component.html`
+```
+<mat-card class="max-w-lg mx-auto mt-32 p-8 bg-white">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-semibold text-primary">Register</h1>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>First name</mat-label>
+      <input formControlName="firstName" type="text" placeholder="John" matInput/>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Last name</mat-label>
+      <input formControlName="lastName" type="text" placeholder="Smith" matInput/>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Email address</mat-label>
+      <input formControlName="email" type="email" placeholder="name@example.com" matInput/>
+    </mat-form-field>
+
+     <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Password</mat-label>
+      <input formControlName="password" type="password" placeholder="Password" matInput/>
+    </mat-form-field>
+    <button mat-flat-button type="submit" class="w-full py-2">Register</button>
+  </form>
+</mat-card>
+
+<mat-card class="max-w-lg mx-auto mt-3 p-2">
+  <pre>Form values: {{ registerForm.value | json }}</pre>
+  <pre>Form status: {{ registerForm.status }}</pre>
+</mat-card>
+
+```
