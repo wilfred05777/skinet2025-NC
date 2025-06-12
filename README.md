@@ -7584,3 +7584,47 @@ export class RegisterComponent {
 </mat-card>
 
 ```
+
+###### 150. Form validation part 1
+
+- ` update register.component.ts`
+```
+  //...private snack = inject(SnackbarService);
+
+  // add this below
+  validationErrors?: string[]; 
+
+  //...
+  onSubmit(){
+    this.accountService.register(this.registerForm.value).subscribe({
+        next: () => {
+          this.snack.success('Registration successful - you can now log in');
+          this.router.navigateByUrl('/account/login');
+        },
+
+        // update code below
+        error: errors => this.validationErrors = errors
+      })
+    }
+```
+- ` update register.component.html`
+```
+<mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Password</mat-label>
+      <input formControlName="password" type="password" placeholder="Password" matInput/>
+    </mat-form-field>
+
+    // update starts here
+    @if (validationErrors){
+      <div class="mb-3 p-4 bg-red-100 text-red-600">
+        <ul class="list-disc px-3">
+          @for (error of validationErrors; track $index) {
+            <li>{{ error }}</li>
+          }
+        </ul>
+      </div>
+    }
+    // update ends here
+
+    <button mat-flat-button type="submit" class="w-full py-2">Register</button>
+```
