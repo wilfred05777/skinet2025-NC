@@ -8202,3 +8202,112 @@ A:  They don't give us any functionality we can't have in
 
 <hr>
 
+###### Module 16 : API & Client Checkout = 159. Introduction
+
+- `Ideas `
+```
+- PCI 
+- Strong Customer Authentication
+```
+
+- ` In this module `
+```
+- Creating a Stripe account
+- PCI DSS Compliance
+- Strong Customer Authentication - 
+- Setting up Payment Intents
+- Using Stripe Elements
+- Confirming Card Payments
+```
+
+- ` Goal:`
+```
+To be able to accept payments
+securely globally that complies
+with EU regulations and PCI DSS
+regulations.
+
+- Payment Card Industry Data Security Standard ( PCI DSS)
+    - Set of industry standards
+    - Designed to protect payment card data
+    - Increased protection for customers and reduced
+      risk of data breaches involving personal card data
+    -12 broad requirements and collectively more than 200
+      line item requiremnts
+
+    - 6 key ares:
+      - Building and maitaining a secure network
+      - Protecting cardholder data
+      - Maintaining a vulnerability management program
+      - Implementing strong access control measures
+      - Regular monitor and test networks
+      - Maintaining an information security policy
+    
+      Note: stripe is a payment processor
+
+PCI DSS non-compliance consequences
+  - Monthly financial penalties from $5,0000 to $100,000
+  - Infringement consequences ($50 to $90 per card
+      holder whose informatin has been endangered)
+  - Compensation costs
+  - Legal Action
+  - Damage reputation
+  - Revenue loss
+  - Federal audits
+
+* Strong Customer Authentication
+
+- EU standards authenticating online payments
+- Requires two of three elements:
+  - Something the customer knows (password or pin)
+  - Something the customer has (phone or hardware token)
+  - Something the customer is (fingerprint or facial recognition)
+
+- Banks will decline payments that require SCA and 
+  don't meet this criteria
+
+============================================================
+Strip without SCA ( USA and Canadian payment only)
+
+1) Create order on API.
+2) If success make payment to Stripe
+3) Stripe returns one time use token if payment succeeds
+4) Client sends token to the API
+5) API verifies token with Stripe
+6) Stripe confirms token.
+7) On success/failure result sent to client from API
+
+ _________       __________
+|         |     |          | 
+|   API   |     |   STRIPE |
+|_________|     |__________|
+
+
+[ client ]
+=============================================================
+
+below approach that we are going to use for our project
+
+Stripe with SCA - Accept payment globally
+
+1) Create payment intent with API (before payment)
+2) API sends payment intent to Stripe
+3) Stripe creates payment intent return client secret
+4) API returns client secret to client
+5) Client sends payment to stripe using the client secret
+6) Stripe Sends confirmation to client payment was successful
+7) Client creates order with API
+8) Stripe sends confirmation to API that payment was successfull - wehbook
+9) Payment confirmed and can be shipped
+
+ _________       __________
+|         |---->|          | 
+|   API   |<----|   STRIPE |
+|_________|     |__________|
+  ^               ^
+  |              /
+   \            /
+    \          /  
+    [ client  ]
+
+```
