@@ -7358,3 +7358,70 @@ export class AccountService{
   }
 ```
 - ` test again login https://localhost:4200/account/login `
+
+###### 147. Adding an auth interceptor
+
+```
+- ang objective ani kay ma centralize ang cookie nga dili redundant sa oban controllers
+-  
+```
+
+- `cd client create 'ng g interceptor core/interceptors/auth --skip-tests' `
+```
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  // update start here
+  const clonedRequest = req.clone({
+    withCredentials: true
+  })
+
+  return next(clonedRequest);
+  // update end here
+};
+```
+
+- ` update app.config.ts`
+```
+//...
+import { authInterceptor } from './core/interceptors/auth.interceptor';
+//...
+
+provideHttpClient(
+      withInterceptors([
+        errorInterceptor,
+        loadingInterceptor,
+        authInterceptor // add  authInterceptor
+    ])),
+    
+}
+```
+
+- `update account.services.ts`
+```
+  login(values: any){
+    let params = new HttpParams();
+    params = params.append('useCookies', true);
+    return this.http.post<User>(this.baseUrl + 'login', values, {params}); // remove withCredentials:...
+
+    //return this.http.post<User>(this.baseUrl + 'login', values, {params, withCredentials: true});
+  }
+
+  getUserInfo(){
+                                            // removed {withCredentials: true}
+    return this.http.get<User>(this.baseUrl + 'account/user-info').pipe( // update code
+    
+    // old code 
+    // return this.http.get<User>(this.baseUrl + 'account/user-info', {withCredentials: true}).pipe(
+      map(user => {
+        this.currentUser.set(user);
+        return user;
+      })
+    )
+  }
+
+  logout(){
+            /// removed {withCredentials: true},  update code below
+    return this.http.post(this.baseUrl + 'account/logout', {}); 
+
+    //return this.http.post(this.baseUrl + 'account/logout', {}, {withCredentials: true}); // old
+  }
+```

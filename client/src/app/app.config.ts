@@ -7,6 +7,7 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 import { InitService } from './core/services/init.service';
 import { lastValueFrom } from 'rxjs';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 function initializeApp(initService: InitService){
   return () => lastValueFrom(initService.init()).finally(() =>{
@@ -24,7 +25,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([
         errorInterceptor,
-        loadingInterceptor
+        loadingInterceptor,
+        authInterceptor
     ])),
     {
       provide: APP_INITIALIZER,
