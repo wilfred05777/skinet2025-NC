@@ -7710,3 +7710,164 @@ import { MatError, ..., ... } from '@angular/material/form-field';
 
 // Note: naa pay better way sa akoang solution para ma-manage ang mga validators
 ```
+
+###### 152. Creating a re-usable text input
+
+- ` create ' ng g c shared/components/text-input --skip-test ' `
+- ` update text-input.component.ts `
+
+```
+import { Component, Input, Self } from '@angular/core';
+import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule } from '@angular/forms';
+import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+
+@Component({
+  selector: 'app-text-input',
+  imports: [
+    ReactiveFormsModule,
+    MatFormField,
+    MatInput,
+    MatError,
+    MatLabel
+  ],
+  templateUrl: './text-input.component.html',
+  styleUrl: './text-input.component.scss'
+})
+            // TextInputComponent need to implement
+export class TextInputComponent implements ControlValueAccessor {
+
+  // use decoratorts instead of signal
+  @Input() label: string = '';
+  @Input() type: string = 'text';
+
+  // need constructor for the decorators to work
+  constructor(@Self() public controlDir: NgControl) {
+    this.controlDir.valueAccessor = this; // set the value accessor
+  }
+
+  writeValue(obj: any): void {
+
+  }
+  registerOnChange(fn: any): void {
+
+  }
+  registerOnTouched(fn: any): void {
+
+  }
+
+  get control() {
+    return this.controlDir.control as FormControl; // return the control from the directive
+  }
+}
+```
+- ` update text-input.component.html `
+```
+<mat-form-field appearance="outline" class="w-full mb-4">
+  <mat-label>{{ label }}</mat-label>
+
+  // kini ang tama - dapat no gap ang type={{type}} anything ingon anig format placeholder={{label}}
+  <input [formControl]="control" type={{type}} placeholder={{label}} matInput/>
+  // code below dili mo gana apg ang type={{ type }} naay space dapat no space or gap
+  <!-- <input [formControl]="control" type={{ type }} placeholder={{ label }} matInput/> -->
+  
+  @if (control.hasError('required')) {
+    <mat-error>{{ label }} is required</mat-error>
+  }
+  @if (control.hasError('email')) {
+    <mat-error>email is invalid</mat-error>
+  }
+</mat-form-field>
+```
+
+
+- ` update register.component.html `
+```
+<mat-card class="max-w-lg mx-auto mt-32 p-8 bg-white">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-semibold text-primary">Register</h1>
+    </div>
+
+    <app-text-input label="First name" formControlName="firstName" />
+    <app-text-input label="Last name" formControlName="lastName" />
+    <app-text-input label="Email address" formControlName="email" />
+    <app-text-input label="Password" formControlName="password" type="password"/>
+
+    <!-- <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>First name</mat-label>
+      <input formControlName="firstName" type="text" placeholder="John" matInput/>
+      @if (registerForm.get('firstName')?.hasError('required')) {
+        <mat-error>First name is required</mat-error>
+      }
+    </mat-form-field> -->
+
+    <!-- <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Last name</mat-label>
+      <input formControlName="lastName" type="text" placeholder="Smith" matInput/>
+      @if (registerForm.get('lastName')?.hasError('required')){
+        <mat-error>Last name is required</mat-error>
+      }
+    </mat-form-field> -->
+
+    <!-- <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Email address</mat-label>
+      <input formControlName="email" type="email" placeholder="name@example.com" matInput/>
+      @if (registerForm.get('email')?.hasError('required')) {
+        <mat-error>Email is required</mat-error>
+      }
+    </mat-form-field> -->
+
+    <!-- <mat-form-field appearance="outline" class="w-full mb-4">
+      <mat-label>Password</mat-label>
+      <input formControlName="password" type="password" placeholder="Password" matInput/>
+      @if(registerForm.get('password')?.hasError('required')) {
+        <mat-error>Password is required</mat-error>
+      }
+    </mat-form-field> -->
+
+    @if (validationErrors){
+      <div class="mb-3 p-4 bg-red-100 text-red-600">
+        <ul class="list-disc px-3">
+          @for (error of validationErrors; track $index) {
+            <li>{{ error }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <button
+        disabled="registerForm.invalid"
+        mat-flat-button
+        type="submit"
+        class="w-full py-2">
+        Register
+    </button>
+  </form>
+</mat-card>
+
+<!-- <mat-card class="max-w-lg mx-auto mt-3 p-2">
+  <pre>Form values: {{ registerForm.value | json }}</pre>
+  <pre>Form status: {{ registerForm.status }}</pre>
+</mat-card> -->
+
+```
+- ` to test localhost:4200/account/register `
+
+- ` update register.component.ts `
+@Component({
+  selector: 'app-register',
+  imports: [
+    ReactiveFormsModule,
+    MatCard,
+    // MatFormField,
+    // MatLabel,
+    // MatInput,
+    MatButton,
+    // JsonPipe,
+    // MatError,
+    TextInputComponent
+],
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss'
+})
