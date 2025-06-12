@@ -7281,3 +7281,80 @@ export class HeaderComponent {
 - pero wala pay persist pag i-refresh sa user ang browser 
 - dili ma-disable ang login bisan pag naka login na
 ```
+
+###### 146. Persisting the login
+
+- ` ideas from NC `
+```
+- call an API endpoints that sends the cookie
+
+```
+
+- ` update init.services.ts` 
+```
+import { AccountService } from '../servies/account.service';
+
+export class InitService {
+  //... private cartService = inject(CartService);
+  private accountService = inject(AccountService);
+  //...
+
+  init(){
+  const cartId = localStorage.getItem('cart_id');
+  const cart$ = cartId ? this.cartService.getCart(cartId) : of(null);
+
+  // forkJoin allows us to wait for multiple observables to complete
+  // multiple requests can be made here, such as fetching user info
+  return forkJoin({
+    cart: cart$,
+    user: this.accountService.getUserInfo()
+  })
+  // return cart$;
+ }
+
+}
+```
+- ` update account.service.ts `
+
+```
+import { map } from 'rxjs';
+
+export class AccountService{
+
+  getUserInfo(){
+
+    // update para mo connect sa init service gamiton ang pipe instead of subscribe
+    return this.http.get<User>(this.baseUrl + 'account/user-info', {withCredentials: true}).pipe(
+      map(user => {
+        this.currentUser.set(user);
+        return user;
+      })
+    )
+
+    // old
+    //return this.http.get<User>(this.baseUrl + 'account/user-info', {withCredentials: true}).subscribe({
+    //  next: user => this.currentUser.set(user)
+    //})
+  }
+}
+```
+- `testing the login https://localhost:4200/account/login`
+
+- ` update login.component.ts`
+```
+
+  onSubmit(){
+    this.accountService.login(this.loginForm.value).subscribe({
+      next: () =>{
+        
+        // add subscribe() para mo take reflect on the first login
+        this.accountService.getUserInfo().subscribe(); 
+        
+        // old
+        // this.accountService.getUserInfo(); 
+        this.router.navigateByUrl('/shop');
+      }
+    })
+  }
+```
+- ` test again login https://localhost:4200/account/login `
