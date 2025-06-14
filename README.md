@@ -8311,3 +8311,94 @@ Stripe with SCA - Accept payment globally
     [ client  ]
 
 ```
+
+###### 160. Creating the delivery methods in the API
+
+- ` create new Entity ' Core/Entities/DeliveryMethod.cs' `
+```
+namespace Core.Entities;
+
+public class DeliveryMethod : BaseEntity
+{
+
+    public required string ShortName { get; set; }
+    public required string DeliveryTime { get; set; }
+    public required string Description { get; set; }
+    public required decimal Price { get; set; } 
+    // note: kay tungod naa daw ang decimal mao ng mag buhat ug DeliveryMethodConfiguration.cs 
+}
+```
+- `create new ' Infrastructure/Config/DeliveryMethodConfiguration.cs ' `
+```
+using Core.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Infrastructure.Config;
+
+public class DeliveryMethodConfiguration : IEntityTypeConfiguration<DeliveryMethod>
+{
+    public void Configure(EntityTypeBuilder<DeliveryMethod> builder)
+    {
+        builder.Property(x => x.Price).HasColumnType("decimal(18,2)");
+    }
+}
+
+// unya adto ta sa StoreContext.cs
+```
+- ` update StoreContext.cs`
+```
+public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
+{
+  // ...
+  public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
+
+  // ...
+} 
+
+// note: Infrastructure/Data/SeedData/delivery.json i-seed ang mga data diri.
+// buhaton nato ni sa StoreContextSeed.cs
+```
+- ` update StoreContextSeed.cs `
+```
+public class StoreContextSeed
+{
+    public static async Task SeedAsync(StoreContext context)
+    {
+      //...if (!context.Products.Any()) {...}
+
+      if (!context.DeliveryMethods.Any())
+        {
+            var dmData = await File.ReadAllTextAsync("../Infrastructure/Data/SeedData/delivery.json");
+
+            var methods = JsonSerializer.Deserialize<List<DeliveryMethod>>(dmData);
+
+            if (methods == null) return;
+            context.DeliveryMethods.AddRange(methods);
+            await context.SaveChangesAsync();
+        }
+    }
+}
+```
+- ` cd API root  'dotnet ef migrations add DeliveryMethodsAdded -p Infrastructure -s API' `
+
+
+```
+Issue: on old EF version
+- updating a t entity framework tools version 'x.x.x' is older ...
+
+Solution: 
+- dotnet tool update dotnet-ef -g
+```
+- Test Data DeliveryMethodsAdded.cs 
+```
+- To check if data has been seeded in the database
+- go Infrastructure/Migrations/######_DeliveryMethodsAdded.cs
+- re-run in the terminal cd api / dotnet watch
+- the logs below will show 
+            
+            info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+            Executed DbCommand //...
+            
+- it means successful.
+```
