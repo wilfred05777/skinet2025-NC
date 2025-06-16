@@ -1,17 +1,21 @@
 To run the program
-  - cd api / dotnet run or dotnet watch
+
+-  cd api / dotnet run or dotnet watch
 
 ---
+
 ### API
+
 ---
 
-###### creation of .net project 
+###### creation of .net project
+
 ```
 dotnet sln add Core
 dotnet new webapi -o API -controllers
 dotnet new sln
 dotnet new classlib -o Infrastructure
-dotnet sln add API 
+dotnet sln add API
 dotnet new classlib -o Core
 dotnet sln add Core // add to main file using dotnet sln list if it is seen it is link or reference on the main project
 dotnet sln list // show attacheh folders
@@ -34,17 +38,17 @@ cd root folder
 ```
 
 config on APi Controllers .net v9
+
 ```
-- api/properties 
+- api/properties
 - launchSettings.json
-- 
+-
 "http": {
       "applicationUrl": "http://localhost:5000; http://localhost:5001",
     },
--- bug in this section: 
+-- bug in this section:
 https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45148203#notes
 ```
-
 
 ```
 dotnet dev-certs https
@@ -53,12 +57,15 @@ dotnet dev-certs https --clean
 ```
 
 8. Creating the Product Entity
+
 ```
  - Solution Explorer
  - Core / Class1.cs - delte
  - create new folder & file core/Entities/product.cs
 ```
+
 product.cs
+
 ```
 namespace Core.Entities;
 
@@ -70,12 +77,13 @@ public class Product
     public decimal Price { get; set; }
     public required string PictureUrl { get; set; }
     public required string Type { get; set; }
-    public required string Brand { get; set; }   
+    public required string Brand { get; set; }
     public int QuantityInStock { get; set; }
 }
 ```
 
 9. Setting up entity framework
+
 ```
 - Solution Explorer
 -- Infractructure folder
@@ -88,7 +96,9 @@ public class Product
 ---- click yellow bulb in VSCode ->Generate constructor(storeContext(optional))
 ---- refactor the generated code to primary constructor
 ```
+
 Connection String @ Program.cs dbContext
+
 ```
 // Add services to the container.
 builder.Services.AddControllers();
@@ -96,18 +106,22 @@ builder.Services.AddDbContext<StoreContext>(opt =>{
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 ```
+
 ```
 - issue cd infrastructure then -> dotnet add reference ../Core/Core.csproj
 ```
 
 10. Setting up Sql Server
+
 ```
 - docker
 - root file skinnet2025/docker-compose.yml
 ```
+
 docker-compose.yml
+
 ```
-services: 
+services:
   sql:
     image: mcr.microsoft.com/azure-sql-edge
     environment:
@@ -115,23 +129,28 @@ services:
       MSSQL_SA_PASSWORD: "Password@1"
     ports:
       - "1433:1433"
-      
+
 ```
+
 running docker-compose.yaml file
+
 ```
  root terminal: docker compose up -d
 ```
 
 11. Connecting to the Sql Server from the app
+
 ```
 Solution Explorer:
                   -skinet2025/API/appsettings.json/appsettings.Development.json
 ```
+
 appsettings.Development.json
-``` 
+
+```
 "ConnectionStrings": {
     "DefaultConnection": "Server=localhost,1433;Database=skinet;User Id=SA;Password=Password@1;TrustServerCertificate=True;"
-  }, 
+  },
 ```
 
 install package
@@ -144,16 +163,17 @@ check if there is a dotnet ef tool
 `at terminal root folder skinet: dotnet ef`
 
 migratations
-`note: api runnig should be stop befor running the command below at the terminal` 
+`note: api runnig should be stop befor running the command below at the terminal`
 `dotnet ef migrations add InitialCreate -s API -p Infrastructure`
 
 To undo this action, use `'dotnet ef migrations remove -s API -p Infrastructure'`
 `note: docker tool should run in order to excute properly the removal of migration`
 
-
 12. Configuring the entities for the migration
-- StoreContext.cs
-`override space selectOnModelCreating(ModelBuilder modelBuilder)) `
+
+-  StoreContext.cs
+   `override space selectOnModelCreating(ModelBuilder modelBuilder)) `
+
 ```
 namespace Infrastructure.Data;
 using Core.Entities; // Ensure the Core project is referenced in the Infrastructure project
@@ -166,7 +186,7 @@ public class StoreContext(DbContextOptions options) : DbContext(options)
     public DbSet<Product> Products { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {   
+    {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductConfiguration).Assembly);
@@ -174,9 +194,10 @@ public class StoreContext(DbContextOptions options) : DbContext(options)
 }
 ```
 
-- create-> Infrastructure/Config/ProductConfiguration.cs
-- `Soulution Explorer`
-  - `higlight->IEntityTypeConfiguration->implement Interface`
+-  create-> Infrastructure/Config/ProductConfiguration.cs
+-  `Soulution Explorer`
+   -  `higlight->IEntityTypeConfiguration->implement Interface`
+
 ```
 using System;
 using Core.Entities;
@@ -194,21 +215,23 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
     }
 }
 ```
-` terminal: dotnet ef migrations add InitialCreate -s API -p Infrastructure `
+
+`terminal: dotnet ef migrations add InitialCreate -s API -p Infrastructure`
 create database
 `note: Docker should be running/started`
 `terminal root: dotnet ef database update -s API -p Infrastructure`
 
 View Database Content
 `SQL Server Via VS Code Extension`
-` server: localhost `
+`server: localhost`
 ` username: SA login`
-` password: Password@1 `
+`password: Password@1`
 ` [skinet].dbo.[__EFMigrationsHistory] right click-> select 1000`
 
 13. Creating a products controller
-` Solution Explorer `
-` Create: API/Controllers/ProductsController.cs `  
+    `Solution Explorer`
+    `Create: API/Controllers/ProductsController.cs`
+
 ```
 using Core.Entities;
 using Infrastructure.Data;
@@ -227,11 +250,11 @@ public class ProductsController : ControllerBase
     {
         this.context = context;
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
     {
-      // return a product list  
+      // return a product list
     return await context.Products.ToListAsync();
     }
 
@@ -257,15 +280,17 @@ public class ProductsController : ControllerBase
 }
 ```
 
-14. Using postman to test our new API Endpoints 
-- Postman
-  - Create new workspace 
-  - name of workspace, only me,
-  - new collection
-  - skinet -> variables for defining variable for api testing oranization
+14. Using postman to test our new API Endpoints
+
+-  Postman
+   -  Create new workspace
+   -  name of workspace, only me,
+   -  new collection
+   -  skinet -> variables for defining variable for api testing oranization
 
 15. Adding the update and delete endpoints
-`API/Controllers/ProductControllers.cs`
+    `API/Controllers/ProductControllers.cs`
+
 ```
 // update product
     // PUT api/products/1
@@ -278,7 +303,7 @@ public class ProductsController : ControllerBase
         context.Entry(product).State = EntityState.Modified;
 
         await context.SaveChangesAsync();
-        
+
         return NoContent();
     }
 
@@ -306,35 +331,37 @@ public class ProductsController : ControllerBase
 API Architecture
 <hr>
 
-` Application archeticture `
-` The Repository Pattern `
-` Seeding Data `
-` Migrations and Startup `
+`Application archeticture`
+`The Repository Pattern`
+`Seeding Data`
+`Migrations and Startup`
 
 19. Introduction to the repository pattern
 
-- The Repository Pattern - Goals
-` Decouple business code from data access `
-` Separation of concerns `
-` Minimise duplicate query logic`
-` Testability `
+-  The Repository Pattern - Goals
+   `Decouple business code from data access`
+   `Separation of concerns`
+   ` Minimise duplicate query logic`
+   `Testability`
 
-- The Repository pattern - Why use it?
-` Avoid messy controllers `
-` Simplified testing `
-` Increased abstraction `
-` Maintainability ` 
-` Reduced duplicated code ` 
+-  The Repository pattern - Why use it?
+   `Avoid messy controllers`
+   `Simplified testing`
+   `Increased abstraction`
+   `Maintainability`
+   `Reduced duplicated code`
 
-- The Repository pattern - Downsides?
-` Abstraction of an abstraction ` 
-` Optimization challenges `
-` Optimization challenges `
+-  The Repository pattern - Downsides?
+   `Abstraction of an abstraction`
+   `Optimization challenges`
+   `Optimization challenges`
 
 20. Creating the repository interface and implementation class
-` Solution Explorer -> Core/Interfaces ` 
-` Solution Explorer -> Core/Interfaces/IProductRepository.cs ` 
-- IProductRepository.cs
+    `Solution Explorer -> Core/Interfaces`
+    `Solution Explorer -> Core/Interfaces/IProductRepository.cs`
+
+-  IProductRepository.cs
+
 ```
 using Core.Entities;
 namespace Core.Interfaces;
@@ -351,29 +378,35 @@ public interface IProductRepository
 
 }
 ```
-- implement the Interface IProductRepository
-` Solution Explorer -> Infrastructure/Data/ProductRepository.cs `
-` ProductRepository.cs`
-` vscode: highlight + quick fix select-> implement interface`
+
+-  implement the Interface IProductRepository
+   `Solution Explorer -> Infrastructure/Data/ProductRepository.cs`
+   ` ProductRepository.cs`
+   ` vscode: highlight + quick fix select-> implement interface`
+
 ```
-public class ProductRepository : IProductRepository // <-Highlight this 
-``` 
+public class ProductRepository : IProductRepository // <-Highlight this
+```
+
 `it  will generate default scafolding content in  ProductRepository.cs `
-- Add ProductREPOSITORY as service in PROGRAM CLASS
-` Program.cs `
+
+-  Add ProductREPOSITORY as service in PROGRAM CLASS
+   `Program.cs`
+
 ```
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 ```
 
 21. Implementing the repository methods
 
-` infrastructure/Data/ProductRepository.cs `
-` context -> create & assign field 'context' `
-` ProductRepository -> use primary constructor `
+`infrastructure/Data/ProductRepository.cs`
+`context -> create & assign field 'context'`
+`ProductRepository -> use primary constructor`
 remove `private readonly StoreContext context = context; `
 
 22. Using the repository in the controller
-` API/Controller/ProductsControllers.cs`
+    ` API/Controller/ProductsControllers.cs`
+
 ```
 using Core.Entities;
 using Core.Interfaces;
@@ -393,11 +426,11 @@ public class ProductsController(IProductRepository repo) : ControllerBase
     // {
     //     this.context = context;
     // }
-    
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts()
     {
-      // return a product list  
+      // return a product list
     return Ok(await repo.GetProductsAsync());
 
     }
@@ -416,7 +449,7 @@ public class ProductsController(IProductRepository repo) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(Product product)
     {
-        
+
         repo.AddProduct(product);
         if(await repo.SaveChangesAsync())
         {
@@ -479,15 +512,17 @@ public class ProductsController(IProductRepository repo) : ControllerBase
     }
 }
 ```
+
 `Check Api endpoints in PostMan`
 
 23. Seeding data
-` CA/seed data/delivery.json`
-` CA/seed data/products.json`
-` add = Infrastructure/Data/SeedData/delivery.json`
-` add = Infrastructure/Data/SeedData/products.json`
+    ` CA/seed data/delivery.json`
+    ` CA/seed data/products.json`
+    ` add = Infrastructure/Data/SeedData/delivery.json`
+    ` add = Infrastructure/Data/SeedData/products.json`
 
 ` create = Infrastructure/Data/StoreContextSeed.json`
+
 ```
 using System;
 using System.Text.Json;
@@ -502,7 +537,7 @@ public class StoreContextSeed
         if(!context.Products.Any())
         {
             var productsData = await File.ReadAllTextAsync("../Infrastructure/Data/SeedData/products.json");
-            
+
             var products = JsonSerializer.Deserialize<List<Product>>(productsData);
 
             if(products == null) return;
@@ -513,7 +548,8 @@ public class StoreContextSeed
 }
 ```
 
-` Program.cs `
+`Program.cs`
+
 ```
 app.MapControllers();
 
@@ -535,18 +571,17 @@ app.Run();
 ```
 
 ` local development server: shutdown API dotnet watch/run`
-` cd API/ then$: ' dotnet ef database drop -p Infrastructure -s API ' `
+`cd API/ then$: ' dotnet ef database drop -p Infrastructure -s API '`
 encounter issue
-` Unable to retrieve project metadata. Ensure it's an SDK-style project. If you're using a custom BaseIntermediateOutputPath or MSBuildProjectExtensionsPath values, Use the --msbuildprojectextensionspath option. `
+`Unable to retrieve project metadata. Ensure it's an SDK-style project. If you're using a custom BaseIntermediateOutputPath or MSBuildProjectExtensionsPath values, Use the --msbuildprojectextensionspath option.`
 
 solution on encounter issue:
 ` reason I encounter this error is that I was in API I should be in the root folder of Skinet => 'cd ..'`
 
 `if successfully drop data from database 'cd api' again then run 'dotnet watch'`
 
-
 24. Getting the brands and types
-` Core/Interface/IProductRepository.cs `
+    `Core/Interface/IProductRepository.cs`
 
 ```
 public interface IProductRepository
@@ -559,8 +594,9 @@ Task<IReadOnlyList<string>> GetTypesAsync();
 implement
 
 ` Infrastructure/Data/ProductRepository.cs`
+
 ```
-// IProductRepository => Implement interface 
+// IProductRepository => Implement interface
 public class ProductRepository(StoreContext context) : IProductRepository
 {
 ...
@@ -576,10 +612,12 @@ public class ProductRepository(StoreContext context) : IProductRepository
             .Distinct()
             .ToListAsync();
     }
- ...   
+ ...
 }
 ```
-` API/Controllers/ProductsController.cs `
+
+`API/Controllers/ProductsController.cs`
+
 ```
 public class ProductsController(IProductRepository repo) : ControllerBase
 {
@@ -598,11 +636,13 @@ public class ProductsController(IProductRepository repo) : ControllerBase
 ...
 }
 ```
+
 ` Postman API testing section 3 - Get Products Brands & Get Product Types`
 
 25. Filtering the products by brand = FF
 
-` IProductRepository.cs `
+`IProductRepository.cs`
+
 ```
 public interface IProductRepository
 {
@@ -611,10 +651,12 @@ public interface IProductRepository
     ...
 }
 ```
+
 ` ProductRepository.cs`
+
 ```
     public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type)
-    {   
+    {
         var query = context.Products.AsQueryable();
 
         if(!string.IsNullOrWhiteSpace(brand))
@@ -629,30 +671,35 @@ public interface IProductRepository
 ```
 
 ` ProductsController.cs`
+
 ```
 [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type)
     {
-      // return a product list  
+      // return a product list
     return Ok(await repo.GetProductsAsync(brand,type));
 
     }
 ```
+
 ` Test it in Postman: Get Products by Brand or Type`
+
 ```
-{{url}}/api/products?brand=React 
+{{url}}/api/products?brand=React
 or
 {{url}}/api/products?type=boards
 ```
 
 ###### 198. Creating the order components
 
-` IProductRepository.cs `
+`IProductRepository.cs`
+
 ```
 Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type, string? sort);
 ```
 
-` ProductRepository.cs `
+`ProductRepository.cs`
+
 ```
 public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type, string? sort)
 {
@@ -668,7 +715,8 @@ public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string
 }
 ```
 
-` ProductsController.cs `
+`ProductsController.cs`
+
 ```
 [ApiController]
 [Route("api/[controller]")]
@@ -678,7 +726,7 @@ public class ProductsController(IProductRepository repo) : ControllerBase
  [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
     {
-      // return a product list  
+      // return a product list
     return Ok(await repo.GetProductsAsync(brand,type, sort));
 
     }
@@ -693,20 +741,21 @@ public class ProductsController(IProductRepository repo) : ControllerBase
 ``
 
 #### The specification Pattern
+
 <hr>
 
 ###### 28. Introduction
 
-` Create a generic repository `
-` Specification pattern `
-` Using the specification pattern `
-` Using the debugger `
-` Shaping data `
+`Create a generic repository`
+`Specification pattern`
+`Using the specification pattern`
+`Using the debugger`
+`Shaping data`
 
-- `about Generics`
-    - `Been around shice C# 2.0 (2002)`
-    - `Help avoid duplicate code`
-    - `Type safety`
+-  `about Generics`
+   -  `Been around shice C# 2.0 (2002)`
+   -  `Help avoid duplicate code`
+   -  `Type safety`
 
 ##### Generics - We are already using
 
@@ -724,12 +773,15 @@ public class ProductsController(IProductRepository repo) : ControllerBase
 
     // => <Product>
 ```
+
 ```
     services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnections)));
-    
+
     // => <StoreContext>
 ```
+
 ##### Generic Repository
+
 ```
 public interface IGenericRepository<T> where T: BaseEntity
 {
@@ -739,8 +791,11 @@ public interface IGenericRepository<T> where T: BaseEntity
 
 // => <T> or T
 ```
+
 ##### Generic Expressions:
+
 ###### Product Repository
+
 ```
 public aync Task<IReadOnlyList<Product>> GetProductsContainingRed()
 {
@@ -749,7 +804,9 @@ public aync Task<IReadOnlyList<Product>> GetProductsContainingRed()
         .ToListAsync();
 }
 ```
+
 ###### Generic Repository
+
 ```
 public aync Task<IReadOnlyList<T>> ListAllAsync()
 {
@@ -759,13 +816,16 @@ public aync Task<IReadOnlyList<T>> ListAllAsync()
         // => p.Name error or there is a change here.
 }
 ```
-` Generic Repository can do a simple things `
-` but when it comes to more complex queries  bearing in mind for Generic Repositories 'I have a hundred queries' `
+
+`Generic Repository can do a simple things`
+`but when it comes to more complex queries  bearing in mind for Generic Repositories 'I have a hundred queries'`
 
 ###### 29. Creating a generic repository
+
 `Generic Version of IProductRepository.cs & ProductRepository.cs`
 
 `Core/Interfaces/IGenericRepository.cs`
+
 ```
 using System;
 using Core.Entities;
@@ -774,7 +834,7 @@ namespace Core.Interfaces;
 
 public interface IGenericRepository<T> where T : BaseEntity
 {
-    Task<T?> GetByIdAsync(int id); 
+    Task<T?> GetByIdAsync(int id);
     Task<IReadOnlyList<T>> ListAllAsync();
     void Add(T entity);
     void Update(T entity);
@@ -784,8 +844,11 @@ public interface IGenericRepository<T> where T : BaseEntity
 }
 
 ```
+
 ###### implementation
+
 `Infrastructure/Data/GenericRepository.cs`
+
 ```
 using System;
 using Core.Entities;
@@ -832,8 +895,11 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
 }
 
 ```
-` implement the interface - highlight this- IGenericRepository `
+
+`implement the interface - highlight this- IGenericRepository`
+
 ##### Add to service in program.cs
+
 ```
 // services section
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -841,7 +907,8 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 
 ###### 30. Implementing the generic repository methods
 
-` Infrastructure/Data/GenericRepository.cs `
+`Infrastructure/Data/GenericRepository.cs`
+
 ```
 using System;
 using Core.Entities;
@@ -890,8 +957,11 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
 }
 0
 ```
-###### 31. Using the generic repository in the controller 
+
+###### 31. Using the generic repository in the controller
+
 `API/Controllers/ProductsController.cs`
+
 ```
 using Core.Entities;
 using Core.Interfaces;
@@ -904,7 +974,7 @@ namespace API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
-{    
+{
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
     {
@@ -924,9 +994,9 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
     [HttpPost]
     public async Task<ActionResult<Product>> CreateProduct(Product product)
     {
-        
+
         repo.Add(product);
-        
+
         if(await repo.SaveAllAsync())
         {
             return CreatedAtAction("GetProduct", new { id = product.Id }, product);
@@ -973,15 +1043,15 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
-    {   
-        //  TODO: implement method 
+    {
+        //  TODO: implement method
         return Ok();
     }
 
     [HttpGet("types")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
-    {   
-        //  TODO: implement method 
+    {
+        //  TODO: implement method
         return Ok();
     }
 
@@ -992,13 +1062,16 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 }
 
 ```
+
 ###### `Postman checking`
+
 ` Section 4: Specification -> Get Products by Brand`
 
 ###### 32. Introduction to the specification pattern
 
-` Specification pattern `
-` Generic Repository is an Anti-Pattern! `
+`Specification pattern`
+`Generic Repository is an Anti-Pattern!`
+
 ```
 public interface IRepository<T>
 {
@@ -1007,7 +1080,7 @@ public interface IRepository<T>
     T GetByID(int id);
     void Add(T item);
     void Update(T item);
-    void Delete(T item); 
+    void Delete(T item);
 }
 
 //FindAsync(Expression<Func<T, bool>> query); // FindAsync = Leaky abstraction or too generic?
@@ -1027,7 +1100,7 @@ public interface IRepository<T>
 ```
 
 ```
----------------------------  
+---------------------------
 |   Specification:        |
 |   that have a brand     |
 |   of 'react' and are a  |
@@ -1035,7 +1108,7 @@ public interface IRepository<T>
 ---------------------------
             |
             | down arrow
----------------------------  
+---------------------------
 |                         |
 |                         | Generic Repository
 |  ListAsync(specifation) |
@@ -1043,11 +1116,11 @@ public interface IRepository<T>
 |                         |
 ---------------------------
     spec |       | IQueryable<T>
-         |       | 
+         |       |
 downarrow|       | up arrow
----------------------------  
+---------------------------
 |                         |
-|                         | 
+|                         |
 |      Evaluator          |
 |                         |
 |                         |
@@ -1055,7 +1128,9 @@ downarrow|       | up arrow
 ```
 
 ###### 33. Setting up the specification classes
-` Core/Interfaces/ISpecification.cs `
+
+`Core/Interfaces/ISpecification.cs`
+
 ```
 using System;
 using System.Linq.Expressions;
@@ -1067,12 +1142,14 @@ public interface ISpecification<T>
 }
 
 ```
-- create folder name
-` Core/Specifications `
-` Core/Specifications/BaseSpecifications.cs `
-` implement the interface `
-` create and assign field 'criteria' `
-` BaseSpecifications(Expression< - highlight Expression - Use primary constructor `
+
+-  create folder name
+   `Core/Specifications`
+   `Core/Specifications/BaseSpecifications.cs`
+   `implement the interface`
+   `create and assign field 'criteria'`
+   `BaseSpecifications(Expression< - highlight Expression - Use primary constructor`
+
 ```
 using System;
 using System.Linq.Expressions;
@@ -1088,6 +1165,7 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>> criteria) : ISpecif
 ```
 
 ` Infrastructure/Data/SpecificationEvaluator.cs`
+
 ```
 using System;
 using Core.Entities;
@@ -1105,14 +1183,16 @@ public class SpecificationEvaluator<T> where T: BaseEntity
         }
 
         return query;
-        
+
     }
 }
 
 ```
+
 ###### 34. Updating the repository to use the specification
 
-` Update Core/Interfaces/IGenericRepository.cs `
+`Update Core/Interfaces/IGenericRepository.cs`
+
 ```
 public interface IGenericRepository<T> where T : BaseEntity
 {
@@ -1122,8 +1202,10 @@ public interface IGenericRepository<T> where T : BaseEntity
     //...
 }
 ```
-` Update Infrastructure/Data/GenericRepository.cs `
-` IGenericRepository = Implement generic methods by Implement Interface `
+
+`Update Infrastructure/Data/GenericRepository.cs`
+`IGenericRepository = Implement generic methods by Implement Interface`
+
 ```
 public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
 {
@@ -1131,7 +1213,7 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
     {
         return await ApplySpecification(spec).FirstOrDefaultAsync();
     }
-    //... 
+    //...
 
     public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
     {
@@ -1146,9 +1228,10 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
 
 }
 ```
+
 ###### 35. Using the specification pattern
 
-` create Core/Specification/ProductSpecification.cs -> start `
+`create Core/Specification/ProductSpecification.cs -> start`
 
 ```
 using Core.Entities;
@@ -1161,7 +1244,8 @@ public class ProductSpecification : BaseSpecifications<Product>
 
 ```
 
-` adjustment to Core/Specifications/BaseSpecification.cs `
+`adjustment to Core/Specifications/BaseSpecification.cs`
+
 ```
 using System.Linq.Expressions;
 using Core.Interfaces;
@@ -1178,7 +1262,8 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>? criteria) : ISpeci
 }
 ```
 
-` adjust code in  Core/Interaces/ISpecification.cs `
+`adjust code in  Core/Interaces/ISpecification.cs`
+
 ```
 using System.Linq.Expressions;
 namespace Core.Interfaces;
@@ -1190,23 +1275,24 @@ public interface ISpecification<T>
 // making it optional by adding in bool>>? <--
 ```
 
-` continue -> create Core/Specification/ProductSpecification.cs `
+`continue -> create Core/Specification/ProductSpecification.cs`
 
 ```
 //...
 public class ProductSpecification : BaseSpecifications<Product>
 {
-    // traditional constructor 
-    public ProductSpecification(string? brand, string? type) : base(x => 
+    // traditional constructor
+    public ProductSpecification(string? brand, string? type) : base(x =>
         (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
         (string.IsNullOrWhiteSpace(type) || x.Type == type))
     {
 
-    }    
+    }
 }
 ```
 
-` update API/Controllers/ProductsController.cs `
+`update API/Controllers/ProductsController.cs`
+
 ```
 //...
 [ApiController]
@@ -1223,10 +1309,12 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 }
 ```
 
-` then test Postman Section 4. Specification - Get Products by Brand & Get Products by Type `
+`then test Postman Section 4. Specification - Get Products by Brand & Get Products by Type`
 
 ###### 36. Adding sorting to the specification
-` update Core/Interfaces/ISpecification.cs `
+
+`update Core/Interfaces/ISpecification.cs`
+
 ```
 using System.Linq.Expressions;
 namespace Core.Interfaces;
@@ -1237,7 +1325,9 @@ public interface ISpecification<T>
     Expression<Func<T, object>>? OrderByDescending { get; }
 }
 ```
+
 ` Core/Specifications/BaseSpecification.cs`
+
 ```
 using System.Linq.Expressions;
 using Core.Interfaces;
@@ -1247,7 +1337,7 @@ namespace Core.Specifications;
 public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
 {
     //...
-    public Expression<Func<T, object>>? OrderBy {get; private set;} 
+    public Expression<Func<T, object>>? OrderBy {get; private set;}
     public Expression<Func<T, object>>? OrderByDescending {get; private set;}
 
     protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
@@ -1262,13 +1352,15 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
 
         // incorrect
         // OrderBy = orderByDescExpression; // encounter issue seen after the testing
-       
+
     }
 }
 ```
+
 ` Evaluate our expression from BaseSpecification and apply it to the query doing that to our SpecificationEvaluator`
 
-` update Infrastructure/Data/SpecificationEvaluator.cs `
+`update Infrastructure/Data/SpecificationEvaluator.cs`
+
 ```
 using Core.Entities;
 using Core.Interfaces;
@@ -1285,18 +1377,20 @@ public class SpecificationEvaluator<T> where T: BaseEntity
         {
             query = query.OrderBy(spec.OrderBy);
         }
-        
+
         if(spec.OrderByDescending != null)
         {
             query = query.OrderByDescending(spec.OrderByDescending);
         }
 
         return query;
-        
+
     }
 }
 ```
-` update Core/Specifications/ProductSpecification.cs `
+
+`update Core/Specifications/ProductSpecification.cs`
+
 ```
 using Core.Entities;
 
@@ -1304,8 +1398,8 @@ namespace Core.Specifications;
 
 public class ProductSpecification : BaseSpecifications<Product>
 {
-    // traditional constructor 
-    public ProductSpecification(string? brand, string? type, string? sort) : base(x => 
+    // traditional constructor
+    public ProductSpecification(string? brand, string? type, string? sort) : base(x =>
         (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
         (string.IsNullOrWhiteSpace(type) || x.Type == type))
     {
@@ -1321,10 +1415,12 @@ public class ProductSpecification : BaseSpecifications<Product>
                 AddOrderBy(x => x.Name);
                 break;
         }
-    }    
+    }
 }
 ```
+
 ` Update API/Controllers/ProductsController.cs file`
+
 ```
 //more codes top ....
 
@@ -1343,16 +1439,20 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
     //more codes below ....
 }
 ```
-##### Sorting/Filtering Specificaton by Checking API through Postman 
-- ` check API through postman section 4 - Specification - 'Get Products' check if the filter is in Alphabetical order`
-- ` check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceAsc price upwards from smallest to highest `
 
-##### !! Issue Encounter & Solution !!: 
+##### Sorting/Filtering Specificaton by Checking API through Postman
+
+-  ` check API through postman section 4 - Specification - 'Get Products' check if the filter is in Alphabetical order`
+-  `check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceAsc price upwards from smallest to highest`
+
+##### !! Issue Encounter & Solution !!:
+
 ` check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceDesc price downwards from highest to lowest ! it got some bugs = because of copy and paste` <br>
 
-- ` solution check: Infrastructure/Data/SpecificationEvaluator.cs -looks good `
-- ` solution check: Core/Specifications/ProductSpecification.cs -looks good `
-- ` solution check: Core/Specifications/BaseSpecification.cs -the issue is here `
+-  `solution check: Infrastructure/Data/SpecificationEvaluator.cs -looks good`
+-  `solution check: Core/Specifications/ProductSpecification.cs -looks good`
+-  `solution check: Core/Specifications/BaseSpecification.cs -the issue is here`
+
 ```
 //...
 public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
@@ -1364,18 +1464,20 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
     }
 }
 ```
-- `check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceDesc price downwards from highest to lowest - functionally good`
 
+-  `check API through postman section 4 - Specification - 'Get Products sorted by Price' check {{url}}/api/products?sort=priceDesc price downwards from highest to lowest - functionally good`
 
 ###### 37. Using the debugger
 
-` creating debugger - VSCode left handside - 'Run & Debug' -> create a launch.json file` 
-` select c# `
+` creating debugger - VSCode left handside - 'Run & Debug' -> create a launch.json file`
+`select c#`
 ` launch.json`
-` select add Configuration button + ` 
-- `'.NET: attach to .NET process' `
-` select add Configuration button + ` 
-- `'.NET: launch C# project' `
+`select add Configuration button +`
+
+-  `'.NET: attach to .NET process' `
+   `select add Configuration button +`
+-  `'.NET: launch C# project' `
+
 ```
 // default
 "configurations": [
@@ -1394,7 +1496,9 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
 
     ]
 ```
+
 ###### `update to`
+
 ```
 // correction
    "configurations": [
@@ -1411,28 +1515,35 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
         }
     ]
 ```
-` then create/assign breakpoint in this case its  ProductsController.cs line 18 `
+
+`then create/assign breakpoint in this case its  ProductsController.cs line 18`
+
 ```
   var spec = new ProductSpecification(brand, type, sort);
 ```
+
 ` click debug and run icon - search API and select it then also select .NET Core Attach`
 ` hit green play icon`
 
 ` test in postman`
-` Get Products sorted by price `
+`Get Products sorted by price`
+
 ```
 {{url}}/api/products?sort=priceDesc
-to 
+to
 {{url}}/api/products?sort=priceDesc&type=boards
 ```
+
 ` 'step into' ProductsControllers.cs`
 
-` - Flow of all and correlation about how data is working behind the scene using vscode debugger `
+`- Flow of all and correlation about how data is working behind the scene using vscode debugger`
 
 ###### 38. Adding projection to the spec part 1
-` Enhancing the specification pattern `
+
+`Enhancing the specification pattern`
 
 `update /Core/Interfaces/ISpecification.cs`
+
 ```
 //other function on top
 public interface ISpecification<T,TResult> : ISpecification<T>
@@ -1442,8 +1553,9 @@ public interface ISpecification<T,TResult> : ISpecification<T>
 ```
 
 `update /Core/Specifcations/BaseSpecification.cs`
+
 ```
-// other function on top 
+// other function on top
 public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria) : BaseSpecifications<T>(criteria), ISpecification<T, TResult>
 {
     public Expression<Func<T, TResult>>? Select {get; private set; }
@@ -1453,7 +1565,9 @@ public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria)
     }
 }
 ```
+
 `update Infrastructure/Data/SpecificationEvaluator.cs `
+
 ```
 public class SpecificationEvaluator<T> where T: BaseEntity
 {
@@ -1469,26 +1583,27 @@ public class SpecificationEvaluator<T> where T: BaseEntity
         {
             query = query.OrderBy(spec.OrderBy);
         }
-        
+
         if(spec.OrderByDescending != null)
         {
             query = query.OrderByDescending(spec.OrderByDescending);
         }
 
-        var selectQuery = query as IQueryable<TResult>;  
+        var selectQuery = query as IQueryable<TResult>;
         if(spec.Select != null)
         {
             selectQuery = query.Select(spec.Select);
         }
         return selectQuery ?? query.Cast<TResult>();
-        
+
     }
 }
 ```
 
 ###### 39. Adding projection to the spec part 2
 
-` update Core/Interfaces/IGenericRepository.cs `
+`update Core/Interfaces/IGenericRepository.cs`
+
 ```
 public interface IGenericRepository<T> where T : BaseEntity
 {
@@ -1496,11 +1611,13 @@ public interface IGenericRepository<T> where T : BaseEntity
 
     Task<TResult?> GetEntityWithSpec<TResult>(ISpecification<T, TResult> spec);
     Task<IReadOnlyList<TResult>> ListAsync<TResult>(ISpecification<T, TResult> spec);
-    
+
     // more code on below
 }
 ```
-` update Infrastructure/Data/GenericRepository.cs `
+
+`update Infrastructure/Data/GenericRepository.cs`
+
 ```
 // implementing interface 'IGenericRepository'
 
@@ -1522,8 +1639,11 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
     }
 }
 ```
+
 ###### 40. Adding projection to the spec part 3
-` update Core/Interface/ISpecification.cs `
+
+`update Core/Interface/ISpecification.cs`
+
 ```
 public interface ISpecification<T>
 {
@@ -1531,7 +1651,9 @@ public interface ISpecification<T>
 
 }
 ```
-` update Core/Specifications/BaseSpecification.cs `
+
+`update Core/Specifications/BaseSpecification.cs`
+
 ```
 public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpecification<T>
 {
@@ -1545,12 +1667,14 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
     }
 }
 ```
-` update Infrastructure/Data/SpecificationEvaluator.cs `
+
+`update Infrastructure/Data/SpecificationEvaluator.cs`
+
 ```
 public class SpecificationEvaluator<T> where T: BaseEntity
 {
     public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
-    {   
+    {
         // more code on top
 
         if(spec.IsDistinct)
@@ -1558,7 +1682,7 @@ public class SpecificationEvaluator<T> where T: BaseEntity
             query = query.Distinct();
         }
 
-        return query;   
+        return query;
     }
 
     public static IQueryable<TResult> GetQuery<TSpec, TResult>(IQueryable<T> query, ISpecification<T, TResult> spec)
@@ -1571,11 +1695,13 @@ public class SpecificationEvaluator<T> where T: BaseEntity
         }
 
         return selectQuery ?? query.Cast<TResult>();
-        
+
     }
 }
 ```
+
 `Adding new file at Core/Specifications/BrandListSpecification.cs`
+
 ```
 using Core.Entities;
 
@@ -1590,7 +1716,9 @@ public class BrandListSpecification : BaseSpecifications<Product, string>
  }
 }
 ```
-` Note: Error on BrandListSpecification(){...} to fixed it in BaseSpecification.cs `
+
+`Note: Error on BrandListSpecification(){...} to fixed it in BaseSpecification.cs`
+
 ```
 public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria) : BaseSpecifications<T>(criteria), ISpecification<T, TResult>
 {
@@ -1598,7 +1726,9 @@ public class BaseSpecifications<T, TResult>(Expression<Func<T, bool>>? criteria)
     //more code below...
 }
 ```
+
 `Adding new file at Core/Specifications/TypeListSpecification.cs`
+
 ```
 using Core.Entities;
 namespace Core.Specifications;
@@ -1606,12 +1736,13 @@ namespace Core.Specifications;
 public class TypeListSpecification : BaseSpecifications<Product, string>
 {
     public TypeListSpecification()
-    {   
+    {
         AddSelect(x => x.Type);
         AppyDistinct();
     }
 }
 ```
+
 ` update ProductsController.cs`
 
 ```
@@ -1625,7 +1756,7 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
-    {   
+    {
         var spec = new BrandListSpecification();
 
         return Ok(await repo.ListAsync(spec));
@@ -1633,7 +1764,7 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
     [HttpGet("types")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
-    {   
+    {
         var spec = new TypeListSpecification();
 
         return Ok(await repo.ListAsync(spec));
@@ -1642,53 +1773,62 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
     //...
 }
 ```
-` check in postman `
-` section 4 - Specification `
-- ` Get Product Brands  - {{url}}/api/products/brands `
-- ` Get Product Types  - {{url}}/api/products/types `
+
+`check in postman`
+`section 4 - Specification`
+
+-  `Get Product Brands  - {{url}}/api/products/brands`
+-  `Get Product Types  - {{url}}/api/products/types`
 
 ###### 41. Summary
-- Creating a generic repository
-- Specification pattern
-- Using the specification pattern
-- Using the debugger
-- Shaping data
 
-- FAQs
-` Question: This is over engineering in action! `
-` Answer; True for now, but we do now have a repository for every entity we create. Imagine we have 100 or 1000 entities, then we have just creatd repositories for all of them. `
+-  Creating a generic repository
+-  Specification pattern
+-  Using the specification pattern
+-  Using the debugger
+-  Shaping data
 
-` its reusable for every across every future project creating all the example are all generic and reuseable. `
+-  FAQs
+   `Question: This is over engineering in action!`
+   `Answer; True for now, but we do now have a repository for every entity we create. Imagine we have 100 or 1000 entities, then we have just creatd repositories for all of them.`
+
+`its reusable for every across every future project creating all the example are all generic and reuseable.`
+
 <hr>
 
 ### Section 5: Sorting, Filtering, Searching & Pagination
---- 
+
+---
+
 ###### 42. Introduction
-- API Sorting, Search, Filtering, & Paging
-    - ` Sorting `
-    - ` Filtering `
-    - ` Searching `
-    - ` Paging `
 
-- Goal: 
-``` To be able to implement sorting, searching and pagination functionality in a list using the Specification parttern ```
+-  API Sorting, Search, Filtering, & Paging
 
-- Pagination
-    - ` Performance `
-    - ` Parameters passed by query string: api/products?pageNumber=2&pageSize=5  `
-    - ` Page size should be limited `
-    - ` We should always page results `
-- Deferred Execution
-    - ` Query commands are stored in a variable`
-    - ` Execution of the query is deffered `
-    - ` IQueryable<T> creates an expression tree `
-    - ` Execution:  `
-        - ` ToList(), ToArrya(), ToDictionary()  `
-        - ` Count() or other singleton queries  `
+   -  `Sorting`
+   -  `Filtering`
+   -  `Searching`
+   -  `Paging`
+
+-  Goal:
+   `To be able to implement sorting, searching and pagination functionality in a list using the Specification parttern`
+
+-  Pagination
+   -  `Performance`
+   -  `Parameters passed by query string: api/products?pageNumber=2&pageSize=5 `
+   -  `Page size should be limited`
+   -  `We should always page results`
+-  Deferred Execution
+   -  ` Query commands are stored in a variable`
+   -  `Execution of the query is deffered`
+   -  `IQueryable<T> creates an expression tree`
+   -  `Execution: `
+      -  `ToList(), ToArrya(), ToDictionary() `
+      -  `Count() or other singleton queries `
 
 ###### 43. Creating product spec parameters
 
-` create Core/Specifications/ProductSpecParams.cs `
+`create Core/Specifications/ProductSpecParams.cs`
+
 ```
 // prop Full
 using System;
@@ -1701,7 +1841,7 @@ public class ProductSpecParams
    public List<string> Brands
    {
         get => _brands; // type=boards, gloves
-        set 
+        set
         {
             _brands = value.SelectMany(x => x.Split(',', StringSplitOptions.RemoveEmptyEntries)).ToList();
         }
@@ -1711,7 +1851,7 @@ public class ProductSpecParams
    public List<string> Types
    {
         get => _types;
-        set 
+        set
         {
             _types = value.SelectMany(x => x.Split(',', StringSplitOptions.RemoveEmptyEntries)).ToList();
         }
@@ -1720,19 +1860,21 @@ public class ProductSpecParams
    public string? Sort { get; set; }
 }
 ```
+
 `update Core/Specifications/ProductSpecifications.cs `
+
 ```
 public class ProductSpecification : BaseSpecifications<Product>
 {
     /* old code
-    public ProductSpecification(string? brand, string? type, string? sort) : base(x => 
+    public ProductSpecification(string? brand, string? type, string? sort) : base(x =>
         (string.IsNullOrWhiteSpace(brand) || x.Brand == brand) &&
         (string.IsNullOrWhiteSpace(type) || x.Type == type))
      {
         switch (sort)
         //...
     */
-    public ProductSpecification(ProductSpecParams specParams) : base(x => 
+    public ProductSpecification(ProductSpecParams specParams) : base(x =>
         (specParams.Brands.Any() || specParams.Brands.Contains(x.Brand) ) &&
         (specParams.Types.Any() || specParams.Types.Contains(x.Type)))
     {
@@ -1749,17 +1891,19 @@ public class ProductSpecification : BaseSpecifications<Product>
                 AddOrderBy(x => x.Name);
                 break;
         }
-    }    
+    }
 }
 ```
+
 ` going back to ProductsController.cs`
+
 ```
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
 {
     [HttpGet]
-    /* old code 
+    /* old code
     public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
     {
         // var spec = new ProductSpecification(brand, type, sort);
@@ -1778,26 +1922,27 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 }
 ```
 
-` Check api (Postman) at Section 5: Get Products by Brand ` 
-    - `{{url}}/api/products?brands=Angular,React `
+`Check api (Postman) at Section 5: Get Products by Brand` - `{{url}}/api/products?brands=Angular,React `
 
-` Get Products by Brand and Types ` 
-    - `{{url}}/api/products?brands=Angular,React&types=Boots,Gloves `
-
+`Get Products by Brand and Types` - `{{url}}/api/products?brands=Angular,React&types=Boots,Gloves `
 
 ###### 44. Adding pagination part 1
-` update Infrastructure/Data/ProductRepository.cs `
+
+`update Infrastructure/Data/ProductRepository.cs`
+
 ```
 public class ProductRepository(StoreContext context) : IProductRepository
 {
     public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type, string? sort)
-    {   
+    {
         //...
         return await query.Skip(5).Take(5).ToListAsync();
     }
 }
 ```
-` update Core/Interface/ISpecification.cs `
+
+`update Core/Interface/ISpecification.cs`
+
 ```
 public interface ISpecification<T>
 {
@@ -1809,7 +1954,8 @@ public interface ISpecification<T>
 }
 ```
 
-` update Core/Specifications/BaseSpecifications.cs `
+`update Core/Specifications/BaseSpecifications.cs`
+
 ```
 // implement interface
 
@@ -1830,14 +1976,15 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
 }
 ```
 
-` update Infrastructure/Data/SpecificationEvaluator.cs `
+`update Infrastructure/Data/SpecificationEvaluator.cs`
+
 ```
 
 
 public class SpecificationEvaluator<T> where T: BaseEntity
 {
     public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
-    {   
+    {
         //...
 
         if(spec.IsPagingEnabled)
@@ -1864,6 +2011,7 @@ public class SpecificationEvaluator<T> where T: BaseEntity
 ```
 
 ###### 45. Adding pagination part 2
+
 `update Core/Specifications/ProductSpecParams.cs`
 
 ```
@@ -1874,19 +2022,21 @@ public class ProductSpecParams
     private int _pageSize = 6;
 
     public int PageSize
-    {   
+    {
         get => _pageSize;
         set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
     }
     //...
 }
 ```
-` update Core/Specifications/ProductSpecification.cs `
+
+`update Core/Specifications/ProductSpecification.cs`
+
 ```
 public class ProductSpecification : BaseSpecifications<Product>
 {
 
-    public ProductSpecification(ProductSpecParams specParams) : base(x => 
+    public ProductSpecification(ProductSpecParams specParams) : base(x =>
         (specParams.Brands.Any() || specParams.Brands.Contains(x.Brand) ) &&
         (specParams.Types.Any() || specParams.Types.Contains(x.Type))
     )
@@ -1898,9 +2048,10 @@ public class ProductSpecification : BaseSpecifications<Product>
 }
 ```
 
-` Create API/RequestHelpers/Pagination.cs `
+`Create API/RequestHelpers/Pagination.cs`
+
 ```
-public class Pagination<T>(int PageIndex, int pageSize, int count, IReadOnlyList<T> data) 
+public class Pagination<T>(int PageIndex, int pageSize, int count, IReadOnlyList<T> data)
 {
     public int PageIndex { get; set; } = PageIndex;
     public int PageSize {get; set;} = pageSize;
@@ -1910,6 +2061,7 @@ public class Pagination<T>(int PageIndex, int pageSize, int count, IReadOnlyList
 ```
 
 ###### 46. Adding pagination part 3
+
 `update Core/Interfaces/IGenericRepository.cs`
 
 ```
@@ -1921,6 +2073,7 @@ public interface IGenericRepository<T> where T : BaseEntity
 ```
 
 `update Core/Insterfaces/ISpecification.cs `
+
 ```
 public interface ISpecification<T>
 {
@@ -1929,7 +2082,8 @@ public interface ISpecification<T>
 }
 ```
 
-` update Core/Specifications/BaseSpecification.cs `
+`update Core/Specifications/BaseSpecification.cs`
+
 ```
 // ISpecification<T> -> implement interface
 
@@ -1947,9 +2101,11 @@ public class BaseSpecifications<T>(Expression<Func<T, bool>>?  criteria) : ISpec
     }
 }
 ```
+
 `update Infrastructure/Data/GenericRepository.cs `
+
 ```
-// IGenericRepository<T> - implement interface 
+// IGenericRepository<T> - implement interface
 
 public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
 {
@@ -1965,7 +2121,9 @@ public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> 
     //...
 }
 ```
+
 `update API/Controllers/ProductsController.cs `
+
 ```
 [ApiController]
 [Route("api/[controller]")]
@@ -1980,7 +2138,7 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
 
         /** new update start here ======= */
         var count = await repo.CountAsync(spec);
-        var pagination = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);        
+        var pagination = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);
 
         return Ok(pagination);
         /** new update end here ======= */
@@ -1988,13 +2146,16 @@ public class ProductsController(IGenericRepository<Product> repo) : ControllerBa
     //...
 }
 ```
-` testing API via Postman Section 5 - Paging, sorting, and filtering : `
-   - ` Get Paged Products Page 0 Size 5 -> {{url}}/api/products?pageSize=3&pageIndex=1 `
-    - ` not showing count: 0 upon testing the api `
 
+`testing API via Postman Section 5 - Paging, sorting, and filtering :`
+
+-  `Get Paged Products Page 0 Size 5 -> {{url}}/api/products?pageSize=3&pageIndex=1`
+-  `not showing count: 0 upon testing the api`
 
 ###### 47. Creating a Base API controller
-` create API/Controllers/BaseApiController.cs `
+
+`create API/Controllers/BaseApiController.cs`
+
 ```
 using API.RequestHelpers;
 using Core.Entities;
@@ -2012,49 +2173,52 @@ public class BaseApiController : ControllerBase
         var items = await repo.ListAsync(spec);
         var count = await repo.CountAsync(spec);
 
-        var pagination = new Pagination<T>(pageIndex, pageSize, count, items);        
+        var pagination = new Pagination<T>(pageIndex, pageSize, count, items);
         return Ok(pagination);
-        
+
     }
 }
 ```
-` to use/update in API/Controllers/ProductsController.cs `
+
+`to use/update in API/Controllers/ProductsController.cs`
+
 ```
 // Derive BaseAPiController
 
 public class ProductsController(IGenericRepository<Product> repo) : BaseApiController
 {
     /* to the code below update : much more cleaner and modularize/ granularize */
-    
+
     return await CreatePageResult(repo, spec, specParams.PageIndex, specParams.PageSize);
 
-    /*  update this page below:  
+    /*  update this page below:
        var products = await repo.ListAsync(spec);
        var count = await repo.CountAsync(spec);
 
-       var pagination = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);        
+       var pagination = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);
 
        return Ok(pagination);
-    */  
+    */
 }
 ```
-- ` Sect. 5 Issue : Solution Sect. 5 Issue `
 
-` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=2&types=boards `
-` testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=1&types=gloves `
+-  `Sect. 5 Issue : Solution Sect. 5 Issue`
 
-   - ` BUG: issue is that count & data : not returning anything. Status: not yet solve !FF `
-   - ` get all products bug not showing after the applying Section 5: Sorting, Filtering, Pagination `
+`testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=2&types=boards`
+`testing API via postman : {{url}}/api/products?pageSize=3&pageIndex=1&types=gloves`
 
+-  `BUG: issue is that count & data : not returning anything. Status: not yet solve !FF`
+-  `get all products bug not showing after the applying Section 5: Sorting, Filtering, Pagination`
 
 ###### 48. Adding the search functionality
 
-` update Core/Specifications/ProductSpecParams.cs `
+`update Core/Specifications/ProductSpecParams.cs`
+
 ```
 public class ProductSpecParams
 {
 
-    //... 
+    //...
     private string? _search;
     public string Search
     {
@@ -2064,13 +2228,15 @@ public class ProductSpecParams
 
 }
 ```
-` update Core/Specifications/ProductSpecification.cs `
+
+`update Core/Specifications/ProductSpecification.cs`
+
 ```
 public class ProductSpecification : BaseSpecifications<Product>
 {
 
-    public ProductSpecification(ProductSpecParams specParams) : base(x => 
-        // update 
+    public ProductSpecification(ProductSpecParams specParams) : base(x =>
+        // update
         (string.IsNullOrEmpty(specParams.Search) || x.Name.ToLower().Contains(specParams.Search)) &&
 
         //...
@@ -2082,16 +2248,18 @@ public class ProductSpecification : BaseSpecifications<Product>
     }
 }
 ```
-` testing in postman GetProducts with search term: {{url}}/api/products?search=red `
 
-` refer back to :  Sect. 5 Issue : for hints `
+`testing in postman GetProducts with search term: {{url}}/api/products?search=red`
+
+`refer back to :  Sect. 5 Issue : for hints`
 ` S`
 
-` Solution Sect. 5 Issue: is in ProductSpecification.cs `
+`Solution Sect. 5 Issue: is in ProductSpecification.cs`
+
 ```
 public class ProductSpecification : BaseSpecifications<Product>
 {
-    public ProductSpecification(ProductSpecParams specParams) : base(x => 
+    public ProductSpecification(ProductSpecParams specParams) : base(x =>
         (string.IsNullOrEmpty(specParams.Search) || x.Name.ToLower().Contains(specParams.Search)) &&
 
          // correction is here .Count == 0
@@ -2112,24 +2280,24 @@ public class ProductSpecification : BaseSpecifications<Product>
 
 ###### git learning or re-learning
 
-- `git log // show time details of each commits `
-- `git certain commit ######`
-- `git reset --hard commit ###### //reset back to a certain save point` 
-- `note: be careful using reset and revert - first you should have branch for it before using the main branch`
-    
+-  `git log // show time details of each commits `
+-  `git certain commit ######`
+-  `git reset --hard commit ###### //reset back to a certain save point`
+-  `note: be careful using reset and revert - first you should have branch for it before using the main branch`
 
 <hr>
 
 ### 6 Error handling on the API
+
 <hr>
 
 ###### 50. Introduction
 
-- Error handling and exceptions
-- Validation errors
-- Http response errors
-- Middleware - catching as defense for handling error
-- CORS
+-  Error handling and exceptions
+-  Validation errors
+-  Http response errors
+-  Middleware - catching as defense for handling error
+-  CORS
 
 ```
  /* Http response codes */
@@ -2142,15 +2310,17 @@ public class ProductSpecification : BaseSpecifications<Product>
     - 500 Internal server error
 ```
 
-###### 51. Adding a test controller for error handling 
-` create API/Controllers/BuggyControllers.cs `
+###### 51. Adding a test controller for error handling
+
+`create API/Controllers/BuggyControllers.cs`
+
 ```
 using Core.Entities;
 using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 public class BuggyController : BaseApiController
-{   
+{
     [HttpGet("unauthorized")]
     public IActionResult GetUnauthorized()
     {
@@ -2182,10 +2352,12 @@ public class BuggyController : BaseApiController
     }
 }
 ```
-` postman checking API: Section 6- Get Notfound , Get Bad Request & Validation Error `
- - ` {{url}}/api/buggy/notfound `
- - ` {{url}}/api/buggy/badrequest `
- - ` {{url}}/api/buggy/validationerror `
+
+`postman checking API: Section 6- Get Notfound , Get Bad Request & Validation Error`
+
+-  `{{url}}/api/buggy/notfound`
+-  `{{url}}/api/buggy/badrequest`
+-  `{{url}}/api/buggy/validationerror`
 
 ###### 52. Exception handling middleware
 
@@ -2194,7 +2366,7 @@ public class BuggyController : BaseApiController
 
 ```
 
-` create API/Errors/ApiErrorResponse.cs `
+`create API/Errors/ApiErrorResponse.cs`
 
 ```
 namespace API.Errors;
@@ -2206,7 +2378,9 @@ public class ApiErrorResponse(int statusCode, string message, string? details)
     public string? Details { get; set; } = details;
 }
 ```
-` create API/Middleware/ExceptionMiddleware.cs `
+
+`create API/Middleware/ExceptionMiddleware.cs`
+
 ```
 // generate the method for HandleExceptionAsync
 
@@ -2230,10 +2404,10 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-        
+
         var response = env.IsDevelopment()
             ? new ApiErrorResponse(context.Response.StatusCode, ex.Message, ex.StackTrace)
-            : new ApiErrorResponse(context.Response.StatusCode, ex.Message, "Internal Server Error"); 
+            : new ApiErrorResponse(context.Response.StatusCode, ex.Message, "Internal Server Error");
 
         var options = new JsonSerializerOptions
         {
@@ -2249,26 +2423,29 @@ public class ExceptionMiddleware(IHostEnvironment env, RequestDelegate next)
 // HandleExceptionAsync make it static
 
 ```
-` going back to API/program.cs class to use the functionality forom ExceptionMiddleware.cs `
+
+`going back to API/program.cs class to use the functionality forom ExceptionMiddleware.cs`
+
 ```
 // Configure the HTTP request pipeline.
 app.UseMiddleware<ExceptionMiddleware>();
-//... 
+//...
 ```
 
-` postman: Get Internal server error = {{url}}/api/buggy/internalerror `
+`postman: Get Internal server error = {{url}}/api/buggy/internalerror`
 
 ###### 53. Validation error responses
-` create API/DTOs/CreateProductDto.cs `
+
+`create API/DTOs/CreateProductDto.cs`
 
 ```
 using System.ComponentModel.DataAnnotations;
 namespace API.DTOs;
 public class CreateProductDto
-{   
+{
     [Required]
     public string Name { get; set; } = string.Empty;
-    
+
     [Required]
     public string Description { get; set; } = string.Empty;
 
@@ -2284,26 +2461,28 @@ public class CreateProductDto
     [Required]
     public string Brand { get; set; } = string.Empty;
 
-    [Range(1, int.MaxValue, ErrorMessage = "Quantity in stock must be at least 1")]    // required doesn't work in number types 
+    [Range(1, int.MaxValue, ErrorMessage = "Quantity in stock must be at least 1")]    // required doesn't work in number types
     public int QuantityInStock { get; set; }
 }
 
 //Products.cs
 //copy to CreateProductDto.cs and modify
-/* old code 
+/* old code
     public required string Name { get; set; }
     public required string Description { get; set; }
     public decimal Price { get; set; }
     public required string PictureUrl { get; set; }
     public required string Type { get; set; }
-    public required string Brand { get; set; }   
+    public required string Brand { get; set; }
     public int QuantityInStock { get; set; }
 */
 ```
-` update BuggyController.cs `
+
+`update BuggyController.cs`
+
 ```
 public class BuggyController : BaseApiController
-{   
+{
 
 [HttpPost("validationerror")]
     public IActionResult GetValidationError(CreateProductDto product)
@@ -2312,10 +2491,13 @@ public class BuggyController : BaseApiController
     }
 }
 ```
-` Postman: Section 6: Get Validation Error =>  {{url}}/api/buggy/validationerror `
+
+`Postman: Section 6: Get Validation Error =>  {{url}}/api/buggy/validationerror`
 
 ###### 54. Adding CORS support on the API
-` update API/Program.cs class  `
+
+`update API/Program.cs class `
+
 ```
 // Add services to the container.
 //...
@@ -2330,25 +2512,30 @@ app.UseMiddleware<ExceptionMiddleware>();
 // must in between | below
 
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-    .WithOrigins("http://localhost:4200", "https://localhost:4200"));  
-    
+    .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+
 // must in between | above
 app.MapControllers();
 
 //...
 ```
-` Postman testing APi: section 6: Check Cors is enabled => {{url}}/api/products => scripts tab `
-- `Scripts tab then on headers tab will see the Access-Control-Allow-Origin: value: https://localhost:4200 `
 
-- ` Sect. 5 Issue | not showing anything on count & data `
+`Postman testing APi: section 6: Check Cors is enabled => {{url}}/api/products => scripts tab`
+
+-  `Scripts tab then on headers tab will see the Access-Control-Allow-Origin: value: https://localhost:4200 `
+
+-  `Sect. 5 Issue | not showing anything on count & data`
 
 ###### 55. Summary
-- Error Handling objective
-    - Goal to handle errors so we can configure the UI in the client for all errors generated by the API 
-    
-    - client side of things
+
+-  Error Handling objective
+
+   -  Goal to handle errors so we can configure the UI in the client for all errors generated by the API
+
+   -  client side of things
 
 ` update Core/Specifications/ProductSpecParams.cs`
+
 ```
 public class ProductSpecParams : PagingParams //<= derive PagingParams.cs>
 {
@@ -2367,7 +2554,9 @@ public class ProductSpecParams : PagingParams //<= derive PagingParams.cs>
     //...
 }
 ```
-` create Core/Specifications/PagingParams.cs `
+
+`create Core/Specifications/PagingParams.cs`
+
 ```
 namespace Core.Specifications;
 public class PagingParams
@@ -2387,71 +2576,72 @@ public class PagingParams
 <hr>
 
 ### 7: Angular Setup
+
 <hr>
 
 ###### 56: Introduction
 
-- Install the Angular CLI
-- Creating the Angular project
-- Setting up VS Code for Angular*
-- Setting up Angular to use HTTPS
-- Adding Angular Material and Tailwind CSS
+-  Install the Angular CLI
+-  Creating the Angular project
+-  Setting up VS Code for Angular\*
+-  Setting up Angular to use HTTPS
+-  Adding Angular Material and Tailwind CSS
 
-- ###### Goal
-- To have a working Angular application running on HTTPS
-- To understand angular standalone components and how we use them to build an app.
+-  ###### Goal
+-  To have a working Angular application running on HTTPS
+-  To understand angular standalone components and how we use them to build an app.
 
-- ###### Angular Release Schedule
-    - Major release every 6 months
-    - 1-3 minor releases for each major release
-    - A patch release build almost every week
-    - At time of recording Angular is on v18
+-  ###### Angular Release Schedule
+   -  Major release every 6 months
+   -  1-3 minor releases for each major release
+   -  A patch release build almost every week
+   -  At time of recording Angular is on v18
 
 ###### 57. Creating the angular project
 
-- [angular.dev](https://angular.dev/)
-- [Angular versioning and releases](https://angular.dev/reference/releases)
-- [Version compatibility](https://angular.dev/reference/versions)
+-  [angular.dev](https://angular.dev/)
+-  [Angular versioning and releases](https://angular.dev/reference/releases)
+-  [Version compatibility](https://angular.dev/reference/versions)
 
-- [The Angular CLI](https://angular.dev/tools/cli)
-- [Setting up the local environment and workspace](https://angular.dev/tools/cli/setup-local)
-    - ` npm install -g @angular/cli `
-    - ` node --version or -v // check node version `
-    - ` npm --version or -v // check npm version `
-    - ` ng version // check angular version `
+-  [The Angular CLI](https://angular.dev/tools/cli)
+-  [Setting up the local environment and workspace](https://angular.dev/tools/cli/setup-local)
 
-- ###### create angular project 
-    - ` ng new client ` 
-    - ` Would you like to share pseudonymous usage data abou: NO `
-    - ` Would you like to share pseudonymous usage data abou: NO `
-    - ` Which stylesheet format would you like to use?: Sass(SCSS) `
-    - ` Do you want to enable Server-Side Rendering (SSR) and Static Site Generation (SSG/Prerendering)?: No `
+   -  `npm install -g @angular/cli`
+   -  `node --version or -v // check node version`
+   -  `npm --version or -v // check npm version`
+   -  `ng version // check angular version`
 
-    - ` ng serve`
-    - ` ng `
-    - ` npm link @angular/cli`
+-  ###### create angular project
 
+   -  `ng new client`
+   -  `Would you like to share pseudonymous usage data abou: NO`
+   -  `Would you like to share pseudonymous usage data abou: NO`
+   -  `Which stylesheet format would you like to use?: Sass(SCSS)`
+   -  `Do you want to enable Server-Side Rendering (SSR) and Static Site Generation (SSG/Prerendering)?: No`
 
+   -  ` ng serve`
+   -  `ng`
+   -  ` npm link @angular/cli`
 
-###### 58. Reviewing the Angular project files 
+###### 58. Reviewing the Angular project files
 
-- just and overview of basic fundamental files in angular
-
+-  just and overview of basic fundamental files in angular
 
 ###### 59. Using HTTPS with the Angular project
 
-- [Mkcertificate](https://github.com/FiloSottile/mkcert) 
-- gitbash: choco install mkcert
-- `cd client`
-- `mkdir ssl`
-- `mkcert localhost`
+-  [Mkcertificate](https://github.com/FiloSottile/mkcert)
+-  gitbash: choco install mkcert
+-  `cd client`
+-  `mkdir ssl`
+-  `mkcert localhost`
 
 ```
 // optional // switching to MS-Edge browser | chrome to test https works better than firefox
 mkcert -install
 ```
 
-- ` client/angular.json `
+-  `client/angular.json`
+
 ```
 "serve":{
     //..
@@ -2463,33 +2653,36 @@ mkcert -install
     //...
 }
 ```
-- `ng serve`
+
+-  `ng serve`
 
 ##### Angular Styling Configuration:
 
 ###### 60. Adding Angular Material and Tailwind CSS
-- [Angular Material UI](https://material.angular.io/)
-- [Angular Material UI](https://material.angular.io/components/categories)
 
-- ` cd client/ then => ng add @angular/material `
-- ` The package @angular/material@19.2.11 will be installed and executed.
-Would you like to proceed? : YES `
-- `Choose a prebuilt theme name, or "custom" for a custom theme: Azure/Blue`
-- `Set up global Angular Material typography styles?: No`
-- `Include the Angular animations module?: Yes`
+-  [Angular Material UI](https://material.angular.io/)
+-  [Angular Material UI](https://material.angular.io/components/categories)
+
+-  `cd client/ then => ng add @angular/material`
+-  `The package @angular/material@19.2.11 will be installed and executed.
+Would you like to proceed? : YES`
+-  `Choose a prebuilt theme name, or "custom" for a custom theme: Azure/Blue`
+-  `Set up global Angular Material typography styles?: No`
+-  `Include the Angular animations module?: Yes`
 
 ###### Installing Tailwind CSS In Angular Project
-- [Install Tailwind CSS with Angular](https://tailwindcss.com/docs/installation/framework-guides/angular)
 
-- side note: For Utility Classes 
-- 
-- ` npm install -D tailwindcss postcss autoprefixer // it does not work anymore `
-- ` npx tailwindcss init // it does not work anymore `
+-  [Install Tailwind CSS with Angular](https://tailwindcss.com/docs/installation/framework-guides/angular)
 
+-  side note: For Utility Classes
+-
+-  `npm install -D tailwindcss postcss autoprefixer // it does not work anymore`
+-  `npx tailwindcss init // it does not work anymore`
 
-- [How to set up Angular & Tailwind CSS 4 in VS Code with Intellisense](https://www.youtube.com/watch?v=s-TAV5pQfcU)
-- `npm install tailwindcss @tailwindcss/postcss postcss --force `
-- `create client/.postcssrc.json
+-  [How to set up Angular & Tailwind CSS 4 in VS Code with Intellisense](https://www.youtube.com/watch?v=s-TAV5pQfcU)
+-  `npm install tailwindcss @tailwindcss/postcss postcss --force `
+-  `create client/.postcssrc.json
+
 ```
 {
   "plugins": {
@@ -2497,13 +2690,15 @@ Would you like to proceed? : YES `
   }
 }
 ```
-- `update client/src/style.scss
+
+-  `update client/src/style.scss
+
 ```
-@import "tailwindcss"; 
+@import "tailwindcss";
 
 /* code on top is working as of this current try out April 25, 2025 */
 
-/* 
+/*
 Code below: No longer works as of this current testing & experimentation
 
 @tailwind base;
@@ -2515,27 +2710,27 @@ Code below: No longer works as of this current testing & experimentation
 
 ###### 61. Adding VS Code extensions for Angular and Tailwind
 
-- ` Extension : Angular Language Service: by angular.dev `
-- ` Extension : Tailwind CSS IntelliSense: by Tailwind Labs tailwindcss.com // For some reason - I restarted the extension but I turns off its auto suggestions`
+-  `Extension : Angular Language Service: by angular.dev`
+-  ` Extension : Tailwind CSS IntelliSense: by Tailwind Labs tailwindcss.com // For some reason - I restarted the extension but I turns off its auto suggestions`
 
 ###### 62. Summary
 
-- ` Installing the Angular CLI `
-- ` Creating the Angular project `
-- ` Setting up VS Code for Angular* `
-- ` Setting up Angular to use HTTPS `
+-  `Installing the Angular CLI`
+-  `Creating the Angular project`
+-  `Setting up VS Code for Angular*`
+-  `Setting up Angular to use HTTPS`
 
 <hr>
 
 ### Section 8: Angular Basics
+
 <hr>
 
-- `Adding components`
-- `Http client module`
-- `Observables => note: doesn't use promise base but observables - its benefits, usage; also there is abetter tools SignalR ` 
-- `Typescript: => type safety like C# and Java better for development at earlier stage`
+-  `Adding components`
+-  `Http client module`
+-  `Observables => note: doesn't use promise base but observables - its benefits, usage; also there is abetter tools SignalR `
+-  `Typescript: => type safety like C# and Java better for development at earlier stage`
 
- 
 ```
 Goal:
 
@@ -2547,10 +2742,10 @@ To understand the basics of observables and Typescript
 
 ###### 64. Setting up the folder structure and creating components
 
-- `create src/app/core/`
-- `create src/app/shared/`
-- `create src/app/features/`
-- `create src/app/layout/`
+-  `create src/app/core/`
+-  `create src/app/shared/`
+-  `create src/app/features/`
+-  `create src/app/layout/`
 
 ```
 cd client/
@@ -2567,8 +2762,11 @@ angular cli commands
 
 - vsCode: Explorer: Compact Folders - uncheck
 ```
+
 ###### 65. Adding a Header component
-- ` udpate client/src/app/layout/header.component.html `
+
+-  `udpate client/src/app/layout/header.component.html`
+
 ```
 <header class="border-b p-3 w-full ">
   <div class="flex align-middle items-center justify-between max-w-screen-2xl mx-auto">
@@ -2589,11 +2787,12 @@ angular cli commands
 </header>
 ```
 
-- ` udpate client/src/app/layout/header.component.ts `
+-  `udpate client/src/app/layout/header.component.ts`
+
 ```
 import { Component } from '@angular/core';
 /* in oder to use the material ui components it need to be importe first then*/
-import { MatIcon} from '@angular/material/icon'; 
+import { MatIcon} from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { MatBadge } from '@angular/material/badge';
 
@@ -2615,18 +2814,20 @@ export class HeaderComponent {
 
 ###### 66. Improving the header component
 
-- ` add images like logo in client/public `
-- ` if a logo recently added would not show - a restart on ng serve will suffice as first step to troubleshoot it `
+-  `add images like logo in client/public`
+-  `if a logo recently added would not show - a restart on ng serve will suffice as first step to troubleshoot it`
 
+-  `update file header.component.scss`
 
-- ` update file header.component.scss `
 ```
 //...
     <div class="flex gap-3 align-middle">
     <a matBadge="5" matBadgeSize="large" class="custom-badge mt-2 mr-2"> // added class="custom-badge mt-2 mr-2"
 //...
 ```
-- ` update file header.component.scss `
+
+-  `update file header.component.scss`
+
 ```
 // for styling of number icon sign badge on top of the cart icon
 .custom-badge .mat-badge-content{
@@ -2636,7 +2837,7 @@ export class HeaderComponent {
   line-height: 24px;
 }
 
-// for styling the cart icon size 
+// for styling the cart icon size
 .custom-badge .mat-icon{
   font-size: 32px;
   width: 32px;
@@ -2644,9 +2845,10 @@ export class HeaderComponent {
 }
 ```
 
-- `styling global css in angular  `
+-  `styling global css in angular  `
 
-- ` client/src/styles.css  `
+-  `client/src/styles.css `
+
 ```
 @use '@angular/material' as mat; /*1*/
 
@@ -2654,7 +2856,7 @@ export class HeaderComponent {
 
 $customTheme: mat.define-theme(); /*2*/
 
-@include mat.core(); /*3*/ 
+@include mat.core(); /*3*/
 
 /* 4 */
 .custom-theme {
@@ -2666,15 +2868,19 @@ $customTheme: mat.define-theme(); /*2*/
   }
 }
 ```
-- ` then implement it in the entire website/app via top level html  `
-- ` client/src/index.html `
+
+-  `then implement it in the entire website/app via top level html `
+-  `client/src/index.html`
+
 ```
 /* add the custom-theme class */
-<html lang="en" class="custom-theme"> 
+<html lang="en" class="custom-theme">
 ```
-- ` incouter some issue: Visual studio code  : Git: fatal: unable to access 'https:/github.com/wilfred05777/skinet2025-NC.git/': Could not resolve proxy: proxy.server.com`
+
+-  ` incouter some issue: Visual studio code  : Git: fatal: unable to access 'https:/github.com/wilfred05777/skinet2025-NC.git/': Could not resolve proxy: proxy.server.com`
+
 ```
-@ Git Bash terminal: 
+@ Git Bash terminal:
 
 Fix Options:
 
@@ -2694,23 +2900,25 @@ git config --global --get https.proxy
 
 ###### 67. Making http requests in Angular
 
-- ["Installing Node using NVM"](https://gist.github.com/MichaelCurrin/5c2d59b2bad4573b26d0388b05ab560e)
-- ` nvm list `
-- ` nvm install 22.15 `
-- ` nvm use 22.5 `
+-  ["Installing Node using NVM"](https://gist.github.com/MichaelCurrin/5c2d59b2bad4573b26d0388b05ab560e)
+-  `nvm list`
+-  `nvm install 22.15`
+-  `nvm use 22.5`
 
-- ` update client/src/app/app.config.ts ` 
+-  `update client/src/app/app.config.ts`
+
 ```
 import { provideHttpClient } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     //...
-    provideHttpClient(),  
+    provideHttpClient(),
   ],
 };
 ```
-- `update client/src/app/app.component.ts`
+
+-  `update client/src/app/app.component.ts`
 
 ```
 //...
@@ -2722,12 +2930,13 @@ export class AppComponent {
   //...
   baseUrl = 'https://localost:5001/api/'
   private http = inject(HttpClient);
-  //... 
+  //...
 
 }
 
-``` 
-- /* implementing observable app.components.ts*/
+```
+
+-  /_ implementing observable app.components.ts_/
 
 ```
 ngOnInit():void {
@@ -2738,12 +2947,14 @@ ngOnInit():void {
   })
 }
 ```
-- ` to test go broswer console `
-- ` encounter error - Cross Origin Request Blocked: on laptop`
-- `update note: working sa desktop node --version 22.13.1` 
 
-- ` /* Display actual product from API to UI(client - angular project) */`
-- `update app.component.ts`
+-  `to test go broswer console`
+-  ` encounter error - Cross Origin Request Blocked: on laptop`
+-  `update note: working sa desktop node --version 22.13.1`
+
+-  ` /* Display actual product from API to UI(client - angular project) */`
+-  `update app.component.ts`
+
 ```
 export class AppComponent implement OnInit{
   //...
@@ -2757,12 +2968,13 @@ export class AppComponent implement OnInit{
 }
 ```
 
-- ` update client/src/app/app.component.html ` 
+-  `update client/src/app/app.component.html`
+
 ```
 /* container will be used connect the global styling*/
 <div class="container mt-6">
   <h2 class="text-3xl font-bold underline">Welcome to {{ title }}</h2>
-  
+
   <ul>
     /* it will loop the product and display each using li*/
 
@@ -2772,19 +2984,23 @@ export class AppComponent implement OnInit{
 
   </ul>
 </div>
-``` 
-- ` update client/src/styles.scss ` 
+```
+
+-  `update client/src/styles.scss`
+
 ```
 //...
 .container {
   @apply mx-auto max-w-screen-2xl
 }
-``` 
+```
 
 ###### 68. Introduction to observables
-- `Note:`
+
+-  `Note:`
+
 ```
-Observable - 
+Observable -
 A sequence of items that arrive asynchronously over time.
 - counter part of promises in javascript
 
@@ -2804,61 +3020,71 @@ Promises
 
 
 Observables                  Cancel
-                         -------X  
+                         -------X
                         /
 ==================< Then ======================
-                        \  Fail             
-                          --------------|------------|-------|--> data                   
+                        \  Fail
+                          --------------|------------|-------|--> data
                            Succeed   subscribe()   map()  filter()
 
 ```
-- ` Observable `
+
+-  `Observable`
+
 ```
  _____________________      GET api/products            ________________
-|                     |------------------------------->|               | 
-| Angular HTTP Client |                                |      API      | 
+|                     |------------------------------->|               |
+| Angular HTTP Client |                                |      API      |
 |_____________________|<-------------------------------|_______________|
  Observable of Products[]  HTTP Response: Products[]
             \
              \
               \  Subscribe
                \ __________________                 ____________________
-                |                  |                |                   | 
+                |                  |                |                   |
                 | Shop Component   |                | Displays data in  |
                 |__________________|                |   the Browser     |
                                                     |___________________|
-``` 
-- ` HTTP, Observables and RxJS `
+```
+
+-  `HTTP, Observables and RxJS`
+
 ```
 1. HTTP Get request from ShopService
 2. Receive the Observable and cast it into a Products Array
 3. Subscribe to the Obeservable from the component
 4. Assign the Products array to a local variable for use in the components template
 ```
-- ` RxJS `
+
+-  `RxJS`
+
 ```
     -Reactive Extensions for JavaScript
     -Utility library for working with observables, similar to lodash or
      underscore for javascript objects and arrays.
     -Uses the pipe() method to chain RxJS operators together
 ```
+
 ###### 69. Introduction to TypeScript
--   ` Typescript ` 
+
+-  `Typescript`
+
 ```
     Pros - Typescript Rocks!        and             Cons - Typescript is Annoying!
     -Strong Typing                                  -More upfront code
     -Object Oriented                                -3rd party libraries
     -Better intellisense                            -Strict mode is...strict! (insurance)
-    -Access Modifiers                               
-    -Future Javascript features                     
-    -Catches silly mistakes in                      
+    -Access Modifiers
+    -Future Javascript features
+    -Catches silly mistakes in
     development
     -3rd party libraries
 ```
 
 ###### 70. Typescript demo
 
-- `create client/src/demo.ts `
+-  `create client/src/demo.ts `
+
 ```
 /* superset of javascript */
 
@@ -2927,7 +3153,8 @@ console.log(todos);
 
 ###### 71. Using Types in our Project
 
-- ` creating Product models -> client/src/app/shared/models/products.ts `
+-  `creating Product models -> client/src/app/shared/models/products.ts`
+
 ```
 export type Product = {
   id: number;
@@ -2955,22 +3182,26 @@ export interface Product1 {
   isFavorite: boolean;
 }
 ```
-- ` creating Paginantion models -> client/src/app/shared/models/pagination.ts `
+
+-  `creating Paginantion models -> client/src/app/shared/models/pagination.ts`
+
 ```
 //<T> is a generics the same with c# but it can also be used in Typescript
-export type Pagination<T> = { 
+export type Pagination<T> = {
   pageIndex: number;
   pageSize: number;
   count: number;
   data: T[];
 }
 ```
-- ` update src/app/app.component.ts `
+
+-  `update src/app/app.component.ts`
+
 ```
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from "./layout/header/header.component";
-import { HttpClient } from '@angular/common/http'; 
+import { HttpClient } from '@angular/common/http';
 import { Product } from './shared/models/products';
 import { Pagination } from './shared/models/pagination';
 
@@ -2992,20 +3223,22 @@ export class AppComponent implements OnInit {
   ngOnInit():void {
     /* implementing Pagination and Product models */
     this.http.get<Pagination<Product>>(this.baseUrl + 'products').subscribe({
-      
+
       // next: data => console.log(data),
-      
+
       /* reponse. will give as access to data, count, pageIndex, pageSize */
       next: response => this.products = response.data,
-      
+
       error: error => console.log(error),
-      
+
       complete: () => console.log('Complete')
     })
   }
 }
 ```
-- ` update client/src/app/app.component.html `
+
+-  `update client/src/app/app.component.html`
+
 ```
 <app-header></app-header>
 <router-outlet></router-outlet>
@@ -3022,7 +3255,8 @@ export class AppComponent implements OnInit {
 
 ###### 72. Summary
 
-- `Goal:` 
+-  `Goal:`
+
 ```
 Goal:
 To be able to use the http client to retrieve data from the API
@@ -3030,29 +3264,35 @@ To be able to use the http client to retrieve data from the API
 To understand the basics of obeservables and Typescript
 ```
 
-- ` FAQs `
+-  `FAQs`
+
 ```
-    Question: 
+    Question:
     Can I use <CssFramework>
     instead of Angular Material and Tailwind?
 
-    Answer: 
-    Only with great difficulty. 
+    Answer:
+    Only with great difficulty.
     This is heavily intergrated into the app.
 ```
-- ` fixing Tailwind Compile issue at global style.scss`
+
+-  ` fixing Tailwind Compile issue at global style.scss`
+
 ```
 /* Fixing tailwind import issue = FF Solution with chatgpt's help */
 
 // @import "tailwindcss";
-@use "tailwindcss" as *; 
+@use "tailwindcss" as *;
 ```
+
 <hr>
 
 ### Section 9: Building the User Interface for the shop
+
 <hr>
 
-- ` 73. Introduction : Client Building the UI`
+-  ` 73. Introduction : Client Building the UI`
+
 ```
     -Angular services (AS) - Singleton, for this project we don't redux (state management) to remember things utilize AS for this project but we can if we want to.
     -Building the UI for the shop
@@ -3065,12 +3305,12 @@ To understand the basics of obeservables and Typescript
 
 ###### 74. Introduction to Angular services
 
-- ` create angular service for reusable logic, ng service is a singleton, `
-- ` ' ng g service core/services/shop.services.ts ' => go to core component <---/* working */ ` 
-- ` ' ng g service core/services/shop.services.ts ' --dry-run <- this command will generate service at app/core/services/shop <---/* not working */`
-- ` ' ng g service core/services/shop.services.ts '  --dry-run --skip-tests <---/* not working */ <- this command will generate service at app/core/services/shop.services.ts`
+-  `create angular service for reusable logic, ng service is a singleton,`
+-  `' ng g service core/services/shop.services.ts ' => go to core component <---/* working */`
+-  ` ' ng g service core/services/shop.services.ts ' --dry-run <- this command will generate service at app/core/services/shop <---/* not working */`
+-  ` ' ng g service core/services/shop.services.ts '  --dry-run --skip-tests <---/* not working */ <- this command will generate service at app/core/services/shop.services.ts`
 
-- ` create client/src/app/core/services/shop.services.ts`
+-  ` create client/src/app/core/services/shop.services.ts`
 
 ```
 import { HttpClient } from '@angular/common/http';
@@ -3086,7 +3326,9 @@ export class ShopService {
   constructor() { }
 }
 ```
-- ` update app/app.component.ts`
+
+-  ` update app/app.component.ts`
+
 ```
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
@@ -3128,7 +3370,9 @@ export class AppComponent implements OnInit {
 }
 
 ```
-- ` update client/src/app/core/services/shop.services.ts`
+
+-  ` update client/src/app/core/services/shop.services.ts`
+
 ```
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
@@ -3151,9 +3395,10 @@ export class ShopService {
 
 ###### 75. Designing the shop page
 
-- ` create features/shop.component.ts`
-- ` ng g component features/shop --dry-run / --skip-tests `
-- ` shop.component.ts`
+-  ` create features/shop.component.ts`
+-  `ng g component features/shop --dry-run / --skip-tests`
+-  ` shop.component.ts`
+
 ```
 import { Component, inject } from '@angular/core';
 import { ShopService } from '../../core/services/shop.service';
@@ -3177,7 +3422,9 @@ export class ShopComponent {  /* implement shop service */
   }
 }
 ```
-- ` update src/app/app.component.ts `
+
+-  `update src/app/app.component.ts`
+
 ```
 // cutting code below:
 /* implement shop service */
@@ -3194,7 +3441,8 @@ export class ShopComponent {  /* implement shop service */
     })
   }
 ```
-- ` update app.component.html `
+
+-  `update app.component.html`
 
 ```
 <app-header></app-header>
@@ -3216,7 +3464,8 @@ export class ShopComponent {  /* implement shop service */
 </div> -->
 ```
 
-- ` update src/app/app.component.ts `
+-  `update src/app/app.component.ts`
+
 ```
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
@@ -3235,11 +3484,15 @@ export class AppComponent {
   title = "Skinet";
 }
 ```
-- ` client/src/app/features/shop/shop.component.ts`
+
+-  ` client/src/app/features/shop/shop.component.ts`
+
 ```
 
 ```
-- ` client/src/app/features/shop/shop.component.html`
+
+-  ` client/src/app/features/shop/shop.component.html`
+
 ```
                 /* grid-cols-5 display five columns in UI*/
 <div class="grid grid-cols-5 gap-4">
@@ -3251,7 +3504,8 @@ export class AppComponent {
 </div>
 ```
 
-- ` update shop.component.ts`
+-  ` update shop.component.ts`
+
 ```
 import { Component, inject } from '@angular/core';
 import { ShopService } from '../../core/services/shop.service';
@@ -3278,12 +3532,14 @@ export class ShopComponent {  /* implement shop service */
   }
 }
 ```
-- ` update client/src/app/core/services/shop.services.ts `
+
+-  `update client/src/app/core/services/shop.services.ts`
+
 ```
     getProducts() {
 
     new return this.http.get<Pagination<Product>>(this.baseUrl + 'products?pageSize=20')
-    
+
     <!--old return this.http.get<Pagination<Product>>(this.baseUrl + 'products') -->
 
   }
@@ -3291,14 +3547,16 @@ export class ShopComponent {  /* implement shop service */
 
 ###### 76. Adding a product item component
 
-- `ng g c features/shop/product-item --skip-tests`
+-  `ng g c features/shop/product-item --skip-tests`
 
 ```
     - src/app/features/shop/product-item/product-item.component.ts
     - src/app/features/shop/product-item/product-item.component.scss
     - src/app/features/shop/product-item/product-item.component.html
 ```
-- `src/app/features/shop/product-item/product-item.component.ts`
+
+-  `src/app/features/shop/product-item/product-item.component.ts`
+
 ```
 import { Component, Input } from '@angular/core';
 import { Product } from '../../../shared/models/products';
@@ -3315,7 +3573,9 @@ export class ProductItemComponent {
   @Input() product?: Product;
 }
 ```
-- `update product-item.component.html`
+
+-  `update product-item.component.html`
+
 ```
 @if (product) {
   <mat-card appearance="raised">
@@ -3323,7 +3583,9 @@ export class ProductItemComponent {
   </mat-card>
 }
 ```
-- ` update import @ shop.component.ts`
+
+-  ` update import @ shop.component.ts`
+
 ```
 @Component({
   selector: 'app-shop',
@@ -3332,23 +3594,27 @@ export class ProductItemComponent {
     ProductItemComponent // <-- import to shop.component.ts
 ],
 ```
-- ` update product-item.component.ts`
+
+-  ` update product-item.component.ts`
+
 ```
 import { MatCard, MatCardContent } from '@angular/material/card';
 
 @Component({
   selector: 'app-product-item',
   imports: [
-    MatCard, // <-- import 
-    MatCardContent, // <-- import 
-    CurrencyPipe, // <-- import 
-    MatCardActions, // <-- import 
-    MatButton, // <-- import 
-    MatIcon // <-- import 
+    MatCard, // <-- import
+    MatCardContent, // <-- import
+    CurrencyPipe, // <-- import
+    MatCardActions, // <-- import
+    MatButton, // <-- import
+    MatIcon // <-- import
   ],
 })
 ```
-- `updae product-item.component.html`
+
+-  `updae product-item.component.html`
+
 ```
 @if (product) {
   <mat-card appearance="raised">
@@ -3371,31 +3637,31 @@ import { MatCard, MatCardContent } from '@angular/material/card';
 }
 ```
 
+-  `API/Program.cs`
 
-
-- `API/Program.cs`
 ```
 /*
 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://localhost:5001/api/products?pageSize=20. (Reason: CORS request did not succeed). Status code: (null)
 */
 //// desktop working and not working in laptop
 // app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
-//     .WithOrigins("http://localhost:4200", "https://localhost:4200")); 
-    
-// laptop testing config 
+//     .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+
+// laptop testing config
 app.UseCors(x => x
     .WithOrigins("http://localhost:4200", "https://localhost:4200")
     .AllowAnyHeader()
-    .AllowAnyMethod());   
+    .AllowAnyMethod());
 
 ```
 
 ###### 77. Getting the types and brands lists
-- ` update client/src/app/core/services/shop.services.ts `
+
+-  `update client/src/app/core/services/shop.services.ts`
 
 ```
 export class ShopService {
-    //... 
+    //...
     types: sting[] = [];
     brands: string[] = []
 
@@ -3415,7 +3681,9 @@ export class ShopService {
     }
 }
 ```
-- ` update client/src/app/features/shop/shop.components.ts` 
+
+-  ` update client/src/app/features/shop/shop.components.ts`
+
 ```
 export class ShopComponent implements OnInit {
 
@@ -3430,12 +3698,14 @@ export class ShopComponent implements OnInit {
     }
 }
 ```
-- `second update client/src/app/features/shop/shop.components.ts` 
+
+-  `second update client/src/app/features/shop/shop.components.ts`
+
 ```
 export class ShopComponent{
 
     //...
-    
+
     ngOnInit():void{
         this.initializeShop(); /* <-- insert the initializeShop() function here */
 
@@ -3461,11 +3731,13 @@ export class ShopComponent{
 ```
 
 ###### 78. Adding the filtering functionality using Material Dialog
+
 [Angular MAterial Ui Dialog](https://material.angular.io/components/dialog)
 
-- ` create dialog cd client - ng g c features/shop/filters-dialog --skip-tests `
+-  `create dialog cd client - ng g c features/shop/filters-dialog --skip-tests`
 
-- ` client/src/app/features/shop/filters-dialog/filters-dialog.components.ts `
+-  `client/src/app/features/shop/filters-dialog/filters-dialog.components.ts`
+
 ```
 //...
 import { ShopService } from '../../../core/services/shop.services';
@@ -3485,10 +3757,11 @@ import { MatButton } from '@angular/material/button';
 //...
 export class FiltersDialogComponent {
     shopService = inject(shopService)
-} 
+}
 ```
 
-- ` update filters-dialog.components.html  `
+-  `update filters-dialog.components.html `
+
 ```
 <div>
     <h3 class="text-3xl text-center pt-6 mb-3"> Filters</h3>
@@ -3525,7 +3798,8 @@ export class FiltersDialogComponent {
 
 ###### 79. Adding the filtering functionality using Material Dialog part 2: FF
 
-- ` update shop.components.ts `
+-  `update shop.components.ts`
+
 ```
 //...
 import { MatDialog } from '@angular/material/dialog';
@@ -3558,9 +3832,10 @@ export class ShopComponent{
     }
 }
 ```
-- ` update shop.component.html `
-- ` google search: Material Symbols and Icons ` 
-[Material Design Icon](https://fonts.google.com/icons)
+
+-  `update shop.component.html`
+-  `google search: Material Symbols and Icons`
+   [Material Design Icon](https://fonts.google.com/icons)
 
 ```
 <div class="flex flex-col gap-3">
@@ -3581,7 +3856,9 @@ export class ShopComponent{
 ```
 
 ###### 80. Hooking up the filters to the service
-- `update filters-dialog.component.ts`
+
+-  `update filters-dialog.component.ts`
+
 ```
 //...
 import { FormsModule } from '@angular/forms';
@@ -3594,7 +3871,9 @@ import { FormsModule } from '@angular/forms';
     ]
 })
 ```
-- `update filters-dialog.components.html`
+
+-  `update filters-dialog.components.html`
+
 ```
 /*
     # notes: about square brackets & parenthesis in angular
@@ -3628,7 +3907,9 @@ import { FormsModule } from '@angular/forms';
     </div>
 </div>
 ```
-- ` update shop.service.ts `
+
+-  `update shop.service.ts`
+
 ```
     //...
     getProducts(brands?: string[], types?: string[]) {
@@ -3648,12 +3929,14 @@ import { FormsModule } from '@angular/forms';
     }
     //...
 ```
-- ` update shop.components.ts`
+
+-  ` update shop.components.ts`
+
 ```
     //...
 
     openFiltersDialog(){
-        
+
         //...
         dialogRef.afterClosed().subscribe({
             next: result =>{
@@ -3669,11 +3952,13 @@ import { FormsModule } from '@angular/forms';
         })
     }
     //...
-    
+
 ```
+
 ###### 81. Adding the sorting functionality
 
-- ` update shop.components.ts `
+-  `update shop.components.ts`
+
 ```
 import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 import { MatSelectionList, MatSelectionList, MatSelectionListChange } from '@angular/material/list';
@@ -3760,10 +4045,12 @@ export class ShopComponent{
   }
 }
 ```
-- ` update shop.components.html `
+
+-  `update shop.components.html`
+
 ```
 <div class="flex justify-end gap-3">
-   //... 
+   //...
 
     <button mat-stroked-button [matMenuTriggerFor]="sortMenu">
       <mat-icon>swap_vert</mat-icon>
@@ -3778,14 +4065,15 @@ export class ShopComponent{
             <mat-list-option [value]="sort.value" [selected]="selectedSort === sort.value">
                 {{ sort.name }}
             </mat-list-option>
-            
+
         }
     <mat-selection-list>
 </mat-menu>
 
 ```
 
-- ` update shop.service.ts `
+-  `update shop.service.ts`
+
 ```
 //...
 getProducts(//..., //..., sort?: string){
@@ -3801,9 +4089,10 @@ getProducts(//..., //..., sort?: string){
 ```
 
 ###### 82. Using a class to supply the parameters for the API request
-- [Angular Paginator](https://material.angular.dev/components/paginator/overview)
 
-- ` create client/src/app/shared/models/shopParams.ts `
+-  [Angular Paginator](https://material.angular.dev/components/paginator/overview)
+
+-  `create client/src/app/shared/models/shopParams.ts`
 
 ```
 export class ShopParams {
@@ -3816,13 +4105,14 @@ export class ShopParams {
 }
 ```
 
-- ` update client/src/app/features/shop/shop.components.ts `
+-  `update client/src/app/features/shop/shop.components.ts`
+
 ```
 
 export class ShopComponents {
-    // selectedBrands: string[] = []; // 4th update removed 
-    // selectedTypes: string[] = []; // 4th update removed 
-    //selectedSort: string = 'name' // 4th update removed 
+    // selectedBrands: string[] = []; // 4th update removed
+    // selectedTypes: string[] = []; // 4th update removed
+    //selectedSort: string = 'name' // 4th update removed
 
     //... sortOptions = [...]
 
@@ -3831,7 +4121,7 @@ export class ShopComponents {
     //... ngOnInit(){...}
 
     getProducts(){
-        /* old 
+        /* old
         this.shopService.getProducts(this.selectedBrands, this.selectedTypes, this.selectedSort)
         */
 
@@ -3845,7 +4135,7 @@ export class ShopComponents {
     onSortChange(event: MatSelectionListChange){
         if(selectedOption){
             this.selectedSort = selectedOption.value;  // <== updated
-            this.getProducts(); 
+            this.getProducts();
             console.log(this.selectedSort); /* removable console testing only */
         }
     }
@@ -3854,7 +4144,7 @@ export class ShopComponents {
     const dialogRef = this.dialogService.open(FiltersDialogComponent, {
       minWidth: '500px',
       data: {
-        selectedBrands: this.shopParams.brands, 
+        selectedBrands: this.shopParams.brands,
         selectedBrands: this.shopParams.types
         //selectedTypes: this.selectedTypes // 5th update
         //selectedTypes: this.selectedTypes // 5th update
@@ -3865,7 +4155,7 @@ export class ShopComponents {
         if(result) {
            this.shopParams.brands = result.selectedBrands;  //3rd update
            this.shopParams.types = result.selectedTypes;    //3rd update
-        // this.selectedBrands = result.selectedBrands; // old 
+        // this.selectedBrands = result.selectedBrands; // old
         // this.selectedTypes = result.selectedTypes; // old
           this.getProducts();
         }
@@ -3875,8 +4165,7 @@ export class ShopComponents {
 }
 ```
 
-
-- ` update client/src/app/features/shop/shop.components.html `
+-  `update client/src/app/features/shop/shop.components.html`
 
 ```
 <mat-menu #sortMenu="matMenu">
@@ -3893,7 +4182,8 @@ export class ShopComponents {
 
 ```
 
-- ` update client/src/app/core/services/shop.services.ts `
+-  `update client/src/app/core/services/shop.services.ts`
+
 ```
 
 import { ShopParams } from '../../shared/models/shopParams';
@@ -3960,7 +4250,9 @@ export class ShopService {
 ```
 
 ###### 83. Adding pagination to the client using Material
-- ` update client/src/app/core/services/shop.serives.ts ` 
+
+-  `update client/src/app/core/services/shop.serives.ts`
+
 ```
 export class ShopService{
     getProducts(shopParams: ShopParams){
@@ -3974,7 +4266,9 @@ export class ShopService{
     }
 }
 ```
-- `update client/src/app/features/shop/shop.component.ts `
+
+-  `update client/src/app/features/shop/shop.component.ts `
+
 ```
 import { MatPaginator } from '@angular/material/paginator'; // update
 
@@ -3986,9 +4280,11 @@ import { MatPaginator } from '@angular/material/paginator'; // update
     ]
 })
 ```
-- `update client/src/app/features/shop/shop.component.html `
-``` 
-<div class="flex flex-col"> 
+
+-  `update client/src/app/features/shop/shop.component.html `
+
+```
+<div class="flex flex-col">
  <div class="flex justify-between"> <!--update-->
     <mat-paginator
         class="bg-white"
@@ -4002,14 +4298,14 @@ import { MatPaginator } from '@angular/material/paginator'; // update
         [pageIndex]="shopParams.pageNumber - 1 " // update
         arial-label="Select page" // update
     >
-    </mat-paginator>    
+    </mat-paginator>
 
  <!-- <div class="flex justify-end gap-3"> old-->
     <mat-paginator
       (page)="handlePageEvent($event)"
       [lenght]="totalCount"
     >
-    
+
     <div class="flex gap-3">
         <div class="flex justify-between gap-3"> <!-- update -->
         <!-- <div class="flex justify-end gap-3"> old -->
@@ -4025,7 +4321,9 @@ import { MatPaginator } from '@angular/material/paginator'; // update
     </div>
 </div>
 ```
-- `update client/src/app/features/shop/shop.component.ts `
+
+-  `update client/src/app/features/shop/shop.component.ts `
+
 ```
 import { MatPaginator, PageEvent } from '@angular/material/paginator'; // 4th update auto import
 
@@ -4043,11 +4341,11 @@ export Class ShopComponent {
     pageSizeOptions = [5, 10, 15, 20] // 3rd update
 
     //...
-    
+
     getProducts(){
         this.shopService.getProducts(this.shopParams).subscribe({
             next: response => this.products = response, // 1st update
-        //  next: response => this.products = response.data, // legacy 
+        //  next: response => this.products = response.data, // legacy
             error: error => console.log(error)
         })
     }
@@ -4057,7 +4355,7 @@ export Class ShopComponent {
         this.shopParams.pageNumber = event.pageIndex + 1; //4th update
         this.shopParams.pageSize = event.pageSize; //4th update
         this.getProducts(); //4th update
-    } //4th update 
+    } //4th update
 
     onSortChange(event: MatSelectionListChange){
     const selectedOption = event.options[0]; // grab the first elemen on the list [0]
@@ -4090,18 +4388,22 @@ export Class ShopComponent {
   }
 }
 ```
-- `update client/src/app/features/shop/shop.component.html `
+
+-  `update client/src/app/features/shop/shop.component.html `
+
 ```
 <div class="flex flex-col gap-3">
     <div class="grid grid-cols-5 gap-4>
         @for (product of products?.data; track product.id) { /* update */
         <!-- @for (product of products; track product.id) { old -->
         <app-product-item [product]="product"></app-product-item>
-    }    
+    }
     </div>
 </div>
 ```
-- ` style default bg color of mat-paginator client/tailwind.config.ts `
+
+-  `style default bg color of mat-paginator client/tailwind.config.ts`
+
 ```
 module.exports = {
     content: [
@@ -4116,7 +4418,9 @@ module.exports = {
 ```
 
 ###### 84. Adding the search functionality to the client
-- `Update shop.component.ts  `
+
+-  `Update shop.component.ts  `
+
 ```
 @Component({
   selector: 'app-shop',
@@ -4135,10 +4439,12 @@ export class ShopComponent {
         this.getProducts();
     }
 
-    //... handlePageEvent(event: PageEvent){...} 
+    //... handlePageEvent(event: PageEvent){...}
 }
 ```
-- `Update shop.component.html `
+
+-  `Update shop.component.html `
+
 ```
 <div class="flex flex-col gap-3">
   <div class="flex justify-between gap-3">
@@ -4168,7 +4474,9 @@ export class ShopComponent {
   </div>
 </div>
 ```
-- `Update shop.services.ts`
+
+-  `Update shop.services.ts`
+
 ```
     //...if (shopParams.sort) { params = params.append('sort', shopParams.sort);  }
 
@@ -4178,7 +4486,9 @@ export class ShopComponent {
 
     //... params = params.append('pageSize', shopParams.pageSize);
 ```
-- `update styles.scss`
+
+-  `update styles.scss`
+
 ```
 .text-primary{
   color: #7d00fa;
@@ -4189,7 +4499,9 @@ button.match-input-height {
 }
 
 ```
-- ` update shop.component.html`
+
+-  ` update shop.component.html`
+
 ```
 // 'match-input-height' = aligns the input and button for search in UI
 <button class="match-input-height" mat-stroked-button (click)="openFiltersDialog()">...
@@ -4200,7 +4512,8 @@ button.match-input-height {
 
 ```
 
-- `!Issue/Solution for not displaying all items in ui `
+-  `!Issue/Solution for not displaying all items in ui `
+
 ```
 export class ShopParams {
   brands: string[] = [];
@@ -4213,14 +4526,14 @@ export class ShopParams {
 
 ```
 
-
 ###### 85. Summary
-- Angular Services
-- Building the UI for the loop
-- Material components
-- Pagination
-- Filtering, Sorting & Search
-- Input properties
+
+-  Angular Services
+-  Building the UI for the loop
+-  Material components
+-  Pagination
+-  Filtering, Sorting & Search
+-  Input properties
 
 <hr>
 
@@ -4228,19 +4541,20 @@ export class ShopParams {
 
 <hr>
 
-######  : 86. Introduction
+###### : 86. Introduction
 
-- Adding new feature components
-- Setting up routes
-- Nav links 
-- This way to the shop!
+-  Adding new feature components
+-  Setting up routes
+-  Nav links
+-  This way to the shop!
 
 ###### 87. Creating components and routes
 
-- ` cd client create 'ng g c features/home --skip-tests' ` 
-- ` cd client create 'ng g c features/shop/product-detail --skip-tests' ` 
+-  `cd client create 'ng g c features/home --skip-tests'`
+-  `cd client create 'ng g c features/shop/product-detail --skip-tests'`
 
-- ` client/src/app/app.routes.ts `
+-  `client/src/app/app.routes.ts`
+
 ```
 export const routes: Routes = [
     { path: '', component: HomeCompnent },
@@ -4249,9 +4563,11 @@ export const routes: Routes = [
     { path: '**', redirectTo: '', pathMatch: 'full' },
 ]
 ```
-- ` tracing client/src/app/app.component.ts `
+
+-  `tracing client/src/app/app.component.ts`
+
 ```
-// 
+//
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, HeaderComponent, ShopComponent],
@@ -4259,30 +4575,36 @@ export const routes: Routes = [
   styleUrl: './app.component.scss'
 })
 ```
-- ` tracing client/src/app/app.component.ts `
+
+-  `tracing client/src/app/app.component.ts`
+
 ```
 <app-header></app-header>
 <div class="container mt-6">
   <router-outlet></router-outlet> // <!-- update here -->
 </div>
 ```
-- ` client/src/app/app.config.ts `
+
+-  `client/src/app/app.config.ts`
+
 ```
 // nothing to change here but its a good way to understand the structure for routes in angular
 ```
-- for testing the routes
-- https://localhost:4200/
-- https://localhost:4200/shop
-- https://localhost:4200/shop/none
+
+-  for testing the routes
+-  https://localhost:4200/
+-  https://localhost:4200/shop
+-  https://localhost:4200/shop/none
 
 ###### 88. Setting up the links in the app
 
-- ` update client/src/app/layout/header/header.component.html ` 
+-  `update client/src/app/layout/header/header.component.html`
+
 ```
 <!-- ...  -->
     <img routerLink="/" src="/images/logo.png" alt="app logo" class="max-h-16" />
      <nav class="flex gap-3 my-2 uppercase text-2xl">
-      <a routerLink="/" 
+      <a routerLink="/"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{exact: true}"
         >Home</a>
@@ -4291,7 +4613,9 @@ export const routes: Routes = [
      </nav>
 <!-- ... -->
 ```
-- ` update client/src/app/layout/header/header.component.ts ` 
+
+-  `update client/src/app/layout/header/header.component.ts`
+
 ```
 import { RouterLink, RouterLinkActive } from '@angular/router';
 @Component({
@@ -4302,7 +4626,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     ]
 })
 ```
-- ` update client/src/app/layout/header/header.component.scss ` 
+
+-  `update client/src/app/layout/header/header.component.scss`
+
 ```
 a {
     &.active{
@@ -4310,14 +4636,19 @@ a {
     }
 }
 ```
--` client/src/app/features/shop/shop.component.html flickering issue `
+
+-`client/src/app/features/shop/shop.component.html flickering issue`
+
 ```
 @if(products) {
     //... insert all entire component code here and remove ? from products?.count
 }
 ```
+
 ###### 89. Getting an individual product using Route params
-- ` update shop.service.ts `
+
+-  `update shop.service.ts`
+
 ```
 //... getProducts(shopParams: ShopParams){}
 
@@ -4326,8 +4657,10 @@ getProduct(id: number){
 }
 
 //... getBrands(){... }
-``` 
-- ` update product-details.components.ts `
+```
+
+-  `update product-details.components.ts`
+
 ```
 import { Component, inject, OnInit } from '@angular/core';
 
@@ -4335,7 +4668,7 @@ export class ProductDetailsComponent implements OnInit {
 
     // update
     /* 1st */
-    private shopService = Inject(ShopService); 
+    private shopService = Inject(ShopService);
     private activatedRoute = Inject(ActivatedRoute);
     product?: Product;
 
@@ -4343,7 +4676,7 @@ export class ProductDetailsComponent implements OnInit {
     ngOninit(): void {
         this.loadProduct();
     }
-    
+
      /* 2nd */
     loadProduct(){
         const id = this.activatedRoute.snapshot.paramMap.get('id'); // its refering to id in app.routes.ts
@@ -4355,7 +4688,9 @@ export class ProductDetailsComponent implements OnInit {
     }
 }
 ```
-- ` connection with app.routes.ts from produc-details.component.ts `
+
+-  `connection with app.routes.ts from produc-details.component.ts`
+
 ```
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -4365,7 +4700,8 @@ export const routes: Routes = [
 ];
 ```
 
-- ` update product-details.components.html `
+-  `update product-details.components.html`
+
 ```
 @if(product){
     <h1 class="text-2xl">{{ product?.name }}</h1>
@@ -4373,26 +4709,32 @@ export const routes: Routes = [
     <h1 class="text-2xl">{{ product?.name }}</h1> // product?. is called optional chaining
 
 ```
-- ` update product-item.component.ts `
+
+-  `update product-item.component.ts`
+
 ```
 @Component({
   selector: 'app-product-item',
   imports: [
-    //...MatIcon, 
+    //...MatIcon,
     RouterLink // add
   ],
  //....
 })
 ```
-- ` update product-item.component.html `
+
+-  `update product-item.component.html`
+
 ```
 @if (product) {
   <mat-card appearance="raised" routerLink="/shop/{{ prdouct.id }}" class="product-card"> //  update code
   </mat-card>
-  //... 
+  //...
 }
 ```
-- ` update product-item.component.scss `
+
+-  `update product-item.component.scss`
+
 ```
 .product-card{
     transition: transform 0.2s, box-shadow 0.2s;
@@ -4403,8 +4745,11 @@ export const routes: Routes = [
     cursor: pointer;
 }
 ```
+
 ###### 90. Designing the product details page
-- ` update product-details.component.ts `
+
+-  `update product-details.component.ts`
+
 ```
 @if(product){
     <section class="py-8">
@@ -4417,7 +4762,7 @@ export const routes: Routes = [
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-900" >{{ product.name }}</h1>
                     <div class="mt-4 items-center gap-4 flex">
-                        <p class="text-3xl font-extrabold text-gray-900"> 
+                        <p class="text-3xl font-extrabold text-gray-900">
                             {{  product.price | currency }}
                         </p>
                     </div>
@@ -4440,13 +4785,15 @@ export const routes: Routes = [
                         {{  product.description }}
                     </p>
                 </div>
- 
+
             </div>
         </div>
     </section>
 }
 ```
-- ` Update product-details.component.ts `
+
+-  `Update product-details.component.ts`
+
 ```
 import { CurrencyPipe } from '@angular/common';
 import { MatButton } from '@angular/material/button';
@@ -4462,12 +4809,14 @@ import { MatInput } from '@angular/material/input';
         MatIcon,
         MatFormField,
         MatInput,
-        MatLabel, 
+        MatLabel,
         MatDivider,
     ]
 })
 ```
-- ` update styles.scss `
+
+-  `update styles.scss`
+
 ```
 //... button.match-input-height{...}
 
@@ -4475,38 +4824,45 @@ import { MatInput } from '@angular/material/input';
     border-right-style: none !important;
 }
 ```
+
 ###### 91. Summary
-- Adding new feature components
-- Setting up routes 
-- Nav links
-- Q: What about lazy loading?
-    - A: Optimization comes at the end, not the beginning
+
+-  Adding new feature components
+-  Setting up routes
+-  Nav links
+-  Q: What about lazy loading?
+   -  A: Optimization comes at the end, not the beginning
 
 <hr>
 
 ### Section 11: Client Side error handling and loading
+
 <hr>
 
 ###### 92. Introduction
-- `Error handling in Angular`
-- `Http interceptors`
-- `Adding toast notifications`
-- `Adding loading indicators`
-- `Goal`
-```
-Goal: 
 
-To handle errors we receive from the API 
+-  `Error handling in Angular`
+-  `Http interceptors`
+-  `Adding toast notifications`
+-  `Adding loading indicators`
+-  `Goal`
+
+```
+Goal:
+
+To handle errors we receive from the API
 centrally and handled by the Http interceptor.
 
 To understand how to troubleshoot API Errors
 
 ```
+
 ###### 93. Creating a test error component
 
-- ` @ client create new component = ng g c features/test-erorr --skip-tests ` 
+-  `@ client create new component = ng g c features/test-erorr --skip-tests`
 
-- `update app.routes.ts`
+-  `update app.routes.ts`
+
 ```
 //...
 import { TestErrorComponent } from './features/test-error/test-error.component';
@@ -4517,12 +4873,16 @@ export const routes: Route =[
     {...},
 ]
 ```
-- ` update header.component.html`
+
+-  ` update header.component.html`
+
 ```
     <a routerLink="/test-error" routerLinkActive="active">Errors</a> //for testing purposes only
     <!-- <a routerLink="/contact">Contact</a>// old -->
 ```
-- ` update test-components.ts` 
+
+-  ` update test-components.ts`
+
 ```
 @Component({
     ...
@@ -4538,18 +4898,18 @@ export class TestErrorComponent{
 
     get404Error(){
         this.http.get(this.baseUrl + 'buggy/notfound').subscribe({
-            next: response => console.log(reponse), 
+            next: response => console.log(reponse),
             error: error =>  console.log(error)
         })
     }
 
     get400Error(){
         this.http.get(this.baseUrl + 'buggy/badrequest').subscribe({
-            next: response => console.log(reponse), 
+            next: response => console.log(reponse),
             error: error =>  console.log(error)
         })
     }
-    
+
     get401Error(){
     this.http.get(this.baseUrl + 'buggy/unauthorized').subscribe({
       next: response => console.log(response),
@@ -4559,7 +4919,7 @@ export class TestErrorComponent{
 
     get500Error(){
         this.http.get(this.baseUrl + 'buggy/internalerror').subscribe({
-            next: response => console.log(reponse), 
+            next: response => console.log(reponse),
             error: error =>  console.log(error)
         })
     }
@@ -4567,23 +4927,25 @@ export class TestErrorComponent{
      // old
     get400ValidationError(){
         this.http.get(this.baseUrl + 'buggy/validationerror').subscribe({
-            next: response => console.log(reponse), 
+            next: response => console.log(reponse),
             error: error =>  console.log(error)
         })
     }
 
-    // update 
+    // update
     get400ValidationError(){
         this.http.post(this.baseUrl + 'buggy/validationerror', {}).subscribe({
-            next: response => console.log(reponse), 
+            next: response => console.log(reponse),
             error: error =>  console.log(error)
         })
     }
 }
 ```
-- ` refer to BuggyControllers.cs API `
 
-- ` update test-error.component.html `
+-  `refer to BuggyControllers.cs API`
+
+-  `update test-error.component.html`
+
 ```
 <div class="mt-5 flex justify-center gap-4">
     <button mat-stroked-button (click)="get500Error()">Test 500 error</button>
@@ -4596,20 +4958,24 @@ export class TestErrorComponent{
 
 ###### 94. Creating a NotFound and Server Error component
 
-- `ng g c shared/components/not-found --skip-tests `
+-  `ng g c shared/components/not-found --skip-tests `
+
 ```
 <div class="container mt-5 ">
     <h1 class="text-3xl"> Not found </h1>
 </div>
 ```
-- `ng g c shared/components/server-error --skip-tests `
+
+-  `ng g c shared/components/server-error --skip-tests `
+
 ```
 <div class="container mt-5 ">
     <h1 class="text-3xl"> Internal server error </h1>
 </div>
 ```
 
-- ` update app.routes.ts `
+-  `update app.routes.ts`
+
 ```
 //...
 export const routes: Routes =[
@@ -4619,10 +4985,12 @@ export const routes: Routes =[
     { path: '**', redirectTo: 'not-found', pathMatch: 'full' },
 ]
 ```
+
 ###### 95. Creating an HTTP Interceptor for handling API errors
 
-- ` cd /client folder  'ng g interceptor core/interceptors/error --dry-run' `
-- ` ng g interceptor core/interceptors/error --skip-tests`
+-  `cd /client folder  'ng g interceptor core/interceptors/error --dry-run'`
+-  ` ng g interceptor core/interceptors/error --skip-tests`
+
 ```
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
@@ -4651,7 +5019,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 ```
-- ` update app.config.ts `
+
+-  `update app.config.ts`
+
 ```
 //...
 import { errorInterceptor } from './core/interceptors/error.interceptor';
@@ -4663,10 +5033,13 @@ export const appConfig: ApplicationConfig = {
   ],
 };
 ```
+
 ###### 96. Adding toast (snackbar) notifications
+
 [Angular Snackbar](https://material.angular.dev/components/snack-bar/overview)
 
-- ` create new service 'ng g s core/services/snackbar --skip-tests'`
+-  ` create new service 'ng g s core/services/snackbar --skip-tests'`
+
 ```
 import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -4692,7 +5065,9 @@ export class SnackbarService {
   }
 }
 ```
-- ` update style.scss` 
+
+-  ` update style.scss`
+
 ```
 //... .mdc-notche-outline__notch{...}
 
@@ -4709,7 +5084,9 @@ export class SnackbarService {
 }
 
 ```
-- ` update error.interceptor.ts `
+
+-  `update error.interceptor.ts`
+
 ```
 export const errorInterceptor: HttpInterceptorFn = (req, next) =>{
     ...
@@ -4722,15 +5099,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) =>{
       }
       if(err.status === 401){
         snackbar.error(err.error.title || err.error);
-      } 
-       
+      }
+
       //...
     })
   );
 }
 ```
+
 ###### 97. Handling validation errors from the API
-- ` update error.interceptor.ts `
+
+-  `update error.interceptor.ts`
+
 ```
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   //....
@@ -4747,14 +5127,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 }
             }
             throw modelStateErrors.flat();
-        } else { 
+        } else {
             snackbar.error(err.error.title || err.error);
         }
         // update ends here ===================
       }
     //....
 ```
-- ` update test-error.components.ts`
+
+-  ` update test-error.components.ts`
+
 ```
 export class TestErrorComponent {
     //....
@@ -4769,7 +5151,9 @@ export class TestErrorComponent {
     }
 }
 ```
-- ` update test-error.components.html template `
+
+-  `update test-error.components.html template`
+
 ```
 
 //...
@@ -4783,9 +5167,11 @@ export class TestErrorComponent {
     </div>
 }
 ```
+
 ###### 98. Configuring the server error page
 
-- ` update error-interceptor.ts `
+-  `update error-interceptor.ts`
+
 ```
 //...
 
@@ -4797,7 +5183,7 @@ export const errorInterceptor: HttpInteceptorFn = (req, next) =>{
 
         if(err.status == 500){
             //update starts here =============
-            const navigationExtras: NavigationExtras = { state: {error: err.error}} 
+            const navigationExtras: NavigationExtras = { state: {error: err.error}}
             router.navigationByUrl('/sever-error', navigationExtras);
             //update ends here =============
         }
@@ -4807,7 +5193,8 @@ export const errorInterceptor: HttpInteceptorFn = (req, next) =>{
 }
 ```
 
-- ` update server-error-components.ts `
+-  `update server-error-components.ts`
+
 ```
 import { HttpErrorReponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -4832,7 +5219,9 @@ export class ServerComponent {
     }
 }
 ```
-- ` update server-error.component.html template`
+
+-  ` update server-error.component.html template`
+
 ```
 <div class="container mt-5 p-4 bg-gray-100 rounded shadow-lg">
     <h1 class="text-2xl font-semibold mb-4">
@@ -4859,7 +5248,8 @@ export class ServerComponent {
 
 ###### 99. Configuring the Not found page
 
-- ` update not-found-component.html `
+-  `update not-found-component.html`
+
 ```
 <div class="flex items-center justify-center min-h-96 bg-gray-100">
     <div class="text-center">
@@ -4872,7 +5262,9 @@ export class ServerComponent {
     </div>
 </div>
 ```
-- ` update not-found-component.ts `
+
+-  `update not-found-component.ts`
+
 ```
 //...
 import { MatButton } from '@angular/material/button'; // update here
@@ -4890,7 +5282,9 @@ import { RouterLink } from '@angular/router'; // update here
   styleUrl: './not-found.component.scss'
 })
 ```
-- ` update not-found-component.scss`
+
+-  ` update not-found-component.scss`
+
 ```
 .icon-display{
   transform: scale(3);
@@ -4898,7 +5292,9 @@ import { RouterLink } from '@angular/router'; // update here
 ```
 
 ###### 100. Adding an HTTP Interceptor for loading
-- ` create "ng g interceptor core/interceptors/loading --skip-tests" `
+
+-  `create "ng g interceptor core/interceptors/loading --skip-tests"`
+
 ```
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
@@ -4916,7 +5312,9 @@ export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
   );
 };
 ```
-- ` app.config.ts`
+
+-  ` app.config.ts`
+
 ```
 import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 
@@ -4932,7 +5330,9 @@ export const appConfig: ApplicationConfig = {
   ],
 };
 ```
-- `create "ng g s core/services/busy --skip-tests " `
+
+-  `create "ng g s core/services/busy --skip-tests " `
+
 ```
 import { Injectable } from '@angular/core';
 
@@ -4957,28 +5357,33 @@ export class BusyService {
   }
 }
 ```
+
 ###### 101. Adding a progress bar to indicate loading
+
 [Material UI - Progressbar](https://material.angular.dev/components/progress-bar/overview)
 
-- ` update header.component.ts `
+-  `update header.component.ts`
+
 ```
-import { MatProgressBar } from '@angular/material/progress-bar'; // update 
+import { MatProgressBar } from '@angular/material/progress-bar'; // update
 
 @Component({
   selector: 'app-header',
   imports: [
     //...
-    MatProgressBar // update 
+    MatProgressBar // update
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
 
 export class HeaderComponent {
-  busyService = inject(BusyService); // update 
+  busyService = inject(BusyService); // update
 }
 ```
-- ` update header.component.html `
+
+-  `update header.component.html`
+
 ```
 <header>
 ...
@@ -4989,8 +5394,11 @@ export class HeaderComponent {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 }
 ```
+
 ##### 102. Making the header fixed to the top
-- ` update header.component.html`
+
+-  ` update header.component.html`
+
 ```
 <header class="border-b shadow-md p-3 w-full fixed top-0 z-50 bg-white">
 </header>
@@ -5000,11 +5408,14 @@ export class HeaderComponent {
 }
 
 ```
-- ` update app.component.html`
+
+-  ` update app.component.html`
+
 ```
 <div class="container mt-24"> // update from mat-6 to mat-24
 </div>
 ```
+
 ###### 103. Summary
 
 ```
@@ -5014,8 +5425,9 @@ To handle errors we receive from the API centrally and handled by the Http inter
 To understand how to troubleshoot API errors
 
 ```
-- Question: Would we create an errors component in a 'real' app?
-- Answer: Probably not, but it is helpful
+
+-  Question: Would we create an errors component in a 'real' app?
+-  Answer: Probably not, but it is helpful
 
 <hr>
 
@@ -5034,14 +5446,16 @@ In this module
 ```
 
 Goal:
+
 ```
 To set up and configure Redis to
 store the customer cart in server
-memory and create the supporting 
+memory and create the supporting
 service and controller
 ```
 
 Where to store the basket?
+
 ```
 Options:
     - Database ()
@@ -5049,11 +5463,13 @@ Options:
     - Cookie (can stor cart data not typically use this days)
     - Redis ( for storing our shopping cart's item in memory data store 'fast' and persistence, also in has service side features )
 ```
+
 What is Redis?
+
 ```
-- In-memory data structure store 
-    - and Ideal for caching 
-    
+- In-memory data structure store
+    - and Ideal for caching
+
 - Suppors strings, hashes, lists, sets, etc.
 
 - Key/Value store
@@ -5069,7 +5485,8 @@ What is Redis?
 
 ###### 105. Creating a Redis instance to use in our app
 
-- ` update docker-compose.yml `
+-  `update docker-compose.yml`
+
 ```
 services:
   sql:
@@ -5083,36 +5500,38 @@ services:
       - sql-data:/var/opt/mssql # update persist data to redis
   redis: # persist data to redis
     image: redis:latest
-    ports: 
+    ports:
       - "6379:6379" # update persist data to redis
     volumes:
       - redis-data:/data
 
 volumes:
   redis-data:
-  sql-data:  
+  sql-data:
 ```
-- ` terminal cmd: cd root folder `
-- ` docker compose down ` // delete only the current container and doesn't include the volumes
-- ` docker compose up -d ` // restarts container and volumes 
-- ` docker compose down `
-- ` docker compose down -v ` // delete the volumes
+
+-  `terminal cmd: cd root folder`
+-  `docker compose down` // delete only the current container and doesn't include the volumes
+-  `docker compose up -d` // restarts container and volumes
+-  `docker compose down`
+-  `docker compose down -v` // delete the volumes
 
 ###### 106. Using Redis with .Net
 
-- ` install redis via nuget -> Infrastructure.csproject [-]`
-- ` update API Program.cs `
+-  ` install redis via nuget -> Infrastructure.csproject [-]`
+-  `update API Program.cs`
+
 ```
 using StackExchange.Redis; // add this library and run ' dotnet add package StackExchange.Redis '
 
 //...builder.Services.AddCors();
-// update code below: 
+// update code below:
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
     var connString = builder.Configuration.GetConnectionString("Redis");
     /**if (connString == null) throw new Exception("Cannot get redis connection string"); // Use coalesce expression below is ther conversion */
     var connString = builder.Configuration.GetConnectionString("Redis") ?? throw new Exception("Cannot get redis connection string");
-    
+
     var configuration = ConfigurationOptions.Parse(connString, true);
     return ConnectionMultiplexer.Connect(configuration);
 });
@@ -5120,13 +5539,16 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 //...builder.Services.AddOpenApi();
 ```
 
-- ` in API folder install ' dotnet add package StackExchange.Redis ' `
-- ` update Program.cs`
+-  `in API folder install ' dotnet add package StackExchange.Redis '`
+-  ` update Program.cs`
+
 ```
 //... using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 ```
-- ` update appsettings.Development.json`
+
+-  ` update appsettings.Development.json`
+
 ```
 "ConnectionStrings": {
     "DefaultConnection":"...",
@@ -5134,13 +5556,15 @@ using StackExchange.Redis;
 }
 
 ```
-- ` restart api 'dotnet watch' `
+
+-  `restart api 'dotnet watch'`
 
 ###### 107. Creating the Cart classes
 
-- ` Redis is not relational database and for this project app use as a key value and store `
+-  `Redis is not relational database and for this project app use as a key value and store`
 
-- ` create new class API/Core/Entities/ShoppingCart.cs  `
+-  `create new class API/Core/Entities/ShoppingCart.cs `
+
 ```
 namespace Core.Entities;
 
@@ -5151,7 +5575,8 @@ public class ShoppingCart
 }
 ```
 
-- ` create new class API/Core/Entities/CartItem.cs  `
+-  `create new class API/Core/Entities/CartItem.cs `
+
 ```
 namespace Core.Entities;
 
@@ -5169,7 +5594,8 @@ public class CartItem
 
 ###### 108. Creating a Cart service
 
-- ` create service @ Core/Interfaces/create ICartService.cs `
+-  `create service @ Core/Interfaces/create ICartService.cs`
+
 ```
 using Core.Entities;
 namespace Core.Interfaces;
@@ -5182,7 +5608,8 @@ public interface ICartService
 }
 ```
 
-- `create service @ Infrastructure/Services/CartService.cs `
+-  `create service @ Infrastructure/Services/CartService.cs `
+
 ```
 using System.Text.Json;
 using Core.Entities;
@@ -5205,7 +5632,7 @@ public class CartService(IConnectionMultiplexer redis) : ICartService
         var data = await _database.StringGetAsync(key);
 
         return data.IsNullOrEmpty ? null : JsonSerializer.Deserialize<ShoppingCart>(data);
-    
+
     }
 
     public async Task<ShoppingCart?> SetCartAsync(ShoppingCart cart)
@@ -5221,7 +5648,9 @@ public class CartService(IConnectionMultiplexer redis) : ICartService
     }
 }
 ```
-- ` Update Program.cs`
+
+-  ` Update Program.cs`
+
 ```
 // builder.Services.AddSingleton<IConnectionMultiplexer>({...})
 builder.Services.AddSingleton<ICartService, CartService>();
@@ -5229,13 +5658,17 @@ builder.Services.AddSingleton<ICartService, CartService>();
 ```
 
 `Issue & Solution : IConnectionMultiplexer `
+
 ```
-    - encounter issue IConnectionMultiplexer 
+    - encounter issue IConnectionMultiplexer
     - install redis via nuget -> Infrastructure.csproject [-]`
 
 ```
+
 ###### 109. Creating the Cart controller
-- ` API/Controllers/CartController.cs`
+
+-  ` API/Controllers/CartController.cs`
+
 ```
     public class Controller(ICartService cartService): BaseApiController
     {
@@ -5243,7 +5676,7 @@ builder.Services.AddSingleton<ICartService, CartService>();
         public async Task<ActionResult<ShoppingCart>> GetCartById(string id) // generate id on the client side
         {
             var cart = await cartService.GetCartAsync(id); // we get the cart if it lives in the redis database
-                                                           // if it does returning the shopping cart 
+                                                           // if it does returning the shopping cart
             return Ok(cart ?? new ShoppingCart{Id = id}); // then it sets the id in the client side
         }
 
@@ -5269,25 +5702,28 @@ builder.Services.AddSingleton<ICartService, CartService>();
         }
     }
 ```
+
 ###### 110. Testing the Cart in Postman
 
-- At postman
+-  At postman
 
 ```
 Get Cart = {{url}}/api/cart?id=cart1
 
-Update Cart = {{url}}/api/cart 
+Update Cart = {{url}}/api/cart
      - think of this as a client side storage and focus on productId and quantity because we are going to validate this in our API, for checking 'Get Cart'
 
-Delete Cart = 
+Delete Cart =
 
 ```
-- ` add redis extension in VSCode - Redis by Dunn` 
-- ` redis explorer - click Add button`
+
+-  ` add redis extension in VSCode - Redis by Dunn`
+-  ` redis explorer - click Add button`
 
 ###### 111. Summary
 
 Goal
+
 ```
 To setup and configure Redis to
 store the customer cart in server
@@ -5296,15 +5732,17 @@ service and controller
 
 FAQs
 
-Question: Isn't Redis overkill here? 
+Question: Isn't Redis overkill here?
             (over engineer?)
 
-Answer: Maybe, but we will use it for 
+Answer: Maybe, but we will use it for
         something else later.
 ```
+
 <hr>
 
 ### Section 13 - Client - Shopping Cart
+
 <hr>
 
 ###### 112. Introduction
@@ -5312,28 +5750,33 @@ Answer: Maybe, but we will use it for
 ```
 - Adding the cart feature
 - Angular signals = added in angular v16 - react to an update a value in NG
-- Environment variables - 
+- Environment variables -
 ```
 
-- Goal
+-  Goal
+
 ```
 To add the cart feature to the
-angular app. 
+angular app.
 To understand the usage of signals in Angular
 ```
 
 ###### 113. Creating the cart components
 
-- ` cd client 'ng g s core/services/cart --skip-tests `
-```
+-  `cd client 'ng g s core/services/cart --skip-tests`
 
-```
-- ` 'ng g c features/cart --skip-tests `
 ```
 
 ```
 
-- ` update app.routes.ts `
+-  `'ng g c features/cart --skip-tests`
+
+```
+
+```
+
+-  `update app.routes.ts`
+
 ```
 import { cartComponent } from './features/cart/cart.component';
 
@@ -5343,24 +5786,28 @@ export const routes: Routes =[
     //...
 ]
 ```
-- ` update header.component.html `
+
+-  `update header.component.html`
+
 ```
 //...
      <div class="flex gap-3 align-middle">
-       <a 
+       <a
             routerLink="/cart"          // update
             routerLinkActive="active"   // update
-            matBadge="5" 
-            matBadgeSize="large" 
+            matBadge="5"
+            matBadgeSize="large"
             class="custom-badge mt-2 mr-2">
-                <mat-icon>shopping_cart</mat-icon> 
+                <mat-icon>shopping_cart</mat-icon>
         </a>
         //...
         //...
      </div>
 //...
 ```
-- ` client/src/app/shared/models/cart.ts `
+
+-  `client/src/app/shared/models/cart.ts`
+
 ```
 import { nanoid } from 'nanoid';
 
@@ -5385,14 +5832,16 @@ export class Cart implements CartType {
   items: CartItem[] = []; // CartItem[] is an array while = [] is an empty array
 }
 ```
-- ` install a utility packages that generate a random id `
-- ` npm install nanoid `
+
+-  `install a utility packages that generate a random id`
+-  `npm install nanoid`
 
 ###### 114. Introduction to Angular Signals
-```
-- State that can be observed and reacted to 
 
-- Clean API for state management 
+```
+- State that can be observed and reacted to
+
+- Clean API for state management
 
 - Avoid the complexity of observables
 
@@ -5414,13 +5863,14 @@ count.update(value => value + 2)
 Pros                    Cons
 - Simplicity            - Limited flexibility
 - Performance           - Scalability
-- Readability           - 
+- Readability           -
 
 ```
 
 ###### 115. Adding the Cart service methods
 
-- ` update cart.service.ts `
+-  `update cart.service.ts`
+
 ```
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
@@ -5449,9 +5899,10 @@ export class CartService {
   }
 }
 ```
-- ` ng g --help `
-- ` ng g environments `
-- ` create client/src/environment.development.ts `
+
+-  `ng g --help`
+-  `ng g environments`
+-  `create client/src/environment.development.ts`
 
 ```
 export const environment = {
@@ -5459,7 +5910,9 @@ export const environment = {
   apiUrl: 'http://localhost:5000/api/'
 };
 ```
-- ` create client/src/environment.ts `
+
+-  `create client/src/environment.ts`
+
 ```
 export const environment = {
   production: true,
@@ -5467,10 +5920,10 @@ export const environment = {
 };
 ```
 
-
 ###### 116. Adding an item to the cart
 
-- ` update cart.service.ts `
+-  `update cart.service.ts`
+
 ```
 export class CartService {
     //...setCart(cart: Cart) {...}
@@ -5522,7 +5975,9 @@ export class CartService {
 ```
 
 ###### 117. Using the add item functionality in the product item
-- ` update product-item.component.ts `
+
+-  `update product-item.component.ts`
+
 ```
 import { Component, inject, Input } from '@angular/core';
 import { CartService } from '../../../core/services/cart.service';
@@ -5533,7 +5988,8 @@ export class ProductItemComponent {
 }
 
 ```
-- ` update product-item.component.html `
+
+-  `update product-item.component.html`
 
 ```
 //...
@@ -5543,19 +5999,23 @@ export class ProductItemComponent {
     </button>
 //...
 ```
-- 
-``` 
-note to check it: 
-in the browser, 
 
-- go to network tab 
-- click 'cart' post 
+-
+
+```
+note to check it:
+in the browser,
+
+- go to network tab
+- click 'cart' post
 - requerst tab ( payload ) -> you will see details from there
 ```
-- Issue: About after clicking 'Add to cart' button in shop page
-- ` update product-item.component.html `
+
+-  Issue: About after clicking 'Add to cart' button in shop page
+-  `update product-item.component.html`
+
 ```
-<mat-card-actions (click)="$event.stopPropagation()"> // prevents from interfere to redirect kay inside may sya sa routerLink which is <mat-card></mat-card> 
+<mat-card-actions (click)="$event.stopPropagation()"> // prevents from interfere to redirect kay inside may sya sa routerLink which is <mat-card></mat-card>
 
     // ignore the code below for now, focus on the top commented code.
     <button mat-stroked-button class="w-full" (click)="cartService.addItemToCart(product)">
@@ -5566,10 +6026,12 @@ in the browser,
 ```
 
 ###### 118. Persisting the cart
-- ` to check go to browser tools `
-- ` storage-> Local Storage ` 
-- ` app initializer `
-- ` update app.config.ts `
+
+-  `to check go to browser tools`
+-  `storage-> Local Storage`
+-  `app initializer`
+-  `update app.config.ts`
+
 ```
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -5587,7 +6049,9 @@ export const appConfig: ApplicationConfig = {
   ],
 };
 ```
-- `create new server 'ng g s core/services/init --skip-tests' => init.service.ts ` 
+
+-  `create new server 'ng g s core/services/init --skip-tests' => init.service.ts `
+
 ```
 import { inject, Injectable } from '@angular/core';
 import { CartService } from './cart.service';
@@ -5608,7 +6072,9 @@ export class InitService {
  }
 }
 ```
-- ` update cart.service.ts `
+
+-  `update cart.service.ts`
+
 ```
   getCart(id: string)
   {
@@ -5626,7 +6092,9 @@ export class InitService {
   }
 
 ```
-- ` update app.config.ts`
+
+-  ` update app.config.ts`
+
 ```
 //...
 import { InitService } from './core/services/init.service';
@@ -5641,7 +6109,7 @@ function initializeApp(initService: InitService){
   })
 }
 
-//... 
+//...
 export const appConfig: ApplicationConfig = {
     providers: [
         providerZoneChangeDetection({ eventCoalescing: true }),
@@ -5656,7 +6124,8 @@ export const appConfig: ApplicationConfig = {
 }
 ```
 
-- ` update index.html`
+-  ` update index.html`
+
 ```
 <body>
   <div id="initial-splash">
@@ -5669,15 +6138,17 @@ export const appConfig: ApplicationConfig = {
   <app-root></app-root>
   //...
 ```
+
 ###### 119. Updating the nav bar with the cart item count
 
-- ` update cart.service.ts`
+-  ` update cart.service.ts`
+
 ```
-import { 
+import {
   computed, // update
-  inject, 
-  Injectable, 
-  signal 
+  inject,
+  Injectable,
+  signal
 } from '@angular/core';
 
 //...
@@ -5691,11 +6162,13 @@ export class CartService{
     // - reduce() method will reduce an array of items into a number
     // (sum, item)  sum is an accumulator keeps the running total and in this case it start at 0
     // each time we use this call back function in one of the items in the array it executes `sum + item.quantity` the current sum + item.quantity
-    
+
   })
 }
 ```
-- ` update header.component.ts`
+
+-  ` update header.component.ts`
+
 ```
 import { CartService } from '../../core/services/cart.service';
 
@@ -5706,13 +6179,15 @@ export class HeaderComponent{
   cartService = inject(CartService);
 }
 ```
-- ` update header.component.html`
+
+-  ` update header.component.html`
+
 ```
 //...
       <div class="flex gap-3 align-middle">
          <a routerLink="/cart" routerLinkActive="active"
             matBadge="{{ cartService.itemCount() }}" // and its because its a signal we need to include () parenthesis
-            matBadgeSize="large" 
+            matBadgeSize="large"
             class="custom-badge mt-2 mr-2">
          <mat-icon>shopping_cart</mat-icon>
         </a>
@@ -5726,7 +6201,8 @@ export class HeaderComponent{
 
 ###### 120. Styling the cart
 
-- ` update cart.component.ts `
+-  `update cart.component.ts`
+
 ```
 import { Component, inject } from '@angular/core';
 import { CartService } from '../../core/services/cart.service';
@@ -5735,7 +6211,9 @@ export class CartComponent{
    cartService = inject(CartService);
 }
 ```
-- ` update cart.component.html `
+
+-  `update cart.component.html`
+
 ```
 <section>
   <div class="max-auto max-w-screen-xl">
@@ -5749,9 +6227,11 @@ export class CartComponent{
   </div>
 </section>
 ```
-- ` ng g c features/cart/cart-item --skip-tests `
 
-- ` update cart-item.component.ts`
+-  `ng g c features/cart/cart-item --skip-tests`
+
+-  ` update cart-item.component.ts`
+
 ```
 import { Component, input } from '@angular/core';
 import { CartItem } from '../../../shared/models/cart';
@@ -5774,7 +6254,9 @@ export class CartItemComponent {
   item = input.required<CartItem>();
 }
 ```
-- ` update cart-item.component.html`
+
+-  ` update cart-item.component.html`
+
 ```
 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm mb-4">
   <div class="flex items-center justify-between gap-6">
@@ -5825,7 +6307,8 @@ export class CartItemComponent {
   </div>
 </div>
 ```
-- ` update cart.component.html`
+
+-  ` update cart.component.html`
 
 ```
 <section>
@@ -5836,7 +6319,7 @@ export class CartItemComponent {
         @for(item of cartService.cart()?.items; track item.productId) {
 
           <app-cart-item [item]="item"></app-cart-item> // update
-          
+
           <!-- <div>{{ item.productName }} - {{ item.quantity }}</div> --> // old
         }
       </div>
@@ -5845,7 +6328,8 @@ export class CartItemComponent {
 </section>
 ```
 
-- ` update cart.component.ts`
+-  ` update cart.component.ts`
+
 ```
 @Component({
   //...
@@ -5855,9 +6339,11 @@ export class CartItemComponent {
 ```
 
 ###### 121. Creating the order summary component
-- ` create 'ng g c shared/components/order-summary --skip-tests `
 
-- ` update order-summary.component.html`
+-  `create 'ng g c shared/components/order-summary --skip-tests`
+
+-  ` update order-summary.component.html`
+
 ```
 <div class="mx-auto max-w-4xl flex-1 space-y-6 w-full">
   <div class="space-y-4 rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -5889,7 +6375,9 @@ export class CartItemComponent {
   </div>
 </div>
 ```
-- ` update cart.component.html `
+
+-  `update cart.component.html`
+
 ```
 <section>
   <div class="max-auto max-w-screen-xl">
@@ -5909,7 +6397,8 @@ export class CartItemComponent {
 
 ###### 122. Creating the order summary component part 2
 
-- ` update order-summary.component.html `
+-  `update order-summary.component.html`
+
 ```
 <div class="mx-auto max-w-4xl flex-1 space-y-6 w-full">
   <div class="space-y-4 rounded-lg border border-gray-200 p-4 bg-white shadow-sm"> // adding p-4
@@ -5929,7 +6418,7 @@ export class CartItemComponent {
       </div>
   </div>
 
-  // voucher code 
+  // voucher code
 <div class="space-y-4 rounded-lg border border-gray-200 bg-white shadow-sm">
     <form class="space-y-2 flex flex-col p-2">
       <label class="mb-2 block text-sm font-medium">
@@ -5944,7 +6433,8 @@ export class CartItemComponent {
   </div>
 ```
 
-- ` update order-summary.component.ts `
+-  `update order-summary.component.ts`
+
 ```
 import { MatButton } from '@angular/material/button';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
@@ -5966,7 +6456,8 @@ import { RouterLink } from '@angular/router';
 
 ###### 123. Creating the order totals
 
-- ` update cart.service.ts `
+-  `update cart.service.ts`
+
 ```
 export class CartService {
   //itemCount...
@@ -5990,7 +6481,9 @@ export class CartService {
   //...
 }
 ```
-- ` update order-summary.component.ts`
+
+-  ` update order-summary.component.ts`
+
 ```
 import { Component, inject } from '@angular/core';
 import { CartService } from '../../../core/services/cart.service';
@@ -6014,7 +6507,8 @@ export class OrderSummaryComponent {
 }
 ```
 
-- ` update order-summary.component.html`
+-  ` update order-summary.component.html`
+
 ```
 //...
   <div class="space-y-4">
@@ -6051,12 +6545,14 @@ export class OrderSummaryComponent {
 //...
 ```
 
-- !!Bug - cart-item.component.html issue - visual issue - minor = status: !resolve
+-  !!Bug - cart-item.component.html issue - visual issue - minor = status: !resolve
+
 ```
 Discovered: bug @ cart-item.component.html visual issue on visual minus sign in cart should be red and plus sign should be green, my theory is the tailwind is not detected.
 ```
 
-- ` update cart.service.ts `
+-  `update cart.service.ts`
+
 ```
 // addItemToCart(item: CartItem | Product, quantity = 1){...}
 
@@ -6095,7 +6591,8 @@ Discovered: bug @ cart-item.component.html visual issue on visual minus sign in 
 ```
 
 ###### 125. Adding these functions to the cart
-- `update cart-item.component.ts `
+
+-  `update cart-item.component.ts `
 
 ```
 import { ..., inject, ... } from '@angular/core';
@@ -6105,7 +6602,7 @@ export class CartItemComponent {
   //... item = input.required<CartItem>();
 
   // update starts here
-  cartService = inject(CartService); 
+  cartService = inject(CartService);
   incrementQuantity(){
     this.cartService.addItemToCart(this.item());
   }
@@ -6120,7 +6617,9 @@ export class CartItemComponent {
   // update ends here
 }
 ```
-- ` update cart-item.component.html`
+
+-  ` update cart-item.component.html`
+
 ```
 //...
 <div class="flex items-center align-middle gap-3">
@@ -6143,11 +6642,12 @@ export class CartItemComponent {
   Delete
 </button>
 ```
-- ` check or test in https://localhost:4200/cart `
+
+-  `check or test in https://localhost:4200/cart`
 
 ###### 126. Adding the update cart functionality to the product details
 
-- ` update product-details.component.ts `
+-  `update product-details.component.ts`
 
 ```
 import { CartService } from '../../../core/services/cart.service'; // update import
@@ -6212,7 +6712,9 @@ export class ProductDetailsComponent implements OnInit {
 
 }
 ```
-- ` update product-details.component.html `
+
+-  `update product-details.component.html`
+
 ```
 //...
     <div class="flex gap-4 mt-6">
@@ -6234,13 +6736,16 @@ export class ProductDetailsComponent implements OnInit {
     </div>
 //...
 ```
-- ` To test you go to e.g https://localhost:4200/shop/1 `
+
+-  `To test you go to e.g https://localhost:4200/shop/1`
 
 ###### 127. Creating the checkout components
-- ` cd client/ ng g s core/services/checkout --skip-tests `
-- ` cd client/ ng g c features/checkout --skip-tests `
 
-- ` update app.routes.ts`
+-  `cd client/ ng g s core/services/checkout --skip-tests`
+-  `cd client/ ng g c features/checkout --skip-tests`
+
+-  ` update app.routes.ts`
+
 ```
 import { CheckoutComponent } from './features/checkout/checkout.component';
 
@@ -6249,28 +6754,35 @@ export const routes: Routes = [
   { path: 'checkout', component: CheckoutComponent }, // update
 ];
 ```
-- `update checkout.component.html `
+
+-  `update checkout.component.html `
+
 ```
 <div class="mt-5">
   <h1 class="text-2xl"> Only authorized users should be able to see this!</h1>
 </div>
 ```
-- ` to test go to e.g: https://localhost:4200/checkout `
+
+-  `to test go to e.g: https://localhost:4200/checkout`
 
 ###### 128. Summary
+
 ```
 Goal:
 
-To add the cart feature to the angular app. 
+To add the cart feature to the angular app.
 To understand the usage of signals in Angular
 
 ```
+
 <hr>
 
 ### Section 14: API - Identity
+
 <hr>
 
 ###### 129. Introduction
+
 ```
 In this module
 
@@ -6289,15 +6801,15 @@ In this module
   --- Security risks
   --- Compliance
   --- Overhead  -.Net Identity API Endpoints
-                - The MapIdentityApi<TUser> endpoints 
-                - The call to MapIdentityApi<TUser> adds the following endpoints to the app: 
+                - The MapIdentityApi<TUser> endpoints
+                - The call to MapIdentityApi<TUser> adds the following endpoints to the app:
                 e.g POST /register; /login; /refresh
 
 Goal:
 
 To implement ASP.NET Identity to
 allow clients to login and register
-to our app and receive a Cookie 
+to our app and receive a Cookie
 which can be used to authenticate
 against certain classes/methods
 in the API.
@@ -6311,12 +6823,12 @@ in the API.
 
 [How to use Identity to secure a Web API backend for SPAs](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-9.0)
 
-- ` alternative: Azure Identity`
+-  ` alternative: Azure Identity`
 
-- ` Nuget -> search: microsoft.extensions.identity.stores (Note: 9.0.3 currently development) -> add to: Core.csproj`
-- ` Nuget -> search: microsoft.aspnetcore.identity.EntityFrameworkCore (Note: 9.0.3 currently development) -> add to: Infrastructure.csproj `
+-  ` Nuget -> search: microsoft.extensions.identity.stores (Note: 9.0.3 currently development) -> add to: Core.csproj`
+-  `Nuget -> search: microsoft.aspnetcore.identity.EntityFrameworkCore (Note: 9.0.3 currently development) -> add to: Infrastructure.csproj`
 
-- ` API/Core/Entities/AppUser.cs `
+-  `API/Core/Entities/AppUser.cs`
 
 ```
 using Microsoft.AspNetCore.Identity;
@@ -6331,7 +6843,7 @@ public class AppUser : IdentityUser
 
 ```
 
-- ` update StoreContenxt.cs `
+-  `update StoreContenxt.cs`
 
 ```
 // instead of DBContext derive to IdentityDBContext()
@@ -6342,7 +6854,8 @@ public class StoreContext(DbContextOptions options) : IdentityDBContext<AppUser>
 }
 ```
 
-- ` update Program.cs `
+-  `update Program.cs`
+
 ```
 //... builder.Services.AddSingleton<ICartService, CartService>();
 
@@ -6353,9 +6866,10 @@ builder.Services.AddIdentityApiEndpoints<AppUser>()
 //... app.MapControllers();
 app.MapIdentityApi<AppUser>();
 ```
+
 ###### 131. Updating the DB and testing the endpoints
 
-- `root folder new or re-migration "dotnet ef migrations add IdentityAdded -s API -p Infrastructure" `
+-  `root folder new or re-migration "dotnet ef migrations add IdentityAdded -s API -p Infrastructure" `
 
 ```
 for testing the Identity API go to postman section 14
@@ -6363,7 +6877,7 @@ for testing the Identity API go to postman section 14
 
 - Defualt endpoints - register => POST {{url}}/register
 - Default endpoints -> Login => POST {{url}}/login
-  - blots a token 
+  - blots a token
 
 - Default endpoints - login with cookie => POST {{url}}/login?useCookies=true
   - cookie link in postman
@@ -6373,7 +6887,8 @@ for testing the Identity API go to postman section 14
 
 ###### 132. Adding a custom register endpoint
 
-- ` create API/DTO/RegisterDto.cs `
+-  `create API/DTO/RegisterDto.cs`
+
 ```
 using System.ComponentModel.DataAnnotations;
 
@@ -6389,10 +6904,12 @@ public class RegisterDto
     public string Email { get; set; } = string.Empty;
     [Required]
     public string Password { get; set; } = string.Empty;
-    
+
 }
 ```
-- ` create API/Controllers/AccountController.cs`
+
+-  ` create API/Controllers/AccountController.cs`
+
 ```
 using API.DTOs;
 using Core.Entities;
@@ -6422,16 +6939,19 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     }
 }
 ```
-- ` update Program.cs `
+
+-  `update Program.cs`
+
 ```
 //...app.MapControllers();
 app.MapGroup("api").MapIdentityApi<AppUser>(); // api/login //update with app.MapGroup("api").
 ```
 
-- Test in postman
+-  Test in postman
+
 ```
 Register as Tom {{url}}/api/account/register
-Body: raw: 
+Body: raw:
 
 {
 	"firstName": "Tom",
@@ -6445,17 +6965,21 @@ Login as Bob - get cookie
 
 ```
 
-- `!BUG: 404 not found upon testing at Postman ( desktop workstation ) `
+-  `!BUG: 404 not found upon testing at Postman ( desktop workstation ) `
+
 ```
 // find the bug here AccountController.cs
 public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
 {
-    [HttpPost("register")] <== HttpDelete to HttpPost 
+    [HttpPost("register")] <== HttpDelete to HttpPost
     //...
 }
 ```
+
 ###### 133. Testing the authentication
-- ` update BuggyController.cs `
+
+-  `update BuggyController.cs`
+
 ```
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -6472,22 +6996,28 @@ public class BuggyContoller : BaseApiController{
     }
 }
 ```
-- ` test at postman `
+
+-  `test at postman`
+
 ```
 - step 1: Login as Bob - get cookie - to test -> remove cookies - manage cookies/x or clear all cookies
 - step 2: Get Secret from buggy - {{url}}/api/buggy/secret - 401 upon delatiom of cookie
 - repeat step 1 & 2
 
 note: Postman console for more detail
-``` 
-###### 134. Creating additional user endpoints
 ```
-Note: 
-at this current stage we don't have a way to delete our cookie from the users browsers when a user logs out and 
-what we are going to do next is to create a method that will do that 
+
+###### 134. Creating additional user endpoints
 
 ```
-- ` update AccountController.cs`
+Note:
+at this current stage we don't have a way to delete our cookie from the users browsers when a user logs out and
+what we are going to do next is to create a method that will do that
+
+```
+
+-  ` update AccountController.cs`
+
 ```
 using System.Security.Claims;
 
@@ -6512,7 +7042,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
             .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
 
         if (user == null) return Unauthorized();
-        
+
         return Ok( new
         {
             user.FirstName,
@@ -6529,24 +7059,26 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
 
 }
 ```
+
 [Use the GET /manage/info endpoint](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-9.0#use-the-get-manageinfo-endpoint)
 
-- 
+-
+
 ```
 To Test => Postman
 - Get Current User => {{url}}/api/account/user-info
 - Post Logout => {{url}}/api/account/logout => [body] to remove the cookie -> !405 Bug not working |
                   it should remove the cookie on this endpoint and 204 error should fixed it.
                   (solution:  [HttpPost("logout")] // it should be [HttpPost] and not [HttpGet] )
-                  
+
 - Login as Tom => {{url}}/api/login?useCookies=true => to get a new cookie
-- Get Secret from Buggy => {{url}}/api/buggy/secret => 
-- Logout - to verify the cookie has been deleted. 
+- Get Secret from Buggy => {{url}}/api/buggy/secret =>
+- Logout - to verify the cookie has been deleted.
 ```
 
 ###### 135. Creating extension methods
 
-- ` create API/Extensions/ClaimsPrincipleExtensions.cs ` 
+-  `create API/Extensions/ClaimsPrincipleExtensions.cs`
 
 ```
 using System.Security.Authentication;
@@ -6559,7 +7091,7 @@ namespace API.Extensions;
 
 public static class ClaimsPrincipleExtensions // we typically use static when don't want a new instance of it
 {
-  
+
 public static async Task<AppUser> GetUserByEmail(this UserManager<AppUser> userManager,
       ClaimsPrincipal user)
   {
@@ -6567,7 +7099,7 @@ public static async Task<AppUser> GetUserByEmail(this UserManager<AppUser> userM
           x.Email == user.GetEmail());
 
       if (userToReturn == null) throw new AuthenticationException("User not found");
-      
+
       return userToReturn;
 
   }
@@ -6580,16 +7112,18 @@ public static async Task<AppUser> GetUserByEmail(this UserManager<AppUser> userM
     // use coalasce expression in if
     // if (email == null) throw new AuthenticationException("Email claim not found");
 
-    // use coalasce expression in if = transform to these code below: 
+    // use coalasce expression in if = transform to these code below:
     var email = user.FindFirstValue(ClaimTypes.Email)
     ?? throw new AuthenticationException("Email claim not found");
-    
+
     return email;
 
   }
 }
 ```
-- ` update AccountController.cs `
+
+-  `update AccountController.cs`
+
 ```
 public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
 {
@@ -6603,9 +7137,9 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
         var user = await signInManager.UserManager
             .GetUserByEmail(User);
             // .Users.FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
-        
+
         // because the var user - in no longer a null we don't need the if check condition below:
-        // if (user == null) return Unauthorized(); 
+        // if (user == null) return Unauthorized();
         return Ok(new
         {
             user.FirstName, // 'user' is not null here by hovering the user.
@@ -6616,21 +7150,23 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
     //...
 }
 ```
-- `Postman Checking`
-``` 
+
+-  `Postman Checking`
+
+```
 test in Postman
 
 - Get - Get Secret from buggy = {{url}}/api/buggy/secret
 - Get - Get Current User = {{url}}/api/account/user-info
 
-``` 
+```
 
 ###### 136. Validation errors
 
 ```
 - go to postman
 - Register with weak password {{ url }}/api/account/register
-- 
+-
   {
     "firstName": "Bob",
       "lastName": "Bobbity",
@@ -6641,14 +7177,16 @@ test in Postman
 - Login as Tom bad password  {{url}}/api/login
 
 ```
-- ` update AccountController.cs `
+
+-  `update AccountController.cs`
+
 ```
-//... BaseApiController has default error generation which is why we can call ModelState.AddModelError 
+//... BaseApiController has default error generation which is why we can call ModelState.AddModelError
 // AddModelError
 
   public async Task<IActionResult> Register(RegisterDto registerDto)
   {
-  
+
   // if (!result.Succeeded) return BadRequest(result.Errors); // before
 
     if (!result.Succeeded)
@@ -6663,7 +7201,8 @@ test in Postman
 //...
 ```
 
-- Postman testing
+-  Postman testing
+
 ```
 // Register with weak password
 // {{url}}/api/account/register
@@ -6675,6 +7214,7 @@ test in Postman
 	"password": "letmein" // weak password
 }
 ```
+
 ```
 {
     "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
@@ -6696,7 +7236,9 @@ test in Postman
 ```
 
 ###### 137. Adding a user address class
-- ` create Core/Entities/Address.cs`
+
+-  ` create Core/Entities/Address.cs`
+
 ```
 namespace Core.Entities;
 
@@ -6711,7 +7253,9 @@ public class Address : BaseEntity
 }
 // note: later gamiton ni para sa stripe payment
 ```
-- `then connect to AppUser.cs`
+
+-  `then connect to AppUser.cs`
+
 ```
 public class AppUser : IdentityUser
 {
@@ -6720,16 +7264,17 @@ public class AppUser : IdentityUser
   public Address? Address { get; set; } // connect here
 }
 ```
-- ` update StoreContext.cs`
+
+-  ` update StoreContext.cs`
 
 ```
 public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
 {
     //... public DbSet<Product> Products { get; set; }
 
-    public DbSet<Address> Addresses { get; set; } // connnect here; 
+    public DbSet<Address> Addresses { get; set; } // connnect here;
     // option to query the Address w/out involving the AppUser
-}   
+}
 
 // note: if there a new entity need to update the database via migration
 // cd .. root
@@ -6738,7 +7283,8 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
 
 ###### 138. Adding an endpoint to update the user address
 
-- ` update API/DTOs/AddressDto.cs`
+-  ` update API/DTOs/AddressDto.cs`
+
 ```
 using System.ComponentModel.DataAnnotations;
 
@@ -6766,7 +7312,8 @@ public class AddressDto
 }
 
 ```
-- ` then update AccountController.cs `
+
+-  `then update AccountController.cs`
 
 ```
 public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
@@ -6774,7 +7321,7 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
   //... public ActionResult GetAuthState(){...}
 
     [Authorize]
-    [HttpGet("address")] // correct =>[HttpPost("address")] and wrong=>[HttpGet] this one causes 401 error 
+    [HttpGet("address")] // correct =>[HttpPost("address")] and wrong=>[HttpGet] this one causes 401 error
     public async Task<ActionResult<Address>> CreateOrUpdateAddress(AddressDto addressDto)
     {
         var user = await signInManager.UserManager.GetUserByEmail(User);
@@ -6795,12 +7342,13 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
 
         if (!result.Succeeded) return BadRequest("Problem updating user address");
 
-        return Ok(user.Address.ToDto());            
-        }        
-    }  
+        return Ok(user.Address.ToDto());
+        }
+    }
 }
 ```
-- ` update ClaimsPrincipleExtensions.cs`
+
+-  ` update ClaimsPrincipleExtensions.cs`
 
 ```
 public static class ClaimsPrincipleExtensions
@@ -6809,7 +7357,7 @@ public static class ClaimsPrincipleExtensions
         ClaimsPrincipal user)
     {...}
 
-    // update below code: 
+    // update below code:
     public static async Task<AppUser> GetUserByEmailWithAddress(this UserManager<AppUser> userManager,
         ClaimsPrincipal user)
     {
@@ -6818,14 +7366,16 @@ public static class ClaimsPrincipleExtensions
             .FirstOrDefaultAsync(x => x.Email == user.GetEmail());
 
         if (userToReturn == null) throw new AuthenticationException("User not found");
-        
+
         return userToReturn;
     }
 }
 ```
-- ` create Extension API/Extensions/AddressMappingExtensions.cs ` 
+
+-  `create Extension API/Extensions/AddressMappingExtensions.cs`
+
 ```
-// auto-mapper is has shakey reputation 
+// auto-mapper is has shakey reputation
 // so we are using the Method Extension approach
 using API.DTOs;
 using Core.Entities;
@@ -6833,7 +7383,7 @@ using Core.Entities;
 namespace API.Extensions;
 
 public static class AddressMappingExtensions
-{   
+{
     // 1st extension method
     public static AddressDto ToDto(this Address address)
     {
@@ -6885,7 +7435,8 @@ public static class AddressMappingExtensions
 
 ###### 139. Updating the user address part 2
 
-- ` update AccountController.cs `
+-  `update AccountController.cs`
+
 ```
 public class AccountController(SignInManager<AppUser> signInManager) : BaseApiController
 {
@@ -6907,17 +7458,19 @@ public class AccountController(SignInManager<AppUser> signInManager) : BaseApiCo
 }
 
 ```
-- ` update AddressMappingExtensions.cs` 
+
+-  ` update AddressMappingExtensions.cs`
+
 ```
 public static class AddressMappingExtensions
-{   
+{
     // 1st extension method
 
     // set to nullable AddressDto?
-    public static AddressDto? ToDto(this Address? address) 
+    public static AddressDto? ToDto(this Address? address)
     // enable Address to optional by adding ?
 
-    { 
+    {
       if (address == null) return null; // update to this
       // if (address == null) throw new ArgumentNullException(nameof(address));
 
@@ -6925,24 +7478,25 @@ public static class AddressMappingExtensions
 }
 ```
 
-- Bug - !FF not working need to recheck all of the files here
+-  Bug - !FF not working need to recheck all of the files here
 
-- ` postman testing | Add User Address (tom) - {{ url }}/api/account/address `
+-  `postman testing | Add User Address (tom) - {{ url }}/api/account/address`
 
 ```
 - Add User Address (tom) - {{ url }}/api/account/address
-- 
+-
 ```
 
-- ` update AddressDto.cs`
+-  ` update AddressDto.cs`
+
 ```
-// accidentally set to required that prevents  
+// accidentally set to required that prevents
 public class AddressDto
 {
     //...
 
-    //[Required] // removed this 
-    public string? Line2 { get; set; } // because string is set to optional string? 
+    //[Required] // removed this
+    public string? Line2 { get; set; } // because string is set to optional string?
     //the question mark, data anotation
 
     //...
@@ -6950,9 +7504,10 @@ public class AddressDto
 
 ```
 
-- Postman - Get Current User {{ url }}/api/account/user-info
+-  Postman - Get Current User {{ url }}/api/account/user-info
 
-- ` update AcountController.cs`
+-  ` update AcountController.cs`
+
 ```
 // ...
        var user = await signInManager.UserManager
@@ -6961,7 +7516,8 @@ public class AddressDto
 //...
 ```
 
-- ` update Program.cs ` 
+-  `update Program.cs`
+
 ```
 app.UseCors(x => x
     .AllowAnyHeader()
@@ -6970,17 +7526,20 @@ app.UseCors(x => x
     .WithOrigins("http://localhost:4200", "https://localhost:4200"));
 ```
 
-- ` Bug fixed `
+-  `Bug fixed`
+
 ```
 [Authorize]
-[HttpGet("address")] // correct =>[HttpPost("address")] and wrong=>[HttpGet] this one causes 401 
+[HttpGet("address")] // correct =>[HttpPost("address")] and wrong=>[HttpGet] this one causes 401
 ```
+
 ###### 140. Summary
+
 ```
-Goal: 
-To implement ASP.NET Identity to 
+Goal:
+To implement ASP.NET Identity to
 allow clients to login and register
-to our app and recieve a Cookie 
+to our app and recieve a Cookie
 which can be used to authenticate
 against certain classes/methods
 in the API
@@ -6992,9 +7551,11 @@ A:  Yes, but the general consesus
     user authentication there
 
 ```
+
 <hr>
 
 ### Module 15: Client - Identity
+
 <hr>
 
 ###### 141: Introduction
@@ -7012,25 +7573,27 @@ In this module
 
 ###### 142. Creating the account components
 
-- ` cd client  'ng g s core/services/account --skip-tests' `
-- ` client 'ng g c features/account/login --skip-tests' `
-- ` client 'ng g c features/account/register --skip-tests' `
+-  `cd client  'ng g s core/services/account --skip-tests'`
+-  `client 'ng g c features/account/login --skip-tests'`
+-  `client 'ng g c features/account/register --skip-tests'`
 
-- `create routes for each at app.routes.ts`
+-  `create routes for each at app.routes.ts`
 
 ```
-//... 
+//...
 import { LoginComponent } from './features/account/login/login.component';
 import { RegisterComponent } from './features/account/register/register.component';
 
 export const routes: Routes = [
-  //..., 
+  //...,
   { path: 'account/login', component: LoginComponent },
   { path: 'account/register', component: RegisterComponent },
   //...
 ];
 ```
-- ` update header.component.html`
+
+-  ` update header.component.html`
+
 ```
   //...
 
@@ -7040,7 +7603,8 @@ export const routes: Routes = [
   //...
 ```
 
-- ` create client/src/app/shared/models/user.ts `
+-  `create client/src/app/shared/models/user.ts`
+
 ```
 export type User = {
   firstName: string;
@@ -7059,7 +7623,8 @@ export type Address = {
 }
 ```
 
-- ` update account.service.ts`
+-  ` update account.service.ts`
+
 ```
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
@@ -7099,41 +7664,45 @@ export class AccountService {
   }
 }
 ```
-- ` Take-away and realization`
+
+-  ` Take-away and realization`
+
 ```
 - API can be only tested or trace bugs using postman or other api tester
-- 401 or other issue regarding http verbs - kay sa api ang issue maybe the httpGet is dapat httpPost something ingon ani na mga issue 
+- 401 or other issue regarding http verbs - kay sa api ang issue maybe the httpGet is dapat httpPost something ingon ani na mga issue
 ```
 
 ###### 143. Introduction to Angular forms
 
-- Angular Forms
+-  Angular Forms
+
 ```
-______________________                    _______________________    
+______________________                    _______________________
 |                     |                   |                     |
 | Forms Module        |                   | ReactiveFormsModule |
 | (Template-driven)   |                   |     (Reactive)      |
-|_____________________|                   |_____________________| 
+|_____________________|                   |_____________________|
   - Template driven                             - Flexible
   - Easy to use                                 - Immutable data model
   - 2 way binding                               - Uses observable operators
   - NgModule directive                          - More component code
   - Minimal component code                      - Easier to test
-  - Automatic tracking by Angular               - Reactive transformations (debounce)  
-  - Testing is difficult                        
+  - Automatic tracking by Angular               - Reactive transformations (debounce)
+  - Testing is difficult
 
 
-______________________      ______________________    __________________    
+______________________      ______________________    __________________
 |                     |    |                     |    |                 |
 |    FormControl      |    |      FormGroup      |    |     FormArray   |
 |                     |    |                     |    |                 |
 |_____________________|    |_____________________|    |_________________|
-  
+
 ```
 
 ###### 144. Creating the login form
 
-- ` update login.component.ts `
+-  `update login.component.ts`
+
 ```
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -7177,7 +7746,9 @@ export class LoginComponent {
   }
 }
 ```
-- ` update login.component.html`
+
+-  ` update login.component.html`
+
 ```
 <mat-card class="max-w-lg mx-auto mt-32 p-8 bg-white">
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -7197,7 +7768,8 @@ export class LoginComponent {
   </form>
 </mat-card>
 ```
-- `update account.services.ts `
+
+-  `update account.services.ts `
 
 ```
 login(values: any){
@@ -7220,28 +7792,28 @@ return this.http.get<User>(this.baseUrl + 'account/user-info', {withCredentials:
 
 ```
 
-- ` to test login client `
+-  `to test login client`
 
 ```
 - https://localhost:4200/account/login
 - "email": "tom@test.com",
 	"password": "Pa$$w0rd"
 
-Browser: 
-check network tab: 
+Browser:
+check network tab:
 Chrome: Application Tab => cookies
 Firefox: Storage tab => cookies
 
-- 201 has issue or test has failed 
+- 201 has issue or test has failed
 - 200 server reponse is successfully getting something and working good upon login
-- at Network tab 
-  - user-info 
+- at Network tab
+  - user-info
   - preview and Reponse = 200 means good or successful test
 ```
 
-###### 145. Updating the header component 
+###### 145. Updating the header component
 
-- ` update header.component.ts`
+-  ` update header.component.ts`
 
 ```
 //...
@@ -7265,7 +7837,9 @@ export class HeaderComponent {
 }
 
 ```
-- ` update header.component.html`
+
+-  ` update header.component.html`
+
 ```
   <a> ... </a>
   @if (accountService.currentUser() ) {
@@ -7275,22 +7849,26 @@ export class HeaderComponent {
     <button routerLink="/account/register" mat-stroked-button>Register</button>
   }
 ```
-- `key take away sa 145: Updating header`
+
+-  `key take away sa 145: Updating header`
+
 ```
 - kani kay pag erase lang sa cookie
-- pero wala pay persist pag i-refresh sa user ang browser 
+- pero wala pay persist pag i-refresh sa user ang browser
 - dili ma-disable ang login bisan pag naka login na
 ```
 
 ###### 146. Persisting the login
 
-- ` ideas from NC `
+-  `ideas from NC`
+
 ```
 - call an API endpoints that sends the cookie
 
 ```
 
-- ` update init.services.ts` 
+-  ` update init.services.ts`
+
 ```
 import { AccountService } from '../servies/account.service';
 
@@ -7314,7 +7892,8 @@ export class InitService {
 
 }
 ```
-- ` update account.service.ts `
+
+-  `update account.service.ts`
 
 ```
 import { map } from 'rxjs';
@@ -7338,35 +7917,39 @@ export class AccountService{
   }
 }
 ```
-- `testing the login https://localhost:4200/account/login`
 
-- ` update login.component.ts`
+-  `testing the login https://localhost:4200/account/login`
+
+-  ` update login.component.ts`
+
 ```
 
   onSubmit(){
     this.accountService.login(this.loginForm.value).subscribe({
       next: () =>{
-        
+
         // add subscribe() para mo take reflect on the first login
-        this.accountService.getUserInfo().subscribe(); 
-        
+        this.accountService.getUserInfo().subscribe();
+
         // old
-        // this.accountService.getUserInfo(); 
+        // this.accountService.getUserInfo();
         this.router.navigateByUrl('/shop');
       }
     })
   }
 ```
-- ` test again login https://localhost:4200/account/login `
+
+-  `test again login https://localhost:4200/account/login`
 
 ###### 147. Adding an auth interceptor
 
 ```
 - ang objective ani kay ma centralize ang cookie nga dili redundant sa oban controllers
--  
+-
 ```
 
-- `cd client create 'ng g interceptor core/interceptors/auth --skip-tests' `
+-  `cd client create 'ng g interceptor core/interceptors/auth --skip-tests' `
+
 ```
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // update start here
@@ -7379,7 +7962,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 ```
 
-- ` update app.config.ts`
+-  ` update app.config.ts`
+
 ```
 //...
 import { authInterceptor } from './core/interceptors/auth.interceptor';
@@ -7391,11 +7975,12 @@ provideHttpClient(
         loadingInterceptor,
         authInterceptor // add  authInterceptor
     ])),
-    
+
 }
 ```
 
-- `update account.services.ts`
+-  `update account.services.ts`
+
 ```
   login(values: any){
     let params = new HttpParams();
@@ -7408,8 +7993,8 @@ provideHttpClient(
   getUserInfo(){
                                             // removed {withCredentials: true}
     return this.http.get<User>(this.baseUrl + 'account/user-info').pipe( // update code
-    
-    // old code 
+
+    // old code
     // return this.http.get<User>(this.baseUrl + 'account/user-info', {withCredentials: true}).pipe(
       map(user => {
         this.currentUser.set(user);
@@ -7420,7 +8005,7 @@ provideHttpClient(
 
   logout(){
             /// removed {withCredentials: true},  update code below
-    return this.http.post(this.baseUrl + 'account/logout', {}); 
+    return this.http.post(this.baseUrl + 'account/logout', {});
 
     //return this.http.post(this.baseUrl + 'account/logout', {}, {withCredentials: true}); // old
   }
@@ -7428,10 +8013,11 @@ provideHttpClient(
 
 ###### 148. Adding an Angular Material Menu
 
-- ` material.angular.io/components/menu/overview `
-[Angular Menu Docs](https://material.angular.dev/components/menu/overview)
+-  `material.angular.io/components/menu/overview`
+   [Angular Menu Docs](https://material.angular.dev/components/menu/overview)
 
-- ` update header.components.ts`
+-  ` update header.components.ts`
+
 ```
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
@@ -7447,20 +8033,22 @@ import { MatDivider } from '@angular/material/divider';
   ],
   //...
 
-  }) 
+  })
 ```
-- ` update header.component.html`
+
+-  ` update header.component.html`
+
 ```
 // ...
         @if (accountService.currentUser() ) {
-          
-          // update code 
+
+          // update code
           <button mat-button [matMenuTriggerFor]="menu" >
             <mat-icon> arrow_drop_down</mat-icon>
             <span>{{ accountService.currentUser()?.email }}</span>
           </button>
 
-          // old 
+          // old
           // <button mat-stroked-button (click)="logout()">Logout</button>
         } @else {
           <button routerLink="/account/login" mat-stroked-button>Login</button>
@@ -7491,7 +8079,8 @@ import { MatDivider } from '@angular/material/divider';
 
 ###### 149. Adding the register form
 
-- ` update register.component.ts`
+-  ` update register.component.ts`
+
 ```
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -7526,7 +8115,7 @@ export class RegisterComponent {
   private router = inject(Router);  // update
   private snack = inject(SnackbarService);   // update
 
-  // create registerForm method 
+  // create registerForm method
   registerForm = this.fb.group({
     fristName: [''],
     lastName: [''],
@@ -7534,7 +8123,7 @@ export class RegisterComponent {
     password: [''],
   })
 
-  // create onSubmit method 
+  // create onSubmit method
   onSubmit(){
     this.accountService.register(this.registerForm.value).subscribe({
         next: () => {
@@ -7547,7 +8136,8 @@ export class RegisterComponent {
 
 ```
 
-- ` update register.component.html`
+-  ` update register.component.html`
+
 ```
 <mat-card class="max-w-lg mx-auto mt-32 p-8 bg-white">
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
@@ -7586,14 +8176,16 @@ export class RegisterComponent {
 ```
 
 ###### 150. Form validation part 1
-- ` client side validation`
 
-- ` update register.component.ts`
+-  ` client side validation`
+
+-  ` update register.component.ts`
+
 ```
   //...private snack = inject(SnackbarService);
 
   // add this below
-  validationErrors?: string[]; 
+  validationErrors?: string[];
 
   //...
   onSubmit(){
@@ -7608,7 +8200,9 @@ export class RegisterComponent {
       })
     }
 ```
-- ` update register.component.html`
+
+-  ` update register.component.html`
+
 ```
 <mat-form-field appearance="outline" class="w-full mb-4">
       <mat-label>Password</mat-label>
@@ -7631,8 +8225,10 @@ export class RegisterComponent {
 ```
 
 ###### 151. Form validation part 2
-- ` client side validation `
-- ` update register.component.ts`
+
+-  `client side validation`
+-  ` update register.component.ts`
+
 ```
 import { MatError, ..., ... } from '@angular/material/form-field';
 
@@ -7661,9 +8257,11 @@ import { MatError, ..., ... } from '@angular/material/form-field';
     password: [''],
   })
 ```
-- test the UI here https://localhost:4200/account/register
 
-- ` update register.component.html`
+-  test the UI here https://localhost:4200/account/register
+
+-  ` update register.component.html`
+
 ```
 //...
   <mat-form-field appearance="outline" class="w-full mb-4">
@@ -7690,7 +8288,7 @@ import { MatError, ..., ... } from '@angular/material/form-field';
     <mat-form-field appearance="outline" class="w-full mb-4">
       <mat-label>Email address</mat-label>
       <input formControlName="email" type="email" placeholder="name@example.com" matInput/>
-        
+
         // update code below:
         @if (registerForm.get('email')?.hasError('required')) {
           <mat-error>Email is required</mat-error>
@@ -7700,7 +8298,7 @@ import { MatError, ..., ... } from '@angular/material/form-field';
     <mat-form-field appearance="outline" class="w-full mb-4">
       <mat-label>Password</mat-label>
       <input formControlName="password" type="password" placeholder="Password" matInput/>
-      
+
         // update code below:
         @if(registerForm.get('password')?.hasError('required')) {
           <mat-error>Password is required</mat-error>
@@ -7713,8 +8311,8 @@ import { MatError, ..., ... } from '@angular/material/form-field';
 
 ###### 152. Creating a re-usable text input
 
-- ` create ' ng g c shared/components/text-input --skip-test ' `
-- ` update text-input.component.ts `
+-  `create ' ng g c shared/components/text-input --skip-test '`
+-  `update text-input.component.ts`
 
 ```
 import { Component, Input, Self } from '@angular/core';
@@ -7761,7 +8359,9 @@ export class TextInputComponent implements ControlValueAccessor {
   }
 }
 ```
-- ` update text-input.component.html `
+
+-  `update text-input.component.html`
+
 ```
 <mat-form-field appearance="outline" class="w-full mb-4">
   <mat-label>{{ label }}</mat-label>
@@ -7770,7 +8370,7 @@ export class TextInputComponent implements ControlValueAccessor {
   <input [formControl]="control" type={{type}} placeholder={{label}} matInput/>
   // code below dili mo gana apg ang type={{ type }} naay space dapat no space or gap
   <!-- <input [formControl]="control" type={{ type }} placeholder={{ label }} matInput/> -->
-  
+
   @if (control.hasError('required')) {
     <mat-error>{{ label }} is required</mat-error>
   }
@@ -7780,8 +8380,8 @@ export class TextInputComponent implements ControlValueAccessor {
 </mat-form-field>
 ```
 
+-  `update register.component.html`
 
-- ` update register.component.html `
 ```
 <mat-card class="max-w-lg mx-auto mt-32 p-8 bg-white">
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
@@ -7852,9 +8452,11 @@ export class TextInputComponent implements ControlValueAccessor {
 </mat-card> -->
 
 ```
-- ` to test localhost:4200/account/register `
 
-- ` update register.component.ts `
+-  `to test localhost:4200/account/register`
+
+-  `update register.component.ts`
+
 ```
 @Component({
   selector: 'app-register',
@@ -7884,12 +8486,13 @@ client side security using auth guard
 - example: hey you need to be login first
 ```
 
-- ` ng g help `
-- ` ' ng g g core/guards/auth --dry-run ' testing `
-- ` select: CanActivate `
+-  `ng g help`
+-  `' ng g g core/guards/auth --dry-run ' testing`
+-  `select: CanActivate`
 
-- ` creating guard ' ng g g core/guards/auth --skip-test ' `
-- ` select: CanActivate `
+-  `creating guard ' ng g g core/guards/auth --skip-test '`
+-  `select: CanActivate`
+
 ```
 // auth.gaurd.ts
 import { inject } from '@angular/core';
@@ -7911,21 +8514,23 @@ export const authGuard: CanActivateFn = (route, state) => {
 // note: to use this go to app.routes.ts
 ```
 
-- ` update app.routes.ts`
+-  ` update app.routes.ts`
+
 ```
-//... 
+//...
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   //...
   { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
-  //...  
+  //...
 ]
 
 // next we go to login.component.ts
 ```
 
-- ` update login.component.ts `
+-  `update login.component.ts`
+
 ```
 import { AccountService } from '../../../core/servies/account.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7954,12 +8559,14 @@ export class LoginComponent {
 }
 
 ```
-- ` to test`
+
+-  ` to test`
+
 ```
 - go to https://localhost:4200/cart then checkout button
 - you will be redirected here if not login: https://localhost:4200/account/login?returnUrl=%2Fcheckout
 
-- logout and refresh and login again 
+- logout and refresh and login again
 - there is weird issue: after that it won't redirect (this is using signal)
 ```
 
@@ -7970,7 +8577,9 @@ export class LoginComponent {
 
 - observable is asynchronous
 ```
-- ` update auth.guard.ts `
+
+-  `update auth.guard.ts`
+
 ```
 import { of } from 'rxjs';
 export const authGuard: CanActivateFn = (route, state) => {
@@ -7981,14 +8590,17 @@ export const authGuard: CanActivateFn = (route, state) => {
 }
 ```
 
-- `API - AccountController.cs = explain and connected with the timing issue`
+-  `API - AccountController.cs = explain and connected with the timing issue`
+
 ```
     public ActionResult GetAuthState()
     {
         return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
     }
 ```
-- ` update account.service.ts `
+
+-  `update account.service.ts`
+
 ```
 export class AccountService {
 
@@ -8001,7 +8613,9 @@ export class AccountService {
 
 // back to the auth.guard.ts
 ```
-- ` update auth.guard.ts`
+
+-  ` update auth.guard.ts`
+
 ```
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
@@ -8032,11 +8646,13 @@ export const authGuard: CanActivateFn = (route, state) => {
 // to fix it go to account.service.ts
 // then AccountController.cs
 ```
+
 -  ` update AccountController.cs`
+
 ```
     // no router here [HttpGet()] should add "auth-status"
-    [HttpGet("auth-status")] 
-    
+    [HttpGet("auth-status")]
+
     public ActionResult GetAuthState()
     {
       //... return Ok(new { IsAuthenticated = User.Identity?.IsAuthenticated ?? false });
@@ -8049,7 +8665,9 @@ export const authGuard: CanActivateFn = (route, state) => {
 - what if the basket is empty? because currently right now the checkout section is showing/displaying the order summary
 - Objective is to hide it if its empty and show if there is something on the cart/basket.
 ```
-- ` update checkout.component.html`
+
+-  ` update checkout.component.html`
+
 ```
 <div class="mt-5">
   <h1 class="text-2xl"> Only authorized users and those with something in the cart should be able to see this!</h1>
@@ -8057,7 +8675,9 @@ export const authGuard: CanActivateFn = (route, state) => {
 ```
 
 ###### 156. Challenge solution
-- ` creating guard ' ng g g core/guards/empty-cart --skip-test ' `
+
+-  `creating guard ' ng g g core/guards/empty-cart --skip-test '`
+
 ```
 import { CanActivateFn, Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
@@ -8079,7 +8699,9 @@ export const emptyCartGuard: CanActivateFn = (route, state) => {
 
 // then use it app.router.ts
 ```
-- `update app.router.ts`
+
+-  `update app.router.ts`
+
 ```
 //...
 import { emptyCartGuard } from './core/guards/empty-cart.guard';
@@ -8092,12 +8714,14 @@ export const routes: Routes = [
 ```
 
 ###### 157. Adding an empty state component
+
 ```
 Note: better approach when we don't have anything to display in cart
 ```
 
-- ` create ' ng g c shared/components/empty-state --skip-test ' `
-- ` empty-state.component.ts`
+-  `create ' ng g c shared/components/empty-state --skip-test '`
+-  ` empty-state.component.ts`
+
 ```
 import { Component } from '@angular/core';
 import { MatButton } from '@angular/material/button';
@@ -8118,7 +8742,9 @@ export class EmptyStateComponent {
 
 }
 ```
-- ` update empty-state.component.html`
+
+-  ` update empty-state.component.html`
+
 ```
 <div class="max-w-screen-xl mx-auto mt-32 px-10 py-4 bg-white rounded-lg shadow-md w-full">
   <div class="flex flex-col items-center justify-center py-12 w-full">
@@ -8130,19 +8756,22 @@ export class EmptyStateComponent {
   </div>
 </div>
 ```
-- `empty-state.component.scss`
+
+-  `empty-state.component.scss`
+
 ```
 .icon-display{
   transform: scale(3);
 }
 ```
 
-- `  update cart.component.html - important`
+-  `  update cart.component.html - important`
+
 ```
 <section>
-  // wierd issue on this part (cartService.cart()?.items?.length > 0 ) 
+  // wierd issue on this part (cartService.cart()?.items?.length > 0 )
   // to solve go to cart.services.ts
-  // if sometimes typescript is showin silly error you can override it. by adding ! at cartService.cart()?.items?.length! > 0 
+  // if sometimes typescript is showin silly error you can override it. by adding ! at cartService.cart()?.items?.length! > 0
   @if (cartService.cart()?.items?.length! > 0 ) {
 
     <div class="max-auto max-w-screen-xl">
@@ -8164,14 +8793,15 @@ export class EmptyStateComponent {
 </section>
 ```
 
-- ` not so important in this lecture:  update cart.component.ts`
+-  ` not so important in this lecture:  update cart.component.ts`
+
 ```
 import { EmptyStateComponent } from "../../shared/components/empty-state/empty-state.component";
 @Component({
   selector: 'app-cart',
   imports: [
-    //...OrderSummaryComponent, 
-    EmptyStateComponent // import this 
+    //...OrderSummaryComponent,
+    EmptyStateComponent // import this
   ],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss'
@@ -8179,6 +8809,7 @@ import { EmptyStateComponent } from "../../shared/components/empty-state/empty-s
 ```
 
 ###### 158. Summary
+
 ```
   - ability to login and register
 
@@ -8204,23 +8835,26 @@ A:  They don't give us any functionality we can't have in
 
 ###### Module 16 : API & Client Checkout = 159. Introduction
 
-- `Ideas `
+-  `Ideas `
+
 ```
-- PCI 
+- PCI
 - Strong Customer Authentication
 ```
 
-- ` In this module `
+-  `In this module`
+
 ```
 - Creating a Stripe account
 - PCI DSS Compliance
-- Strong Customer Authentication - 
+- Strong Customer Authentication -
 - Setting up Payment Intents
 - Using Stripe Elements
 - Confirming Card Payments
 ```
 
-- ` Goal:`
+-  ` Goal:`
+
 ```
 To be able to accept payments
 securely globally that complies
@@ -8242,7 +8876,7 @@ regulations.
       - Implementing strong access control measures
       - Regular monitor and test networks
       - Maintaining an information security policy
-    
+
       Note: stripe is a payment processor
 
 PCI DSS non-compliance consequences
@@ -8263,7 +8897,7 @@ PCI DSS non-compliance consequences
   - Something the customer has (phone or hardware token)
   - Something the customer is (fingerprint or facial recognition)
 
-- Banks will decline payments that require SCA and 
+- Banks will decline payments that require SCA and
   don't meet this criteria
 
 ============================================================
@@ -8278,7 +8912,7 @@ Strip without SCA ( USA and Canadian payment only)
 7) On success/failure result sent to client from API
 
  _________       __________
-|         |     |          | 
+|         |     |          |
 |   API   |     |   STRIPE |
 |_________|     |__________|
 
@@ -8301,20 +8935,21 @@ Stripe with SCA - Accept payment globally
 9) Payment confirmed and can be shipped
 
  _________       __________
-|         |---->|          | 
+|         |---->|          |
 |   API   |<----|   STRIPE |
 |_________|     |__________|
   ^               ^
   |              /
    \            /
-    \          /  
+    \          /
     [ client  ]
 
 ```
 
 ###### 160. Creating the delivery methods in the API
 
-- ` create new Entity ' Core/Entities/DeliveryMethod.cs' `
+-  `create new Entity ' Core/Entities/DeliveryMethod.cs'`
+
 ```
 namespace Core.Entities;
 
@@ -8324,11 +8959,13 @@ public class DeliveryMethod : BaseEntity
     public required string ShortName { get; set; }
     public required string DeliveryTime { get; set; }
     public required string Description { get; set; }
-    public required decimal Price { get; set; } 
-    // note: kay tungod naa daw ang decimal mao ng mag buhat ug DeliveryMethodConfiguration.cs 
+    public required decimal Price { get; set; }
+    // note: kay tungod naa daw ang decimal mao ng mag buhat ug DeliveryMethodConfiguration.cs
 }
 ```
-- `create new ' Infrastructure/Config/DeliveryMethodConfiguration.cs ' `
+
+-  `create new ' Infrastructure/Config/DeliveryMethodConfiguration.cs ' `
+
 ```
 using Core.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -8346,7 +8983,9 @@ public class DeliveryMethodConfiguration : IEntityTypeConfiguration<DeliveryMeth
 
 // unya adto ta sa StoreContext.cs
 ```
-- ` update StoreContext.cs`
+
+-  ` update StoreContext.cs`
+
 ```
 public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
 {
@@ -8354,12 +8993,14 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
   public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
 
   // ...
-} 
+}
 
 // note: Infrastructure/Data/SeedData/delivery.json i-seed ang mga data diri.
 // buhaton nato ni sa StoreContextSeed.cs
 ```
-- ` update StoreContextSeed.cs `
+
+-  `update StoreContextSeed.cs`
+
 ```
 public class StoreContextSeed
 {
@@ -8380,25 +9021,108 @@ public class StoreContextSeed
     }
 }
 ```
-- ` cd API root  'dotnet ef migrations add DeliveryMethodsAdded -p Infrastructure -s API' `
 
+-  `cd API root  'dotnet ef migrations add DeliveryMethodsAdded -p Infrastructure -s API'`
 
 ```
 Issue: on old EF version
 - updating a t entity framework tools version 'x.x.x' is older ...
 
-Solution: 
+Solution:
 - dotnet tool update dotnet-ef -g
 ```
-- Test Data DeliveryMethodsAdded.cs 
+
+-  Test Data DeliveryMethodsAdded.cs
+
 ```
 - To check if data has been seeded in the database
 - go Infrastructure/Migrations/######_DeliveryMethodsAdded.cs
 - re-run in the terminal cd api / dotnet watch
-- the logs below will show 
-            
+- the logs below will show
+
             info: Microsoft.EntityFrameworkCore.Database.Command[20101]
             Executed DbCommand //...
-            
+
 - it means successful.
+```
+
+###### 161. Setting up Stripe
+
+-  `https://stripe.com/pricing`
+-  `https://dashboard.stripe.com/test/dashboard - wilfred057777@gmail.com`
+
+```
+-> In Strip sandbox - click the top left - Shop icon->
+-> the create new account -> 'Other accounts' ->  + Create account ( fill up the form)
+-> after that:
+
+-> at Home tab-> API key(right side at this current time - June2025 UI )
+-> Publishable key: pk_test_51RaRRpQ4ykDn46yOi2ItBhEXc7gWqmfj8tV3mfFaUAllbGzNG9tc0pEqs7jvPv3uwggX8GUDAl8GA7U4gbSOCYWM00aqPSWy9D
+
+-> Secret key: sk_test_51RaRRpQ4ykDn46yOxDUqEkKMSkAxBpFBU4g7AL3TJZEGWF4Gy4r56vA2tcJnRf4yTiCmfqHiwQ4v9vx2Ps7M8TU500wlrybuus
+
+// then we go to: 
+```
+- ` API/appsettings.Development.json `
+```
+  "ConnectionStrings":{...},
+  "StripeSettings":{
+    "PublishableKey":"pk_test_51RaRRpQ4ykDn46yOi2ItBhEXc7gWqmfj8tV3mfFaUAllbGzNG9tc0pEqs7jvPv3uwggX8GUDAl8GA7U4gbSOCYWM00aqPSWy9D",
+    "SecretKey":"sk_test_51RaRRpQ4ykDn46yOxDUqEkKMSkAxBpFBU4g7AL3TJZEGWF4Gy4r56vA2tcJnRf4yTiCmfqHiwQ4v9vx2Ps7M8TU500wlrybuus"
+  },
+```
+- ` update API/appsettings.json`
+```
+{
+  //"Loggin": {...},
+  "StripeSettings":{
+  "PublishableKey":"pk_test_51RaRRpQ4ykDn46yOi2ItBhEXc7gWqmfj8tV3mfFaUAllbGzNG9tc0pEqs7jvPv3uwggX8GUDAl8GA7U4gbSOCYWM00aqPSWy9D",
+  "SecretKey":"sk_test_51RaRRpQ4ykDn46yOxDUqEkKMSkAxBpFBU4g7AL3TJZEGWF4Gy4r56vA2tcJnRf4yTiCmfqHiwQ4v9vx2Ps7M8TU500wlrybuus"
+  },
+}
+```
+- ` note for stripe Publishable and Secrete keys: you will see test on the generated keys but in production you will not see the test on the keys!!` 
+
+- ` in order to used the stripe key in the application project we need a package for stripe`
+```
+=> go to nuget -> stripe.net - by Jayme Davis ( for this project )
+=> add to Infrastructure.csproj
+=> to utilize the stripe for the C# backend we gonna create a payment service
+```
+- `=> Solution Explorer: create -> Core/Interfaces/IPaymentService.css`
+```
+using Core.Entities;
+
+namespace Core.Interfaces;
+
+public interface IPaymentService
+{
+    Task<ShoppingCart> CreateOrUpdatePaymentIntent(string cartId);
+}
+
+```
+- ` next the we create the implmentation class`
+- ` go to Infrastructure/Services/PaymentService.cs`
+```
+
+using Core.Entities;
+using Core.Interfaces;
+
+namespace Infrastructure.Services;
+
+             // implement the IPaymentService interface
+public class PaymentService : IPaymentService
+{
+    public Task<ShoppingCart> CreateOrUpdatePaymentIntent(string cartId)
+    {
+        throw new NotImplementedException();
+    }
+}
+```
+- ` Then add the service to the program.cs class`
+```
+//... add the service below this code
+//... builder.Services.AddIdentityApiEndpoints<AppUser>().AddEntityFrameworkStores<StoreContext>();
+
+builder.Services.AddScoped<IPaymentService, PaymentService>(); // add the stripe service here
 ```
