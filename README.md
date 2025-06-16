@@ -9126,3 +9126,120 @@ public class PaymentService : IPaymentService
 
 builder.Services.AddScoped<IPaymentService, PaymentService>(); // add the stripe service here
 ```
+
+###### 162. Implementing the payment intent
+- ` update to return null at the moment the following files:`
+- ` PaymentService.cs & IPaymentService.cs` 
+```
+public class PaymentService : IPaymentService
+{
+    //update ShoppingCart to null by adding '?'
+    public Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId)
+    {}
+}
+```
+- `Update IPaymentService.cs`
+```
+public interface IPaymentService
+{
+    //update ShoppingCart to null by adding '?'
+    Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId);
+}
+```
+- `next go to Core/Entities/ShoppingCart.cs and update the code`
+```
+namespace Core.Entities;
+
+public class ShoppingCart
+{
+  //... public
+  public int? DeliveryMethodId { get; set; }
+  public string? ClientSecret { get; set; }
+  public string? PaymentIntentId { get; set; }
+}
+```
+- ` next we go to PaymentService.cs`
+```
+using Core.Entities;
+using Core.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Stripe;
+
+namespace Infrastructure.Services;
+
+public class PaymentService(
+    IConfiguration config,
+    ICartService cartService,
+    // setting Product to not be ambiguous with Core.Entities.Product (below code:)
+    IGenericRepository<Core.Entities.Product> productRepo, 
+    IGenericRepository<DeliveryMethod> dmRepo) 
+    : IPaymentService
+{
+    public async Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId)
+    {
+        StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"];
+
+        var cart = await cartService.GetCartAsync(cartId);
+
+        if (cart == null) return null;
+
+        var shippingPrice = 0m;
+
+        if (cart.DeliveryMethodId.HasValue)
+        {
+            var deliveryMethod = await dmRepo.GetByIdAsync((int)cart.DeliveryMethodId);
+
+            if (deliveryMethod == null) return null;
+
+            shippingPrice = deliveryMethod.Price;
+        }
+
+        // validate the items for the cart
+        foreach (var item in cart.Items)
+        {
+            var productItem = await productRepo.GetByIdAsync(item.ProductId);
+            if (productItem == null) return null;
+
+            if (item.Price != productItem.Price)
+            {
+                item.Price = productItem.Price;
+            }
+        }
+
+        // variable for service
+        var service = new PaymentIntentService();
+        PaymentIntent? intent = null;
+
+        if (string.IsNullOrEmpty(cart.PaymentIntentId))
+        {
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = (long)cart.Items.Sum(x => x.Quantity * (x.Price * 100))
+                        + (long)shippingPrice * 100,
+                Currency = "usd",
+                PaymentMethodTypes = ["card"]
+            };
+            intent = await service.CreateAsync(options);
+
+            // update the cart with the payment intent id and client secret
+            cart.PaymentIntentId = intent.Id;
+            cart.ClientSecret = intent.ClientSecret;
+        }
+        else
+        {
+            var options = new PaymentIntentUpdateOptions
+            {
+                Amount = (long)cart.Items.Sum(x => x.Quantity * (x.Price * 100))
+                        + (long)shippingPrice * 100,
+            };
+            intent = await service.UpdateAsync(cart.PaymentIntentId, options);
+        }
+
+        await cartService.SetCartAsync(cart);
+
+        return cart; // dapat naa return para dili mag problema ang CreateOrUpdatePaymentIntent class kay pagwala ni return, mag error siya nga wala daw return type
+    }
+}
+```
+[Implementing the payment intent](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151441#notes)
+- `note to myself: balikan ni na video 'Implementing the payment intent' kay gi explain niya ang dagan sa pagbuhat ug PaymentService thoroughly ` 
