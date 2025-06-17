@@ -9243,3 +9243,166 @@ public class PaymentService(
 ```
 [Implementing the payment intent](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151441#notes)
 - `note to myself: balikan ni na video 'Implementing the payment intent' kay gi explain niya ang dagan sa pagbuhat ug PaymentService thoroughly ` 
+
+###### 163. Creating a payment controller
+
+- ` create new controller ' API/Controllers/PaymentsController.cs ` 
+```
+using Core.Entities;
+using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers;
+
+public class PaymentsController(
+        IPaymentService paymentService,
+        IGenericRepository<DeliveryMethod> dmRepo
+    ) : BaseApiController
+{
+    [Authorize]
+    [HttpPost("{cartId}")]
+    public async Task<ActionResult<ShoppingCart>> CreateOrUpdatePaymentIntent(string cartId)
+    {
+        var cart = await paymentService.CreateOrUpdatePaymentIntent(cartId);
+
+        if (cart == null) return BadRequest("Problem with your cart");
+
+        return Ok(cart);
+    }
+
+    [HttpGet("deliveryMethods")]
+    public async Task<ActionResult<IReadOnlyList<DeliveryMethod>>> GetDeliveryMethods()
+    {
+        return Ok(await dmRepo.ListAllAsync());
+    }
+
+}
+
+```
+- ` check Stripe https://dashboard.stripe.com/test/payments `
+
+- ` test API via Postman Section 16: Payments `
+```
+- Update cart : {{url}}/api/cart 
+- json raw files
+```
+
+```
+{
+    "id": "cart1",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 1,
+            "quantity": 2,
+            "pictureUrl": "https://localhost:5001/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ]
+}
+```
+```
+{
+    "id": "cart1",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 1,
+            "quantity": 2,
+            "pictureUrl": "https://localhost:5001/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ],
+    "deliveryMethodId": null,
+    "clientSecret": null,
+    "paymentIntentId": null
+}
+```
+- `Postman => Create payment intent as tom {{url}}/api/payments/cart1`
+```
+- Create payment intent as tom`
+- Login as top first - Section 14: Login as tom => {{url}}/api/login?useCookies=true => 200 ok response
+- create payment as tom => {{url}}/api/payments/cart1
+- Status: 200 ok
+
+- Body return:
+{
+    "id": "cart1",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 150.00,
+            "quantity": 2,
+            "pictureUrl": "https://localhost:5001/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ],
+    
+    // get this 3 items and add to `Update Cart - Add payment intent details`
+    "deliveryMethodId": null,
+    "clientSecret": "pi_3Rap5XQ4ykDn46yO27Ar5LkA_secret_nvCwFM39efPgMyV3w4setY1CV",
+    "paymentIntentId": "pi_3Rap5XQ4ykDn46yO27Ar5LkA"
+}
+
+// check the stripe https://dashboard.stripe.com/test/payments or in the transactions tab
+// update the cart 
+// kaning Update cart intent for the mean time we do it manually sa Postman later we create UI after ni
+// `Update Cart - Add payment intent details` - Add payment intent details => {{url}}/api/cart
+
+{
+    "id": "cart1",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 1,
+            "quantity": 10,
+            "pictureUrl": "https://localhost:5001/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ],
+    "deliveryMethodId": null,
+    "clientSecret": "pi_3Rap5XQ4ykDn46yO27Ar5LkA_secret_nvCwFM39efPgMyV3w4setY1CV",
+    "paymentIntentId": "pi_3Rap5XQ4ykDn46yO27Ar5LkA"
+}
+// send this request then 
+// next
+```
+- `Update payment intent as bob => {{url}}/api/payments/cart1 `
+```
+- at postman send this request {{url}}/api/payments/cart1 
+{}
+//
+
+// return response coming Status: 200 Ok
+{
+    "id": "cart1",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 150.00,
+            "quantity": 10,
+            "pictureUrl": "https://localhost:5001/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ],
+    "deliveryMethodId": null,
+    "clientSecret": "pi_3Rap5XQ4ykDn46yO27Ar5LkA_secret_nvCwFM39efPgMyV3w4setY1CV",
+    "paymentIntentId": "pi_3Rap5XQ4ykDn46yO27Ar5LkA"
+}
+
+// then check again the Stripe 
+// https://dashboard.stripe.com/test/payments/ 
+// price before the update was $300 the it became $1,500
+
+```
