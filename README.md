@@ -9519,3 +9519,62 @@ export class OrderSummaryComponent {
 }
 //...
 ```
+
+###### 165. Adding client side Stripe
+
+- ` install : ' npm install @stripe/stripe-js ' at client: cd client `
+- ` create  : ' ng g s core/services/stripe --skip-test' `
+
+- ` stripe.service.ts but needs enviroment.ts setup by adding publisable key coming from stripe `
+```
+
+```
+- ` update cart.ts `
+```
+export type CartType = {
+  //...id: string;
+  //...items: CartItem[];
+  deliveryMethodId?: number; // update
+  paymentIntentId?: string; // update 
+  clientSecret?: string; // update
+}
+
+//...
+
+  // id = ''; // generate a random id in this example nanoid package
+  //...id = nanoid(); // implment nanoid package to generate a random id
+  //...items: CartItem[] = []; // CartItem[] is an array while = [] is an empty array
+  
+  deliveryMethodId?: number; // update
+  paymentIntentId?: string; // update
+  clientSecret?: string; // update
+```
+
+- ` update environment.development.ts & environment.ts ` 
+```
+// this should be done first before stripe.service.ts
+// get the publishable key at stripe
+
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:5000/api/',
+  // get this publish key from your Stripe dashboard
+  stripePublicKey:
+  'pk_test_51RaRRpQ4ykDn46yOi2ItBhEXc7gWqmfj8tV3mfFaUAllbGzNG9tc0pEqs7jvPv3uwggX8GUDAl8GA7U4gbSOCYWM00aqPSWy9D',
+};
+```
+- `update environment.ts `
+export const environment = {
+  production: true,
+  apiUrl: 'api/',
+  // update code below with the publishable key
+  stripePublicKey:
+  'pk_test_51RaRRpQ4ykDn46yOi2ItBhEXc7gWqmfj8tV3mfFaUAllbGzNG9tc0pEqs7jvPv3uwggX8GUDAl8GA7U4gbSOCYWM00aqPSWy9D',
+};
+
+```
+ need to rewatch this again with out typing the code and just try to understand the flow
+ very important in setting or connecting stripe api how it is created
+
+```
+[165. Adding client side Stripe](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151525#overview)

@@ -3,6 +3,9 @@ import { nanoid } from 'nanoid';
 export type CartType = {
   id: string;
   items: CartItem[];
+  deliveryMethodId?: number;
+  paymentIntentId?: string;
+  clientSecret?: string;
 }
 
 export type CartItem = {
@@ -19,4 +22,7 @@ export class Cart implements CartType {
   // id = ''; // generate a random id in this example nanoid package
   id = nanoid(); // implment nanoid package to generate a random id
   items: CartItem[] = []; // CartItem[] is an array while = [] is an empty array
+  deliveryMethodId?: number;
+  paymentIntentId?: string;
+  clientSecret?: string;
 }
