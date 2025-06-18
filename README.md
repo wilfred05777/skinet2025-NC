@@ -9503,6 +9503,12 @@ export class OrderSummaryComponent {
 // take away for some reason it didn't work on its own location.path '.path' has issue at order-summary.component.ts 
 // must add `PathLocationStrategy` to 
 // import { CurrencyPipe, Location, PathLocationStrategy } from '@angular/common';
+// 1- read the terminal prompting issue
+// 2- if unfamiliar go to google and search or use AI/
+// 3- vscode - terminal `[ERROR] NG9: Property 'path' does not exist on type 'Location'.`
+// 4- google and just scroll the searches that are comming related to the bug prompt and lucky lead me to 
+// 5- https://angular.dev/api/common/Location and which I find it more reliable since its coming from 
+//    angular documentations and just trying to hook the class or library 
 
 // update code below:
 @if (location.path() !== '/checkout'){
