@@ -9406,3 +9406,6 @@ public class PaymentsController(
 // price before the update was $300 the it became $1,500
 
 ```
+- this Chapters needed to be rewatch for better understanding how he create services and controllers to connect to Stripe payment
+[162. Implementing the payment intent](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151441#content)
+[163. Creating a payment controller](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151443#content)
