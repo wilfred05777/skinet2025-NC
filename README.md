@@ -9409,3 +9409,107 @@ public class PaymentsController(
 - this Chapters needed to be rewatch for better understanding how he create services and controllers to connect to Stripe payment
 [162. Implementing the payment intent](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151441#content)
 [163. Creating a payment controller](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151443#content)
+
+
+###### 164. Checkout page layout
+
+- ` update checkout.component.html`
+```
+<div class="flex mt-32">
+  <div class="w-3/4">
+    Checkout Stepper
+  </div>
+  <div class="w-1/4">
+    <app-order-summary></app-order-summary>
+  </div>
+</div>
+```
+- ` update checkout.component.ts`
+```
+import { OrderSummaryComponent } from "../../shared/components/order-summary/order-summary.component";
+
+@Component({
+  //...
+  imports: [OrderSummaryComponent],
+  //...
+})
+```
+
+- ` update cart.component.html `
+```
+  // removed this because its restricting the full width of the certain section
+   <div class="max-auto max-w-screen-xl"> 
+   //...
+   </div>
+```
+[Angular Material Stepper](https://material.angular.dev/components/stepper/overview)
+
+- ` To use the Angular Material Stepper ` 
+- ` in this case we go to checkout.component.ts`
+
+```
+import { MatStepperModule } from '@angular/material/stepper';
+@Component({
+  selector: 'app-checkout',
+  imports: [
+    //...OrderSummaryComponent,
+    MatStepperModule
+  ],
+  //...
+})
+```
+- ` update checkout.component.html`
+```
+<div class="flex mt-32 gap-6">
+  <div class="w-3/4">
+    <!-- Checkout Stepper -->
+     <mat-stepper #stepper class="bg-white border border-gray-200 shadow-sm">
+      <mat-step label="Address"> Address form</mat-step>
+      <mat-step label="Shipping"> Delivery form</mat-step>
+      <mat-step label="Payment"> Payment form</mat-step>
+      <mat-step label="Confirmation"> Review form</mat-step>
+     </mat-stepper>
+  </div>
+  <div class="w-1/4">
+    <app-order-summary></app-order-summary>
+  </div>
+</div>
+```
+- ` Issue User Checkout hide checkout button when in user checkout page `
+```
+  - update order-summary.component.ts purpose is to hide the UI if a user is the checkout stepper
+  - 
+```
+- `update order-summary.component.ts`
+```
+//...
+import { CurrencyPipe, Location } from '@angular/common';
+//...
+
+export class OrderSummaryComponent {
+  //...cartService = inject(CartService);
+
+  location = inject(Location); // update
+}
+```
+- ` update order-summary.component.html `
+```
+//...put this inside the if (location.path() !== '/checkout'){ ... }
+<div class="flex flex-col gap-2">
+  <button routerLink="/checkout" mat-flat-button>Checkout</button>
+  <button routerLink="/shop" mat-button>Continue Shopping</button>
+</div>
+
+// take away for some reason it didn't work on its own location.path '.path' has issue at order-summary.component.ts 
+// must add `PathLocationStrategy` to 
+// import { CurrencyPipe, Location, PathLocationStrategy } from '@angular/common';
+
+// update code below:
+@if (location.path() !== '/checkout'){
+  <div class="flex flex-col gap-2">
+    <button routerLink="/checkout" mat-flat-button>Checkout</button>
+    <button routerLink="/shop" mat-button>Continue Shopping</button>
+  </div>
+}
+//...
+```
