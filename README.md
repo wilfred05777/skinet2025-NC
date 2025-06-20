@@ -9578,3 +9578,99 @@ export const environment = {
 
 ```
 [165. Adding client side Stripe](https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151525#overview)
+
+###### 166. Creating the address element
+
+- ` update stripe.service.ts`
+```
+import { loadStripe, Stripe, StripeAddressElement, StripeAddressElementOptions, StripeElements } from '@stripe/stripe-js';
+
+export class StripeService {
+  //private elements?: StripeElements;
+  private addressElement?: StripeAddressElement;
+}
+
+  //... async initializeElements() {...}
+
+  async createAddressElement() {
+    if (!this.addressElement){
+      const elements = await this.initializeElements();
+      if(elements) {
+        const options: StripeAddressElementOptions = {
+          mode: 'shipping',
+        };
+        this.addressElement = elements.create('address', options);
+      } else{
+        throw new Error('Elements instance not been loaded');
+      }
+    }
+    return this.addressElement;
+  }
+
+  //...createOrUpdatePaymentIntent(){...}
+}
+```
+- ` update checkout.component.html`
+```
+//...
+    <mat-stepper #stepper class="bg-white border border-gray-200 shadow-sm">
+      <mat-step label="Address">
+        <div class="address-element">
+        </div>
+        <div class="flex justify-between mt-6">
+        <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
+        <button matStepperNext mat-flat-button>Next</button>
+      </div>
+    </mat-step>
+//...
+```
+- ` update checkout.component.ts`
+```
+import { Component, inject, OnInit } from '@angular/core';
+import { OrderSummaryComponent } from "../../shared/components/order-summary/order-summary.component";
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatButton } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
+import { StripeService } from '../../core/services/stripe.service';
+import { StripeAddressElement } from '@stripe/stripe-js';
+import { SnackbarService } from '../../core/services/snackbar.service';
+
+
+@Component({
+  selector: 'app-checkout',
+  imports: [
+    OrderSummaryComponent,
+    MatStepperModule,
+    MatButton,
+    RouterLink
+  ],
+  templateUrl: './checkout.component.html',
+  styleUrl: './checkout.component.scss'
+})
+export class CheckoutComponent implements OnInit {
+  // inject stripe into our component
+  private stripeService = inject(StripeService);
+  private snackBar = inject(SnackbarService);
+  addressElement?: StripeAddressElement;
+
+  async ngOnInit() {
+    try {
+      this.addressElement = await this.stripeService.createAddressElement();
+      this.addressElement.mount('#address-element');
+    } catch (error: any) {
+      this.snackBar.error(error.message);
+    }
+  }
+}
+```
+- ` test ui https://localhost:4200/checkout `
+- ` encouter issues:`
+```
+  - on address it create 404 on api
+  
+  - browser prompt:
+    - Request path: POST http://localhost:5000/api/payments, Response status code: 404 
+  
+    - POST http://localhost:5000/api/payments [HTTP/1.1 404 Not Found 0ms] 
+    
+```
