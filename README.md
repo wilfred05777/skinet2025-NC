@@ -9674,3 +9674,116 @@ export class CheckoutComponent implements OnInit {
     - POST http://localhost:5000/api/payments [HTTP/1.1 404 Not Found 0ms] 
     
 ```
+
+###### 167. Populating the address in the address form
+
+```
+- postman
+- Section 14 
+  - Add User Address (tom) => {{url}}/api/account/address
+  - 
+  {
+    "line1": "100 Park Lane",
+    "city": "London",
+    "state": "London",
+    "postalCode": "SW1 1BD",
+    "country": "GB"
+  }
+
+- Get Current User => {{url}}/api/account/user-info
+- 
+  {
+      "firstName": "Tom",
+      "lastName": "Smith",
+      "email": "tom@test.com",
+      "address": {
+          "line1": "100 Park Lane",
+          "line2": null,
+          "city": "London",
+          "state": "London",
+          "postalCode": "SW1 1BD",
+          "country": "GB"
+      }
+  }
+```
+
+- ` update stripe.service.ts`
+```
+//...
+import { AccountService } from '../servies/account.service';
+
+export class StripeService {
+
+  //...
+    private accountService = inject(AccountService);
+  //...
+
+    async createAddressElement() {
+    if(elements) {
+        const user = this.accountService.currentUser(); // update
+        let defaultValues: StripeAddressElementOptions['defaultValues'] = {}; // update
+
+        if(user) {
+          defaultValues.name = user.firstName + ' ' + user.lastName; // update
+        }
+
+        if(user?.address){ // update 
+          defaultValues.address = { // update
+            line1: user.address.line1, // update
+            line2: user.address.line2, // update
+            city: user.address.city, // update
+            state: user.address.state, // update
+            country: user.address.country, // update
+            postal_code: user.address.postalCode // update
+          }
+        }
+
+        const options: StripeAddressElementOptions = {
+          //... mode: 'shipping',
+          defaultValues  // update
+        };
+    }
+}
+
+// at localhost:4200/checout 
+// under addres it should populate the address which in this case i haven't fix the issue yet.
+// 
+```
+
+- ` just fixed the issue about register.component.html `
+```
+[disabled]="registerForm.invalid" => adding [] in disabled
+```
+
+- ` update stripe.service.ts`
+```
+export class StripeService {
+
+  //...
+
+  disposeElements(){
+    this.elements = undefined;
+    this.addressElement = undifined;
+  }
+}
+
+// to use this we go to checkout.component.ts
+```
+- ` update checkout.component.ts => para ni sa different user nga mo login dili mahabilin ilahang cookie`
+```
+import {...Component, ...inject, OnDestroy, ...OnInit } from '@angular/core';
+//...
+
+export class CheckoutComponent implements OnInit, OnDestroy {
+
+  //...
+
+  ngOnDestroy(): void {
+    this.stripeService.disposeElements();
+  }
+}
+```
+- ` ngOndestroy is iyahang ipang remove ang cookie of a certian user`
+```
+- to test this is dapat imoha ipangLogin then ilogout with different user
+```
