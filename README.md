@@ -9608,6 +9608,18 @@ export class StripeService {
   }
 
   //...createOrUpdatePaymentIntent(){...}
+  createOrUpdatePaymentIntent(){
+    const cart = this.cartService.cart();
+    if (!cart) throw new Error('Problem with cart');
+    // 500 error is due to return , but it should be + for concatenation 
+    // this.http.post<Cart>(this.baseUrl + 'payments/', cart.id, {}).pipe( 
+    return this.http.post<Cart>(this.baseUrl + 'payments/' + cart.id, {}).pipe(
+      map(cart => {
+        this.cartService.cart.set(cart);
+        return cart;
+      })
+    );
+  }
 }
 ```
 - ` update checkout.component.html`
