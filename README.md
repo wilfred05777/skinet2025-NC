@@ -9799,3 +9799,141 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 ```
 - to test this is dapat imoha ipangLogin then ilogout with different user
 ```
+
+###### 168. Save the address as default address
+
+- `save address input into our database`
+
+- [Checkbox Material Ui](https://material.angular.dev/components/checkbox/overview)
+
+- `update checkout.component.ts`
+```
+//...
+import {MatCheckboxChange, MatCheckboxModule} from '@angular/material/checkbox';
+import { StepperSelectionEvent } from '@angular/cdk/stepper';
+import { Address } from '../../shared/models/user';
+
+@Component({
+  selector: 'app-checkout',
+  imports: [
+    //...RouterLink
+    MatCheckboxModule
+  ],
+  //...templateUrl:'...';
+})
+export class CheckoutComponent implements OnInit, OnDestroy {
+  //...addressElement?: StripeAddressElement;
+  saveAddress = false;
+
+  //... async ngOnInit(){...}
+
+  async onStepChange(event:StepperSelectionEvent){
+      if (event.selectedIndex === 1){
+        if (this.saveAddress){
+          // const address = await this.addressElement?.getValue();
+          const address = await this.getAddressFromStripeAddress();
+        }
+      }
+    }
+    private async getAddressFromStripeAddress(): Promise<Address | null> {
+      const result = await this.addressElement?.getValue();
+      const address = result?.value.address;
+
+      if (address){
+        return {
+          line1: address.line1,
+          line2: address.line2 || undefined,
+          city: address.city,
+          country: address.country,
+          state: address.state,
+          postalCode: address.postal_code,
+        }
+      } else return null;
+    }
+
+    onSaveAddressCheckboxChange(event: MatCheckboxChange){
+      this.saveAddress = event.checked;
+    }
+
+  //... ngOnDestroy():void{...}
+}
+
+```
+- ` update checkout.component.html`
+```
+      
+    <div class="w-3/4">
+      <!-- Checkout Stepper -->
+        <mat-stepper
+        (selectionChange)="onStepChange($event)" // update
+        #stepper
+      class="bg-white border border-gray-200 shadow-sm">
+        <mat-step label="Address">
+          <div id="address-element"></div>
+          
+          <!--  // update start -->
+          <div class="flex justify-end mt-1">
+            <mat-checkbox
+              [checked]="saveAddress"
+              (change)="onSaveAddressCheckboxChange($event)"
+            >
+              Save as default address
+            </mat-checkbox>
+          </div>
+          <!--  // update end -->
+      //...
+```
+
+- `update account.service.ts `
+
+```
+//...
+import { map, tap } from 'rxjs';
+
+  updateAddress(address: Address){
+    // return this.http.post(this.baseUrl + 'account/address', address);
+    return this.http.post(this.baseUrl + 'account/address', address).pipe(
+
+      // using 'tap' because we don't need to interfere with the incoming data
+      tap(()=> {
+        this.currentUser.update(user => {
+          if (user) user.address = address
+          return user;
+        })
+      })
+    );
+  }
+
+/// going back to checkout.component.ts
+```
+- ` 168. Save the address as default address => checkout.component.ts`
+```
+//...
+import { AccountService } from '../../core/servies/account.service';  // update
+
+export class CheckoutComponent implements OnInit, OnDestroy {
+  //... private snackbar = inject(SnackbarService);
+  private accountService = inject(AccountService); // update
+  //... addressElement?: StripeAddressElement;
+
+  //...
+  async onStepChange(event:StepperSelectionEvent){
+    if (event.selectedIndex === 1){
+      if (this.saveAddress){
+        const address = await this.getAddressFromStripeAddress();
+        address && firstValueFrom(this.accountService.updateAddress(address)); // update
+      }
+    }
+  }
+
+  //...
+}
+```
+
+- ` Doing Address Stepper test below are the steps: `
+```
+- doing a test in the localhost:4200/checkout
+- fill in the Address stepper
+- tick => checkbox: set to default address 
+- save, if it is successful all data will be save once you try to refresh the browser
+```
