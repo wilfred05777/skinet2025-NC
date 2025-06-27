@@ -9937,3 +9937,87 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 - tick => checkbox: set to default address 
 - save, if it is successful all data will be save once you try to refresh the browser
 ```
+
+###### 169. Creating the delivery component part 1
+
+- `Step 1-a: In client folder => ' ng g c features/checkout/checkout-delivery --skip-tests ' `
+
+- `step 1-b: we need to create a checkoutDelivery models => client/src/app/shared/models/deliveryMetho.ts `
+```
+// this below is our property for our deliver checkout-delivery.component.ts 
+export type DeliveryMethod = {
+  shortName: string;
+  deliveryTime: string;
+  description: string;
+  price: number;
+  id: number;
+}
+```
+- `step 2: update the checkout.service.ts `
+```
+// step 2 
+import { inject, Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { DeliveryMethod } from '../../shared/models/deliveryMethods';
+import { map, of } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CheckoutService {
+  baseUrl = environment.apiUrl;
+  private http = inject(HttpClient);
+  deliveryMethods: DeliveryMethod[] = [];
+
+
+  getDeliveryMethods(){
+
+    if (this.deliveryMethods.length > 0) return of(this.deliveryMethods)
+    return this.http.get<DeliveryMethod[]>(this.baseUrl + 'payments/delivery-methods').pipe(
+      map(methods => {
+        this.deliveryMethods = methods.sort((a, b) => b.price - a.price);
+        return methods
+      })
+    )
+  }
+}
+
+```
+
+- `step 3: checkout-delivery.component.ts`
+```
+import { Component, inject, OnInit } from '@angular/core';
+import { CheckoutService } from '../../../core/services/checkout.service';
+
+@Component({
+  selector: 'app-checkout-delivery',
+  imports: [],
+  templateUrl: './checkout-delivery.component.html',
+  styleUrl: './checkout-delivery.component.scss'
+})
+export class CheckoutDeliveryComponent implements OnInit {
+  checkoutService = inject(CheckoutService);
+
+  ngOnInit(): void {
+    this.checkoutService.getDeliveryMethods().subscribe();
+  }
+}
+```
+
+- `step 4: checkout.component.html`
+```
+  //...    
+    <!-- <mat-step label="Shipping">...</mat-step> update the content inside ... -->
+
+      <mat-step label="Shipping">
+        <!-- Delivery form -->
+         <app-checkout-delivery></app-checkout-delivery>
+          <div class="flex justify-between mt-6">
+            <button matStepperPrevious mat-stroked-button>Back</button>
+            <button matStepperNext mat-flat-button>Next</button>
+          </div>
+      </mat-step>
+    
+  //...
+```
