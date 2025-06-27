@@ -9940,9 +9940,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
 ###### 169. Creating the delivery component part 1
 
-- `Step 1-a: In client folder => ' ng g c features/checkout/checkout-delivery --skip-tests ' `
+- `Step-1-a:169 In client folder => ' ng g c features/checkout/checkout-delivery --skip-tests ' `
 
-- `step 1-b: we need to create a checkoutDelivery models => client/src/app/shared/models/deliveryMetho.ts `
+- `step-1-b:169 we need to create a checkoutDelivery models => client/src/app/shared/models/deliveryMetho.ts `
 ```
 // this below is our property for our deliver checkout-delivery.component.ts 
 export type DeliveryMethod = {
@@ -9953,9 +9953,9 @@ export type DeliveryMethod = {
   id: number;
 }
 ```
-- `step 2: update the checkout.service.ts `
+- `step-2:169 update the checkout.service.ts `
 ```
-// step 2 
+// step-2:169 
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
@@ -9985,7 +9985,7 @@ export class CheckoutService {
 
 ```
 
-- `step 3: checkout-delivery.component.ts`
+- `step-3: checkout-delivery.component.ts`
 ```
 import { Component, inject, OnInit } from '@angular/core';
 import { CheckoutService } from '../../../core/services/checkout.service';
@@ -10005,7 +10005,7 @@ export class CheckoutDeliveryComponent implements OnInit {
 }
 ```
 
-- `step 4: checkout.component.html`
+- `step-4: checkout.component.html`
 ```
   //...    
     <!-- <mat-step label="Shipping">...</mat-step> update the content inside ... -->
@@ -10020,4 +10020,57 @@ export class CheckoutDeliveryComponent implements OnInit {
       </mat-step>
     
   //...
+```
+###### 170. Creating the delivery component part 2
+- ` step-5: create radio buttons - go to angular material - radio button `
+- [ng material - radio button](https://material.angular.dev/components/radio/overview)
+- [Api ref. for angular Material radio](https://material.angular.dev/components/radio/api)
+- ` import {MatRadioModule} from '@angular/material/radio'; insert this to `
+
+- ` step-5:170 - update checkout-delivery.component.ts ` 
+```
+//... step-5.b:170
+import {MatRadioModule} from '@angular/material/radio';
+import { CurrencyPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-checkout-delivery',
+  imports: [
+    MatRadioModule, // udpate
+    CurrencyPipe // udpate
+  ],
+  // templateUrl:...
+})
+
+//...
+```
+- ` step-6:170 update template checkout-delivery-component.html `
+```
+<div class="w-full">
+  <mat-radio-button class="grid grid-cols-2 gap-4">
+    @for (method of checkoutService.deliveryMethods; track method.id) {
+      <label class="p-3 border border-gray-200 cursor-pointer w-full h-full hover:bg-purple-100">
+        <mat-radio-button class="w-full h-full" [value]="method">
+          <div class="flex flex-col w-full h-full">
+            <strong>{{ method.shortName }} - {{ method.price | currency }}</strong>
+          </div>
+        </mat-radio-button>
+      </label>
+    }
+  </mat-radio-button>
+</div>
+```
+
+- Issue/Bug spotted @ 170. Creating the delivery component part 2: !FF = functional but the UI is broken
+
+```
+- bug-170-a: stepper Header and stepper container: - background color is not white instead #FEF8FC <= wrong #ffffff
+- bug-170-b: shipping tab UI display is not properly align to 2column and 2rows size distribution
+
+```
+
+- Objective: 
+```
+- upon selecting any one of the shipping fee the 'Order summary' section the 'Delivery fee' should update
+ 
 ```
