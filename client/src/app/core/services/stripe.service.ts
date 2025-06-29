@@ -80,7 +80,8 @@ export class StripeService {
     if (!cart) throw new Error('Problem with cart');
     return this.http.post<Cart>(this.baseUrl + 'payments/' + cart.id, {}).pipe(
       map(cart => {
-        this.cartService.cart.set(cart);
+        // this.cartService.cart.set(cart); // while this pass only on local browser
+        this.cartService.setCart(cart); // this pass the redis
         return cart;
       })
     );

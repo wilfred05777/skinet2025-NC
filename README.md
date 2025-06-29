@@ -10074,3 +10074,138 @@ import { CurrencyPipe } from '@angular/common';
 - upon selecting any one of the shipping fee the 'Order summary' section the 'Delivery fee' should update
  
 ```
+
+###### 171. Creating the delivery component part 3
+
+- ` step-7:171 Update cart.service.ts `
+
+```
+//...
+import { DeliveryMethod } from '../../shared/models/deliveryMethods';
+
+// create another signal
+  seletedDelivery = signal<DeliveryMethod | null>(null);
+  totals = computed(() => {
+    //...const cart = this.cart();
+    const delivery = this.seletedDelivery();
+
+    if(!cart) return null;
+    //... const subTotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shipping = delivery ? delivery.price : 0; // update
+    //... const discount = 0;
+  })
+```
+
+- ` step-6b:171 update checkout-delivery.component.ts `
+```
+//...
+import { CartService } from '../../../core/services/cart.service'; // update
+import { DeliveryMethod } from '../../../shared/models/deliveryMethods'; // update
+
+export class CheckoutDeliveryComponent implements OnInit {
+  //...
+  cartService = inject(CartService);   // update 
+
+  ngOnInit(): void {
+    // update below
+    this.checkoutService.getDeliveryMethods().subscribe({
+      next: methods => {
+        if (this.cartService.cart()?.deliveryMethodId) {
+          const method = methods.find(x => x.id === this.cartService.cart()?.deliveryMethodId);
+          if(method){
+            this.cartService.seletedDelivery.set(method);
+          }
+        }
+      }
+    });
+  }
+
+  // update below code
+  updateDeliveryMethod(method: DeliveryMethod){
+    // update our signal
+    this.cartService.seletedDelivery.set(method);
+    const cart = this.cartService.cart();
+    if(cart) {
+      cart.deliveryMethodId = method.id;
+      this.cartService.setCart(cart);
+    }
+  }
+
+}
+
+```
+
+- `step-6c:171 Update checkout-delivery.component.html `
+```
+<div class="w-full">
+  <mat-radio-group
+    [value]="cartService.seletedDelivery()?.id" // update
+    (change)="updateDeliveryMethod($event.value)" // update
+    class="grid grid-cols-2 gap-4"
+  >
+  @for (method of checkoutService.deliveryMethods; track method.id) {
+      <label class="p-3 border border-gray-200 cursor-pointer w-full h-full hover:bg-purple-100">
+        <mat-radio-button
+          class="w-full h-full" [value]="method" // update
+          [checked]="cartService.seletedDelivery() === method" // update
+          [value]="method" 
+          >
+          <div class="flex flex-col w-full h-full">
+            <strong>{{ method.shortName }} - {{ method.price | currency }}</strong>
+            <span class="text-sm">{{ method.description }}</span>
+          </div>
+        </mat-radio-button>
+      </label>
+    }
+  </mat-radio-group>
+</div>
+```
+
+- ` step-6d:171 update checkout.component.ts ` 
+```
+  async onStepChange(event:StepperSelectionEvent){
+    if (event.selectedIndex === 1){
+      //...
+    }
+
+    // update code below
+        if(event.selectedIndex === 2){
+      // update payment intent
+      await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+    }
+  }
+```
+- `step-6e:171 update stripe.service.ts `
+```
+  createOrUpdatePaymentIntent(){
+    const cart = this.cartService.cart();
+    if (!cart) throw new Error('Problem with cart');
+    return this.http.post<Cart>(this.baseUrl + 'payments/' + cart.id, {}).pipe(
+      map(cart => {
+        this.cartService.setCart(cart); // this pass the redis // updated this line
+        // this.cartService.cart.set(cart); // while this pass only on local browser
+        return cart;
+      })
+    );
+  }
+```
+- ` step-6f:171 testing via browser`
+```
+- localhost:4200/checkout
+- address
+- shipping
+  - ticking any will update the following:
+    - Order summary
+      - Delivery fee
+      - Total will compute base on the delivery/shipping fee
+
+- then test on strip payment dashboard 
+  - it will reflect the payment
+  - https://dashboard.stripe.com/test/payments
+  - in my case: $210/$205 - June 29,2025 - if it reflect the value here it means it is successful.
+
+-bug fFix also the issue of 2x2 UI
+
+- next on step is on payment tab for checkout page
+
+```
