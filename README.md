@@ -10209,3 +10209,85 @@ export class CheckoutDeliveryComponent implements OnInit {
 - next on step is on payment tab for checkout page
 
 ```
+
+###### 172. Creating the payment element
+
+- ` 172-Update stripe.service.ts `
+```
+export class StripeService {
+  //...
+  private paymentElement?: StripePaymentElement;
+
+  //... async initializeElements() {//...}
+  
+  async createPaymentElement(){
+    if(!this.paymentElement){
+      const elements = await this.initializeElements();
+      if(elements){
+        this.paymentElement = elements.create('payment');
+      } else {
+        throw new Error("Elements instance has not been initialized");
+      }
+    }
+    return this.paymentElement;
+  }
+  //...async createAddressElement() {//...}
+
+  //...
+
+  disposeElements(){
+    //...this.addressElement = undefined;
+    this.paymentElement = undefined;
+  }
+}
+```
+
+- ` 172-update checkout.component.html`
+```
+      //...
+      <mat-step label="Payment">
+        <!-- Payment form -->
+          <div id="payment-element"></div>
+            <div class="flex justify-between mt-6">
+            <button matStepperPrevious mat-stroked-button>Back</button>
+            <button matStepperNext mat-flat-button>Next</button>
+          </div>
+      </mat-step>
+    //....
+```
+- ` 172-update: checkout.component.ts `
+```
+
+export class CheckoutComponent implements OnInit, OnDestroy { 
+  //...
+  paymentElement?: StripePaymentElement;
+}
+
+async ngOnInit(){
+  try{
+    //...this.addressElement.mount('#address-element');
+    
+    this.paymentElement = await this.stripeService.createPaymentElement();
+    this.paymentElement.mount('#payment-element');
+  } catch {
+    //...
+  }
+}
+```
+- 172-Testing UI
+```
+- https://localhost:4200/checkout
+  - Payment
+  - downside of using stripe api on console
+    - there alot poping console issues
+  - stripe -> settings(cog icon)
+  - Search Product settings category
+    -> Payments
+    -> Payment methods tab
+    -> Map suggestion in console will auto suggest for map location address automatically by 
+        hooking up stripe payment
+  
+  - note for development purposes: in chrome console in filter icon type - minus e.g '-utf8 -apple -google -thrid-party' not an ideal solution but good thing to know
+
+  - search about "stripe third part cookies"
+```
