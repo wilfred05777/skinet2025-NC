@@ -10397,3 +10397,19 @@ export class CheckoutReviewComponent {
 - calling or styling the UI makes it easy.
 - 
 ```
+
+###### 174. Stripe address auto complete functionality
+
+- ` if I don't want some stripe payment additional functionality `
+- ` just go to https://dashboard.stripe.com/test/settings/payment_methods/pmc_1RaRSMQ4ykDn46yOpZsYmoHv and turn it off `
+- ` payment option the link will be turn off`
+- ` Address section address line 1 suggestion: user that doesn't have an address `
+- ` iframe issue on the address auto suggestion when creating a new user like sam@test.com - difficult to style`
+
+- ` update-174: checkout.component.html`
+```
+//  adding z-0 is sovling issus about auto suggest address odd layout ouput on UI 
+<button class="z-0" routerLink="/shop" mat-stroked-button>Continue shopping</button>
+<button class="z-0" matStepperNext mat-flat-button>Next</button>
+```
+- ` next will be disabling the stepper to not go or jump around to other tabs like: Shipping  | Payment | Confirmation` 
