@@ -10291,3 +10291,109 @@ async ngOnInit(){
 
   - search about "stripe third part cookies"
 ```
+
+###### 173. Creating the review component
+
+- ` cd client ' ng g c features/checkout/checkout-review --skip-tests ' `
+- ` Update-173: checkout.component.html `
+```
+    //...
+
+      <mat-step label="Confirmation">
+      <!-- Review form -->
+        // update code start
+        <app-checkout-review></app-checkout-review> // update code
+        <div class="flex justify-between mt-6">
+          <button matStepperPrevious mat-stroked-button>Back</button>
+          <button mat-flat-button>Pay {{ cartService.totals()?.total | currency }}</button>
+        </div>
+        // update code end
+      </mat-step>
+
+      //...
+```
+
+- ` Update-173: checkout.component.ts `
+```
+import { CartService } from '../../core/services/cart.service';
+import { CurrencyPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-checkout',
+  imports: [
+    //...CheckoutDeliveryComponent,
+    CheckoutReviewComponent, // update 
+    CurrencyPipe // update 
+],
+  templateUrl: './checkout.component.html',
+  styleUrl: './checkout.component.scss'
+})
+
+export class CheckoutComponent implements OnInit, OnDestroy {
+  //...private accountService = inject(AccountService);
+  cartService = inject(CartService); // update
+  //...addressElement?: StripeAddressElement;
+}
+```
+
+- ` update-173: checkout-review.component.ts `
+```
+import { Component, inject } from '@angular/core';
+import { CartService } from '../../../core/services/cart.service';
+import { CurrencyPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-checkout-review',
+  imports: [
+    CurrencyPipe
+  ],
+  templateUrl: './checkout-review.component.html',
+  styleUrl: './checkout-review.component.scss'
+})
+export class CheckoutReviewComponent {
+  cartService = inject(CartService);
+}
+
+```
+- ` update-173: checkout-review.component.html `
+```
+<div class="mt-4 w-full">
+  <h4 class="text-lg font-semibold">Billing and delivery information</h4>
+  <dl>
+    <dt class="font-medium">Shipping address</dt>
+    <dd class="mt-1 text-gray-500">Shipping address goes here</dd>
+    <dt class="font-medium">Payment details</dt>
+    <dd class="mt-1 text-gray-500">Payment details goes here</dd>
+  </dl>
+</div>
+
+<div class="mt-6 mx-auto">
+  <div class="border-b border-gray-200">
+    <table class="w-full text-center">
+      <tbody class="divide-y divide-gray-200">
+        @for (item of cartService.cart()?.items; track item.productId) {
+          <tr>
+            <td class="py-4">
+              <div class="flex items-center gap-4">
+                <img src="{{item.pictureUrl}}" alt="product image" class="w-10 h-10"/>
+                <span>{{item.productName}}</span>
+              </div>
+            </td>
+            <td class="p-4">x{{ item.quantity }}</td>
+            <td class="p-4 text-right">{{ item.price | currency }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+```
+- ` testing go to localhost:4200/checkout => stepper => confirmation `
+
+- Take aways for 173: 
+``` 
+- take aways at the moment: is that when we are able to laid the C# api properly
+- calling or styling the UI makes it easy.
+- 
+```
