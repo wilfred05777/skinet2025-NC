@@ -10600,3 +10600,50 @@ export class CheckoutDeliveryComponent implements OnInit {
 }
 
 ```
+
+###### 176. Validating step completion part 2
+
+- ` implement prevent a user from moving forward in stepper if anything is not meet accordingly `
+- ` but we will allow a user to move backward step`
+
+- `update-176 step-1: checkout.component.html ` 
+```
+<div class="flex mt-32 gap-6">
+  <div class="w-3/4">
+    <!-- Checkout Stepper -->
+     <mat-stepper
+      (selectionChange)="onStepChange($event)"
+
+      [linear]="true" /* update: what this does it will prevent the stepper to move forward */
+      
+      //...
+      //class="bg-white border border-gray-200 shadow-sm">
+
+        /* updated code below: */
+        <mat-step label="Address" [completed]="completionStatus().address">
+                      //...
+                      <button
+              [disabled]="!completionStatus().address"
+              class="z-0" matStepperNext mat-flat-button>Next</button>
+        </mat-step>
+          
+        <mat-step label="Address" [completed]="completionStatus().delivery">
+          //...
+              <button
+              [disabled]="!completionStatus().delivery"
+              class="z-0" matStepperNext mat-flat-button>Next
+              </button>
+        </mat-step>
+
+        <mat-step label="Address" [completed]="completionStatus().card>
+              <button
+              [disabled]="!completionStatus().card"
+              class="z-0" matStepperNext mat-flat-button>Next
+              </button>
+        </mat-step>
+         /* updated code above: */
+
+    </mat-stepper>
+  </div>
+</div>
+```
