@@ -10413,3 +10413,190 @@ export class CheckoutReviewComponent {
 <button class="z-0" matStepperNext mat-flat-button>Next</button>
 ```
 - ` next will be disabling the stepper to not go or jump around to other tabs like: Shipping  | Payment | Confirmation` 
+
+###### 175. Validating step completion part 1
+- ` update-175: checkout.component.ts `
+```
+//...
+import { //..., StripeAddressElementChangeEvent, //... } from '@stripe/stripe-js';
+import { //...CurrencyPipe, JsonPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-checkout',
+  imports: [
+    //...CurrencyPipe,
+    JsonPipe
+],
+  //...templateUrl: './checkout.component.html',
+  //...styleUrl: './checkout.component.scss'
+})
+
+export class CheckoutComponent implements OnInit, OnDestroy {
+
+  //...saveAddress = false;
+
+  completionStatus = signal<{address: boolean, card: boolean, delivery:boolean}>(
+    {address: false, card: false, delivery: false}
+  )
+
+  /*constructor(){
+    this.handleAddressChange = this.handleAddressChange.bind(this)
+  }*/
+
+  async ngOnInit() {
+    try {
+      //...this.addressElement = await this.stripeService.createAddressElement();
+      //...this.addressElement.mount('#address-element');
+      // update code below
+      this.addressElement.on('change', this.handleAddressChange);
+
+      //...this.paymentElement = await this.stripeService.createPaymentElement();
+      //...this.paymentElement.mount('#payment-element');
+    } //...catch (error: any) {
+      //...this.snackbar.error(error.message);
+    }
+  }
+
+  // same effect as constructor () {...}
+
+  handleAddressChange = (event: StripeAddressElementChangeEvent) => {
+    this.completionStatus.update(state => {
+      state.address = event.complete;
+      return state;
+    })
+  }
+
+  /* old code
+  handleAddressChange(event: StripeAddressElementChangeEvent){
+    this.completionStatus.update(state => {
+      state.address = event.complete;
+      return state;
+    })
+  }
+  */
+}
+```
+
+- ` update-175: checkout.component.html `
+```
+    //...
+     </mat-stepper>
+      // update code below
+     <pre>{{completionStatus() | json}}</pre>
+     //...
+```
+- ` testing address the address status will reflect and it will reflect to true in the UI `
+
+- ` next-step: update-175: checkout.component.ts `
+```
+import { //..., StripePaymentElementChangeEvent } from '@stripe/stripe-js';
+
+export class CheckoutComponent implements OnInit, OnDestroy {
+//...
+  async ngOnInit() {
+    try {
+      //...
+
+      //...this.paymentElement = await this.stripeService.createPaymentElement();
+      //..this.paymentElement.on('change', this.handlePaymentChange);
+
+      this.paymentElement.mount('#payment-element'); // update 
+      
+    } catch (error: any) {
+      //...this.snackbar.error(error.message);
+    }
+  }
+  //   handleAddressChange  =() =>{...}
+  
+  /* updated code below */
+  handlePaymentChange = (event: StripePaymentElementChangeEvent) => {
+    this.completionStatus.update(state => {
+      state.card = event.complete;
+      return state;
+    })
+  }
+}
+```
+
+- `delivery: false update to true when the value is true`
+- `next-step-> update-175: checkout-delivery.component.ts`
+```
+import { //...OnInit, output } from '@angular/core';
+
+export class CheckoutDeliveryComponent implements OnInit {
+
+  deliveryComplete = output<boolean>(); // update
+
+  ngOnInit(): void {
+    this.checkoutService.getDeliveryMethods().subscribe({
+      next: methods => {
+        if (this.cartService.cart()?.deliveryMethodId) {
+          const method = methods.find(x => x.id === this.cartService.cart()?.deliveryMethodId);
+          if(method){
+            this.cartService.seletedDelivery.set(method);
+            this.deliveryComplete.emit(true) // update
+          }
+        }
+      }
+    });
+  }
+
+  updateDeliveryMethod(method: DeliveryMethod){
+    // update our signal
+    this.cartService.seletedDelivery.set(method);
+    const cart = this.cartService.cart();
+    if(cart) {
+      cart.deliveryMethodId = method.id;
+      this.cartService.setCart(cart);
+      this.deliveryComplete.emit(true);  // update
+    }
+  }
+
+}
+```
+
+- `next-step: update:175 checkout-component.ts `
+```
+
+//...handlePaymentChange = (event: StripePaymentElementChangeEvent) => {...}
+  
+  /* update code */
+  handleDeliveryChange(event: boolean){
+    this.completionStatus.update(state =>{
+      state.delivery = event;
+      return state;
+    })
+  }
+
+  //... async onStepChange(event:StepperSelectionEvent){...}
+
+```
+
+- ` update-175: template checkout.component.html `
+```
+      <mat-step label="Shipping">
+        <!-- Delivery form -->
+                      /* update (deliveryComplete="handleDeliveryChange($event)" 
+                        - checking is if cart has item it will have "delivery":true
+                      */
+         <app-checkout-delivery (deliveryComplete)="handleDeliveryChange($event)"></app-checkout-delivery>
+          <div class="flex justify-between mt-6">
+            <button matStepperPrevious mat-stroked-button>Back</button>
+            <button matStepperNext mat-flat-button>Next</button>
+          </div>
+      </mat-step>
+```
+- Check and testing
+```
+- UI -> localhost:4200/checkout
+- Address - it will set to 'true' if it has an input in it
+- card - it will set to 'true' if it has an input in it
+- delivery - it will become 'true' if the cart is not empty
+
+{
+  "address": true,
+  "card": true,
+  "delivery": true
+}
+
+```
