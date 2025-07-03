@@ -90,6 +90,18 @@ export class StripeService {
     return this.addressElement;
   }
 
+  async createConfimationToken(){
+    const stripe = await this.getStripeInstance();
+    const elements = await this.initializeElements();
+    const result = await elements.submit();
+    if (result.error) throw Error(result.error.message);
+    if(stripe){
+      return await stripe.createConfirmationToken({elements});
+    } else {
+      throw new Error('Stripe not available');
+    }
+  }
+
   createOrUpdatePaymentIntent(){
     const cart = this.cartService.cart();
     if (!cart) throw new Error('Problem with cart');

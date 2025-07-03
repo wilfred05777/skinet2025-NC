@@ -10647,3 +10647,70 @@ export class CheckoutDeliveryComponent implements OnInit {
   </div>
 </div>
 ```
+
+###### 177. Creating a Stripe confirmation token
+
+- ` update-177: stripe.service.ts `
+```
+//...async createAddressElement(){...}
+
+  async createConfimationToken(){
+    const stripe = await this.getStripeInstance();
+    const elements = await this.initializeElements();
+    const result = await elements.submit();
+    if (result.error) throw Error(result.error.message);
+    if(stripe){
+      return await stripe.createConfirmationToken({elements});
+    } else {
+      throw new Error('Stripe not available');
+    }
+  }
+
+//...createOrUpdatePaymentIntent(){...}
+```
+
+- `update-177: checkout.component.ts `
+```
+import { ConfirmationToken, ..., ... } from '@stripe/stripe-js';
+
+export class CheckoutComponent implements OnInit, OnDestroy {
+
+  //... completionStatus = signal<{address: boolean, card: boolean, delivery:boolean}>(...)
+
+  confirmationToken?: ConfirmationToken;
+
+  //...async ngOnInit() {...}
+
+    async getConfirmationToken(){
+    try {
+      if(Object.values(this.completionStatus()).every(status => status === true)){
+        const result = await this.stripeService.createConfimationToken();
+        if(result.error) throw new Error(result.error.message);
+        this.confirmationToken = result.confirmationToken;
+        console.log(this.confirmationToken);
+      }
+    } catch (error:any) {
+      this.snackbar.error(error.message);
+    }
+  }
+
+  async onStepChange(event:StepperSelectionEvent){
+    if(event.selectedIndex === 2){
+      //...
+    }
+    if(event.selectedIndex === 3) {
+      await this.getConfirmationToken();
+    }
+  }
+
+} 
+```
+- ` Test-177: `
+```
+- go to checkout payment
+- open console in browser
+- you will se Object with token
+- navigate to paymnent_method_preview
+  - card
+  - shipping
+```

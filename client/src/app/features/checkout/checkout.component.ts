@@ -4,7 +4,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatButton } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 import { StripeService } from '../../core/services/stripe.service';
-import { StripeAddressElement, StripeAddressElementChangeEvent, StripePaymentElement, StripePaymentElementChangeEvent } from '@stripe/stripe-js';
+import { ConfirmationToken, StripeAddressElement, StripeAddressElementChangeEvent, StripePaymentElement, StripePaymentElementChangeEvent } from '@stripe/stripe-js';
 import { SnackbarService } from '../../core/services/snackbar.service';
 import {MatCheckboxChange, MatCheckboxModule} from '@angular/material/checkbox';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
@@ -46,6 +46,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     {address: false, card: false, delivery: false}
   )
 
+  confirmationToken?: ConfirmationToken;
 
   async ngOnInit() {
     try {
@@ -82,6 +83,19 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     })
   }
 
+  async getConfirmationToken(){
+    try {
+      if(Object.values(this.completionStatus()).every(status => status === true)){
+        const result = await this.stripeService.createConfimationToken();
+        if(result.error) throw new Error(result.error.message);
+        this.confirmationToken = result.confirmationToken;
+        console.log(this.confirmationToken);
+      }
+    } catch (error:any) {
+      this.snackbar.error(error.message);
+    }
+  }
+
   async onStepChange(event:StepperSelectionEvent){
     if (event.selectedIndex === 1){
       if (this.saveAddress){
@@ -93,6 +107,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     if(event.selectedIndex === 2){
       // update payment intent
       await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+    }
+    if(event.selectedIndex === 3) {
+      await this.getConfirmationToken();
     }
   }
   private async getAddressFromStripeAddress(): Promise<Address | null> {
