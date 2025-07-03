@@ -10714,3 +10714,89 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   - card
   - shipping
 ```
+
+###### 178. Updating the review component with the token information
+
+- ` update-178: checkout-review-component.ts `
+```
+//...
+import { ConfirmationToken } from '@stripe/stripe-js';
+
+export class CheckoutReviewComponent {
+  //...cartService = inject(CartService);
+  @Input() confirmationToken?: ConfirmationToken;
+}
+```
+
+- ` update-178: checkout.component.html`
+```
+    //...
+      <mat-step label="Confirmation">
+      <!-- Review form -->
+        // update => [confirmationToken]="confirmationToken"
+        <app-checkout-review [confirmationToken]="confirmationToken"></app-checkout-review>
+        <div class="flex justify-between mt-6">
+          <button matStepperPrevious mat-stroked-button>Back</button>
+          <button mat-flat-button>Pay {{ cartService.totals()?.total | currency }}</button>
+        </div>
+      </mat-step>
+    //...
+```
+
+- ` update-178: checkout-review.component.html`
+```
+<div class="mt-4 w-full">
+  <h4 class="text-lg font-semibold">Billing and delivery information</h4>
+  <dl>
+    <dt class="font-medium">Shipping address</dt>
+    
+    /* pag-gamit sa address.pipe.ts mao ning access point sa gi response gikan sa stripe via DOM/Console kay ang address.pipe.ts diri ang factory mahitabo below ang pag join together:*/
+    <dd class="mt-1 text-gray-500">{{confirmationToken?.shipping | address}}</dd> 
+    
+    //<dd class="mt-1 text-gray-500">{{confirmationToken?.shipping?.address}}</dd> // dili mo gana need ug angular-pipe ani ng approach
+    // testing the it via UI ang result kay [object Object]
+
+    <!-- <dd class="mt-1 text-gray-500">Shipping address goes here</dd> -->
+    <dt class="font-medium">Payment details</dt>
+    <dd class="mt-1 text-gray-500">Payment details goes here</dd>
+  </dl>
+</div>
+
+```
+
+- `issue: [object Object] -> solution is to look for ng pipe`
+```
+- cd client => ng g --help
+  - ng g p shared/pipes/address --dry-run
+  - ng g p shared/pipes/address --skip-tests
+```
+- ` update-178: adress.pipe.ts`
+```
+import { Pipe, PipeTransform } from '@angular/core';
+import { ConfirmationToken } from '@stripe/stripe-js';
+
+@Pipe({
+  name: 'address'
+})
+export class AddressPipe implements PipeTransform {
+
+  /*
+  * diri ma-access ang kadtong gipang response sa Console sa browser nga gikan sa stripe
+  * kaning transform(value: ConfirmationToken) ang tawag ani kay angular pipe
+  * para magamit ni need ni pang inject next sa checkout-review.component.html
+  * 
+  * then iimport ni sa sa checkout-review.component.ts:  import { AddressPipe } from "../../../shared/pipes/address.pipe";
+  *
+  * 
+  */
+  transform(value?: ConfirmationToken['shipping'], ...args: unknown[]): unknown {
+    if(value?.address && value.name){
+      const {line1, line2, city, state, country, postal_code} = value.address;
+      return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''},
+        ${city}, ${state}, ${postal_code}, ${country}`
+    } else {
+      return 'Unknown address'
+    }
+  }
+}
+```
