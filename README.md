@@ -11135,3 +11135,30 @@ export class CheckoutSuccessComponent {
 ```
 - https://localhost:4200/checkout/success
 ```
+
+###### 182. Summary
+- goal
+```
+- To be able to accept payments
+securely globally that complies
+with EU regulations and PCI DSS
+regulations.
+```
+- FAQs
+```
+Q:  Why didn't you include <PaymentProcessor>?
+
+A:  Stripe covers the majority of
+    card payments globally and is
+    priced similarly to others. You
+    could add extra if you wish
+
+Q2: How can I become PCI 
+    complaint so that I can avoid
+    payment processor costs.
+
+A2: if your is turning over 
+    lots of money then this is 
+    something to think about.
+    Outside the scope of this course.     
+```
