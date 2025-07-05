@@ -11162,3 +11162,16 @@ A2: if your is turning over
     something to think about.
     Outside the scope of this course.     
 ```
+<hr>
+
+### Section 17: API - Orders
+<hr>
+
+###### 183. Introduction
+- In this module
+```
+- Adding the Order Entity
+- Aggregate Entities
+- ' Owned Entities ' - we don't need a multiple/separte table for a shipping address nor do we need separate for shipping address if we use Own Entities.
+- Unit of Work pattern - refactor our code, streamline the process.
+```
