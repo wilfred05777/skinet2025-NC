@@ -11073,3 +11073,65 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   - then check in stripe for verification of payments status: https://dashboard.stripe.com/test/payments
 ```
+
+###### 181. Checkout success page
+
+- `step-1a-181: update => checkout-success.component.ts`
+```
+import { Component } from '@angular/core';
+import { MatButton } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-checkout-success',
+  imports: [
+    MatButton,
+    RouterLink
+  ],
+  templateUrl: './checkout-success.component.html',
+  styleUrl: './checkout-success.component.scss'
+})
+export class CheckoutSuccessComponent {
+
+}
+```
+
+- `step-1b-181: update => checkout-success.component.html`
+```
+<section class="bg-white py-16">
+  <div class="mx-auto max-w-2xl px-4">
+    <h2 class="font-semibold text-2xl mb-2">
+      Thanks for your order!
+    </h2>
+    <p class="text-gray-500 mb-8">Your order <span class="font-medium">#42</span>
+      will never be processed as this is a fake shop. we will not notify you once your order has not shipped.
+    </p>
+    <div class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-6 mb-8">
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Date</dt>
+        <dd class="font-medium text-gray-900 text-end">20 Sep 2025</dd>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Payment method</dt>
+        <dd class="font-medium text-gray-900 text-end">Visa</dd>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Address</dt>
+        <dd class="font-medium text-gray-900 text-end">Address goes here</dd>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Amount</dt>
+        <dd class="font-medium text-gray-900 text-end">$450</dd>
+      </dl>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button routerLink="/orders/42" mat-flat-button>View your order</button>
+      <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
+    </div>
+  </div>
+</section>
+```
+- `step-2-181: Check and Testing`
+```
+- https://localhost:4200/checkout/success
+```
