@@ -51,11 +51,13 @@
         <app-checkout-review [confirmationToken]="confirmationToken"></app-checkout-review>
         <div class="flex justify-between mt-6">
           <button matStepperPrevious mat-stroked-button>Back</button>
-          <button mat-flat-button>Pay {{ cartService.totals()?.total | currency }}</button>
+          <button
+              (click)="confirmPayment(stepper)"
+              mat-flat-button>Pay {{ cartService.totals()?.total | currency }}</button>
         </div>
       </mat-step>
      </mat-stepper>
-     <pre>{{completionStatus() | json}}</pre>
+     <!-- <pre>{{completionStatus() | json}}</pre> -->
   </div>
   <div class="w-1/4">
     <app-order-summary></app-order-summary>

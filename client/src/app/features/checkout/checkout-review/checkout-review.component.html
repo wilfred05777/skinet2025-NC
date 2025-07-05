@@ -6,7 +6,8 @@
     <!-- <dd class="mt-1 text-gray-500">{{confirmationToken?.shipping?.address}}</dd> -->
     <!-- <dd class="mt-1 text-gray-500">Shipping address goes here</dd> -->
     <dt class="font-medium">Payment details</dt>
-    <dd class="mt-1 text-gray-500">Payment details goes here</dd>
+    <dd class="mt-1 text-gray-500">{{ confirmationToken?.payment_method_preview | paymentCard }}</dd>
+    <!-- <dd class="mt-1 text-gray-500">Payment details goes here</dd> -->
   </dl>
 </div>
 

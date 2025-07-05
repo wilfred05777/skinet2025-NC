@@ -10800,3 +10800,173 @@ export class AddressPipe implements PipeTransform {
   }
 }
 ```
+
+###### 179. Confirming the payment
+- ` step-1a-179: create new payment-card.pipe.ts `
+```
+/*
+- cd client => ng g --help
+  - ng g p shared/pipes/payment-card --dry-run
+*/
+
+import { Pipe, PipeTransform } from '@angular/core';
+import { ConfirmationToken } from '@stripe/stripe-js/dist/api/confirmation-tokens';
+
+@Pipe({
+  name: 'paymentCard'
+})
+export class PaymentCardPipe implements PipeTransform {
+
+  transform(value?: ConfirmationToken['payment_method_preview'], ...args: unknown[]): unknown {
+    if(value?.card){
+      const {brand, last4, exp_month, exp_year} = value.card;
+      return `${brand.toUpperCase()} **** **** **** ${last4}, Exp: ${exp_month}/${exp_year}`;
+    } else {
+      return 'Unknown payment method'
+    }
+  }
+}
+```
+
+- ` step-1b-179: update checkout-review.component.html `
+```
+<div class="mt-4 w-full">
+  <h4 class="text-lg font-semibold">Billing and delivery information</h4>
+  <dl>
+    //...<dt class="font-medium">Shipping address</dt>
+    //...<dd class="mt-1 text-gray-500">{{confirmationToken?.shipping | address}}</dd>
+
+    /* update code below: */
+    <dt class="font-medium">Payment details</dt>
+    <dd class="mt-1 text-gray-500">Payment details goes here</dd> // update here
+    </dl>
+</div>
+```
+
+- ` step-1c-179: update checkout-review.component.ts `
+```
+import { PaymentCardPipe } from "../../../shared/pipes/payment-card.pipe"; // update import here
+
+@Component({
+  selector: 'app-checkout-review',
+  imports: [
+    //...AddressPipe,
+    PaymentCardPipe // update import here
+],
+  //...templateUrl: './checkout-review.component.html',
+  //...styleUrl: './checkout-review.component.scss'
+})
+```
+
+- `step-2-update-179: stripe.service.ts `
+```
+  //...async createConfimationToken(){...}
+
+  async confirmPayment(confirmationToken: ConfirmationToken){
+    const stripe = await this.getStripeInstance();
+    const elements = await this.initializeElements();
+    const result = await elements.submit();
+    if (result.error) throw Error(result.error.message);
+
+    const clientSecret = this.cartService.cart()?.clientSecret;
+
+    if(stripe && clientSecret) {
+      return await stripe.confirmPayment({
+        clientSecret: clientSecret,
+        confirmParams: {
+          confirmation_token: confirmationToken.id
+        },
+        redirect: 'if_required'
+      })
+    } else {
+      throw new Error('Unable to load stripe');
+    }
+  }
+
+  //... createOrUpdatePaymentIntent(){...}
+```
+
+- `step-3-update-179: checkout.component.ts`
+```
+import { MatStepper, ... } from '@angular/material/stepper';
+import { Router, ...RouterLink } from '@angular/router';
+
+export class CheckoutComponent implements OnInit, OnDestroy{
+  //...private snakbar 
+  private router = inject(Router);
+  //...private accountService
+
+  //...   async onStepChange(event:StepperSelectionEvent){...}
+
+  async confirmPayment(stepper: MatStepper){
+    try {
+      if(this.confirmationToken){
+        const result = await this.stripeService.confirmPayment(this.confirmationToken);
+        if(result.error){
+          throw new Error(result.error.message);
+        } else {
+          this.cartService.deleteCart();
+          this.cartService.seletedDelivery.set(null);
+          this.router.navigateByUrl('/checkout/success');
+        }
+      }
+    } catch (error: any) {
+      this.snackbar.error(error.message || 'Something went wrong');
+      stepper.previous();
+    }
+  }
+
+  private async getAddressFromStripeAddress(): Promise<Address | null> {...}
+}
+```
+
+- `step-4-179: update checkout.component.html `
+```
+//...
+
+      <mat-step label="Confirmation">
+      <!-- Review form -->
+        <app-checkout-review [confirmationToken]="confirmationToken"></app-checkout-review>
+        <div class="flex justify-between mt-6">
+          <button matStepperPrevious mat-stroked-button>Back</button>
+          <button
+              (click)="confirmPayment(stepper)" // updated code this line only works because of the #stepper assign on  <mat-stepper #stepper ></mat-stepper>
+              mat-flat-button>Pay {{ cartService.totals()?.total | currency }}</button>
+        </div>
+      </mat-step>
+
+      //...
+```
+- ` step-5-179: at client => create checkout-success `
+```
+- cd client => ' ng g c features/checkout/checkout-success --skip-tests '
+```
+
+- ` step-6-179: app.routes.ts `
+```
+import { CheckoutSuccessComponent } from './features/checkout/checkout-success/checkout-success.component';
+
+export const routes: Routes = [ 
+  //...{ path: 'checkout', component: CheckoutComponent, canActivate: [authGuard, emptyCartGuard] },
+
+  { path: 'checkout/success', component: CheckoutSuccessComponent, canActivate: [authGuard] }, // update code
+  
+  //...{ path: 'account/login', component: LoginComponent },
+]
+```
+
+- ` step-7-179: Test the UI `
+```
+- localhost:4200/checkout/
+  - address
+  - shipping
+  - payment
+    - card
+  - Confirmation stepper
+    - Payment details
+      -  hit 'Pay' button
+
+- if it is successful
+  - in dashboard.stripe.com/test/payments
+    - it will show : Succeeded
+```
