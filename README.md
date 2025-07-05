@@ -10970,3 +10970,106 @@ export const routes: Routes = [
   - in dashboard.stripe.com/test/payments
     - it will show : Succeeded
 ```
+
+###### 180. Loading and error notifications
+
+- [Stripe Docs - Cards by brand](https://docs.stripe.com/testing)
+
+- `/* mag add ug loading sa pay button section*/`
+
+- ` step-1-180: update => checkout.component.ts `
+```
+//...
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; // update code
+
+@Component({
+  selector: 'app-checkout',
+  imports: [
+  //...,
+    MatProgressSpinnerModule // update code
+],
+  //templateUrl: './checkout.component.html',
+  //styleUrl: './checkout.component.scss'
+})
+
+export class CheckoutComponent implements OnInit, OnDestroy {
+  //... confirmationToken?: ConfirmationToken;
+
+  loading = false; // update code
+
+  async confirmPayment(stepper: MatStepper){
+    this.loading = true;
+    try {
+      if(this.confirmationToken){
+        const result = await this.stripeService.confirmPayment(this.confirmationToken);
+        if(result.error){
+          throw new Error(result.error.message);
+        } else {
+          this.cartService.deleteCart();
+          this.cartService.seletedDelivery.set(null);
+          this.router.navigateByUrl('/checkout/success');
+        }
+      }
+    } catch (error: any) {
+      this.snackbar.error(error.message || 'Something went wrong');
+      stepper.previous();
+    } finally { // update code
+      this.loading = false; // update code
+    } // update code
+  }
+}
+```
+- [Material-NG: Progress Spinner](https://material.angular.dev/components/progress-spinner/overview)
+
+- `step-2-180: update => checkout-component.html `
+```
+    //...
+    <mat-stepper>
+      //...
+
+      <mat-step label="Confirmation">
+      <!-- Review form -->
+        <app-checkout-review [confirmationToken]="confirmationToken"></app-checkout-review>
+        <div class="flex justify-between mt-6">
+          <button matStepperPrevious mat-stroked-button>Back</button>
+          <button
+              [disabled]="!confirmationToken || loading" // update
+              (click)="confirmPayment(stepper)" mat-flat-button
+            >
+              /* update code start here*/
+              @if (loading) { 
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                <span>
+                  Pay {{ cartService.totals()?.total | currency }}
+                </span>
+              }
+              /* update code end here*/
+            </button>
+        </div>
+      </mat-step>
+     </mat-stepper>
+    //...
+```
+- `step-3-180: testing in UI https://localhost:4200/checkout`
+```
+- for successful payment:
+  - card : 5555 5555 5555 4444
+  - https://dashboard.stripe.com/test/payments
+  - it should reflect in stripe as success
+
+- for unsuccessful payment:
+  - https://docs.stripe.com/testing#declined-payments
+  - Insufficient funds decline	4000000000009995	card_declined	insufficient_funds
+    - you will see a snakbar of 'insufficient funds' red prompting !!
+      - Generic decline	4000000000000002	card_declined	generic_decline
+      - Stolen card decline	4000000000009979	card_declined	stolen_card
+
+  -https://docs.stripe.com/testing#regulatory-cards
+    - Always authenticate	4000002760003184	This card requires authentication on all transactions, regardless of how the card is set up. 
+    - pop-up -3d secure 2 Test page' - test fail or complete button
+      - if fail = it will not proceed and you will re-redirected to payment/card
+    - else if it is successful - it will procced to 'checkout-success page'
+
+  - then check in stripe for verification of payments status: https://dashboard.stripe.com/test/payments
+```
