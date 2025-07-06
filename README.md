@@ -11175,3 +11175,72 @@ A2: if your is turning over
 - ' Owned Entities ' - we don't need a multiple/separte table for a shipping address nor do we need separate for shipping address if we use Own Entities.
 - Unit of Work pattern - refactor our code, streamline the process.
 ```
+
+###### 184. Creating the order aggregate part 1
+
+- `step-1a-184: go to Solution explorer `
+
+- `step-2a-184: create Core/Entities/OrderAggregate/ShippingAddress.cs 1st part`
+```
+namespace Core.Entities.OrderAggregate;
+
+public class ShippingAddress
+{
+    public required string Name { get; set; }
+    public required string Line1 { get; set; }
+    public string? Line2 { get; set; }
+    public required string City { get; set; }
+    public required string State { get; set; }
+    public required string PostalCode { get; set; }
+    public required string Country { get; set; }
+}
+``` 
+- `step-2b-184: create | Class | Core/Entities/OrderAggregate/ProductItemOrdered.cs 2nd part`
+```
+namespace Core.Entities.OrderAggregate;
+
+public class ProductItemOrdered
+{
+    public int ProductId { get; set; }
+    public required string ProductName { get; set; }
+    public required string PictureUrl { get; set; }
+}
+```
+
+- `step-2c-184: create | Enum | Core/Entities/OrderAggregate/OrderStatus.cs  `
+```
+namespace Core.Entities.OrderAggregate;
+
+public enum OrderStatus
+{
+    Pending,
+    PaymentReceived,
+    PaymentFailed
+}
+```
+
+- `step-2d-184: create | class | Core/Entities/OrderAggregate/OrderItem.cs  `
+```
+namespace Core.Entities.OrderAggregate;
+
+public class OrderItem : BaseEntity
+{
+    public ProductItemOrdered ItemOrdered { get; set; } = null!;
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
+    
+}
+```
+
+- `step-2d-184: create | class | Core/Entities/OrderAggregate/PaymentSummary.cs  `
+```
+namespace Core.Entities.OrderAggregate;
+
+public class PaymentSummary
+{
+    public int Last4 { get; set; }
+    public required string Brand { get; set; }
+    public int ExpMonth { get; set; }
+    public int Year { get; set; }
+}
+```
