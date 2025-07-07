@@ -11264,3 +11264,79 @@ public class Order : BaseEntity
     public required string PaymentIntentId { get; set; }
 }
 ```
+
+###### 186. Configuring the order entities
+
+- ` step-1-186: create | Infrastructure/Config/OrderConfiguration.cs `
+```
+using Core.Entities.OrderAggregate;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Infrastructure.Config;
+
+public class OrderConfiguration : IEntityTypeConfiguration<Order>
+{
+    public void Configure(EntityTypeBuilder<Order> builder)
+    {
+        builder.OwnsOne(x => x.ShippingAddress, o => o.WithOwner());
+        builder.OwnsOne(x => x.PaymentSummary, o => o.WithOwner());
+        builder.Property(x => x.Status).HasConversion(
+            o => o.ToString(),
+            o => (OrderStatus)Enum.Parse(typeof(OrderStatus), o)
+        );
+        builder.Property(x => x.SubTotal).HasColumnType("decimal(18, 2)");
+        builder.HasMany(x => x.OrderItems).WithOne().OnDelete(DeleteBehavior.Cascade);
+        builder.Property(x => x.OrderDate).HasConversion(
+            d => d.ToUniversalTime(),
+            d => DateTime.SpecifyKind(d, DateTimeKind.Utc)
+        );
+    }
+}
+```
+
+- ` step-2-186: create | Infrastructure/Config/OrderItemConfiguration.cs `
+```
+using Core.Entities.OrderAggregate;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Infrastructure.Config;
+
+public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
+{
+    public void Configure(EntityTypeBuilder<OrderItem> builder)
+    {
+        builder.OwnsOne(x => x.ItemOrdered, o => o.WithOwner());
+        builder.Property(x => x.Price).HasColumnType("decimal(18,2)");
+    }
+}
+```
+
+- ` step-3-186: Update StoreContext.cs => Infrastructure/Data/StoreContext.cs `
+```
+//...using Core.Entities;
+using Core.Entities.OrderAggregate; // update
+//...using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
+
+
+public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>(options)
+{
+    //... public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
+    
+    public DbSet<Order> Orders { get; set; } // update 
+    public DbSet<OrderItem> OrderItems { get; set; } // update
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+      //....
+    }
+}
+```
+
+- ` step-4-186: Update Migration `
+```
+- cd => root folder => " dotnet ef migrations add OrderAggregateAdded -p Infrastructure -s API "
+- check Infrastructure/Migration/20250707124655_OrderAggregateAdded.cs
+```
