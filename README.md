@@ -11340,3 +11340,39 @@ public class StoreContext(DbContextOptions options) : IdentityDbContext<AppUser>
 - cd => root folder => " dotnet ef migrations add OrderAggregateAdded -p Infrastructure -s API "
 - check Infrastructure/Migration/20250707124655_OrderAggregateAdded.cs
 ```
+
+###### 187. Introducing the Unit of work
+
+```
+Pros - Current Usage of Repo
+  - Generic Repository
+  - Specification pattern
+
+Cons 
+  - Could end up with partial updates
+  - 
+  
+```
+- `Contoller`
+```
+  Controller
+[Unit of Work] ====>   Database []
+    |
+    | =======> Repository<Order>
+    |
+    | =======> Repository<Product>
+    |
+    | =======> Repository<Delivery>
+
+1. Unit of Work (UoW) instantiates DbContext instance
+2. UoW Creates Repositories as needed
+```
+
+- `Unit of Work Pattern`
+```
+- UoW creates repository instances as needed.
+- EF Tracks the entities state (add, update, remove).
+- At the end of the transaction UoW.Complete()
+- Dispose the DBContext
+- Uses same lifetime as repository (scoped)
+```
