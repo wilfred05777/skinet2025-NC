@@ -11376,3 +11376,62 @@ Cons
 - Dispose the DBContext
 - Uses same lifetime as repository (scoped)
 ```
+
+###### 188. Implementing the unit of work
+
+- ` step-1a-188: solution-explorer Create | type - Interface | Interface Core/Interfaces/IUnitOfWork.cs`
+- ` step-1b-188: IUnitOfWork.cs the implement IDisposable `
+```
+using Core.Entities;
+
+namespace Core.Interfaces;
+
+public interface IUnitOfWork : IDisposable
+{
+    IGenericRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity;
+    Task<bool> Complete();
+}
+```
+
+- ` step-2a-188: solution-explorer Create | Class | Infrastructure/Data/IUnitOfWork.cs`
+```
+using System.Collections.Concurrent;
+using Core.Entities;
+using Core.Interfaces;
+
+namespace Infrastructure.Data;
+
+public class UnitOfWork(StoreContext context) : IUnitOfWork
+{
+    private readonly ConcurrentDictionary<string, object> _repositories = new();
+
+    public async Task<bool> Complete()
+    {
+        return await context.SaveChangesAsync() > 0;
+    }
+
+    public void Dispose()
+    {
+        context.Dispose();
+    }
+
+    public IGenericRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity
+    {
+        var type = typeof(TEntity).Name;
+
+        return (IGenericRepository<TEntity>)_repositories.GetOrAdd(type, t =>
+        {
+            var repositoryType = typeof(GenericRepository<>).MakeGenericType(typeof(TEntity));
+            return Activator.CreateInstance(repositoryType, context)
+            ?? throw new InvalidOperationException($"Could not create repository for {t}");
+        });
+    }
+}
+```
+
+- ` step-3-188: add this as a service update 'API/Program.cs' `
+```
+//...builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); //update
+//...builder.Services.AddCors();
+```
