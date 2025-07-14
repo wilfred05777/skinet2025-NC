@@ -6,6 +6,7 @@ using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Identity;
+using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 

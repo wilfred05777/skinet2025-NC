@@ -1,4 +1,3 @@
-using System;
 using Core.Entities;
 
 namespace Core.Interfaces;
@@ -15,8 +14,8 @@ public interface IGenericRepository<T> where T : BaseEntity
     void Add(T entity);
     void Update(T entity);
     void Remove(T entity);
-    Task<bool> SaveChangesAsync();
+    // Task<bool> SaveChangesAsync();
     bool Exists(int id);
-    Task<bool> SaveAllAsync();
+    // Task<bool> SaveAllAsync();
     Task<int> CountAsync(ISpecification<T> spec);
 }

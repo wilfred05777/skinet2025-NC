@@ -11431,7 +11431,281 @@ public class UnitOfWork(StoreContext context) : IUnitOfWork
 
 - ` step-3-188: add this as a service update 'API/Program.cs' `
 ```
+/*
+    encounter some issues in the 189: GenericRepository
+    GenericRepository => added using infrastructure;
+    typeof(GenericRepository<>))
+
+*/
+using Infrastructure;
+
 //...builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>(); //update
 //...builder.Services.AddCors();
+```
+
+###### 189. Using the unit of work
+
+/* https://www.udemy.com/course/learn-to-build-an-e-commerce-app-with-net-core-and-angular/learn/lecture/45151681?start=0#overview 
+*/
+- ` step-1-189: update IGenericRepository.cs `
+```
+/* by removing Task<bool> SaveChangesAsync(); */
+
+public interface IGenericRepository<T> where T : BaseEntity
+{
+    void Remove(T entity);
+    // Task<bool> SaveChangesAsync(); // gi remove ni kay ibalhin sa UnitOfWork ang controll
+    bool Exists(int id);
+}
+```
+
+- ` step-2-189: update GenericRepository.cs `
+/* by removing the SaveAllAsync*/
+```
+public class GenericRepository<T>(StoreContext context) : IGenericRepository<T> where T : BaseEntity
+{
+    /*remove below */
+    public async Task<bool> SaveAllAsync()
+    {
+        return await context.SaveChangesAsync() > 0;
+    }
+    
+}
+```
+- ` step-3-189: update ProductsController.cs `
+```
+/*        replace: IGenericRepository<Product> to (IUnitOfWork unit)  
+  update  ProductsController(IGenericRepository<Product> repo)
+  
+  then update all the error in 'repo' = unit.Repository<Product>()
+  
+  update repo.SaveAllAsync() to unit.Complete()
+
+*/
+
+using Core.Entities;
+using Core.Interfaces;
+using Core.Specifications;
+using Microsoft.AspNetCore.Mvc;
+using API.RequestHelpers;
+
+namespace API.Controllers;
+
+public class ProductsController(IUnitOfWork unit) : BaseApiController
+{
+    [HttpGet]
+
+    public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts([FromQuery]ProductSpecParams specParams)
+    {
+
+        var spec = new ProductSpecification(specParams);
+
+        return await CreatePageResult(unit.Repository<Product>(), spec, specParams.PageIndex, specParams.PageSize);
+
+    }
+
+    [HttpGet("{id:int}")] // api/products/2
+    public async Task<ActionResult<Product>> GetProduct(int id)
+    {
+        var product = await unit.Repository<Product>().GetByIdAsync(id);
+        if (product == null) return NotFound();
+        return product;
+    }
+
+    // create a new product
+    [HttpPost]
+    public async Task<ActionResult<Product>> CreateProduct(Product product)
+    {
+        unit.Repository<Product>().Add(product);
+        
+        if(await unit.Complete())
+        {
+            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+        }
+        return BadRequest("Problem creating product");
+
+    }
+
+    // update product
+    // PUT api/products/1
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult> UpdateProduct(int id, Product product)
+    {
+        if(product.Id != id) return BadRequest("Cannot update this product");
+
+        unit.Repository<Product>().Update(product);
+
+        if(await unit.Complete())
+        {
+            return NoContent();
+        }
+        return BadRequest("Problem updating the product");
+    }
+
+    // delete product
+    // DELETE api/products/1
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult> DeleteProduct(int id)
+    {
+        var product = await unit.Repository<Product>().GetByIdAsync(id);
+        if (product == null) return NotFound();
+
+        unit.Repository<Product>().Remove(product);
+        if(await unit.Complete())
+        {
+            return NoContent();
+        }
+        return BadRequest("Problem deleting the product");
+
+    }
+
+    [HttpGet("brands")]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetBrands()
+    {   
+        var spec = new BrandListSpecification();
+
+        return Ok(await unit.Repository<Product>().ListAsync(spec));
+    }
+
+    [HttpGet("types")]
+    public async Task<ActionResult<IReadOnlyList<string>>> GetTypes()
+    {   
+        var spec = new TypeListSpecification();
+
+        return Ok(await unit.Repository<Product>().ListAsync(spec));
+    }
+
+    private bool ProductExists(int id)
+    {
+        return unit.Repository<Product>().Exists(id);
+    }
+}
+```
+
+- ` step-4-189: update PaymentsController.cs `
+```
+/*
+    replace IGenericRepository<DeliveryMethod> dmRepo to  IUnitOfWork unit
+    replace dmRepo to unit.Repository<DeliveryMethod>()
+*/
+using Core.Entities;
+using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers;
+
+public class PaymentsController(
+        IPaymentService paymentService,
+        IUnitOfWork unit
+    ) : BaseApiController
+{
+    [Authorize]
+    [HttpPost("{cartId}")]
+    public async Task<ActionResult<ShoppingCart>> CreateOrUpdatePaymentIntent(string cartId)
+    {
+        var cart = await paymentService.CreateOrUpdatePaymentIntent(cartId);
+
+        if (cart == null) return BadRequest("Problem with your cart");
+
+        return Ok(cart);
+    }
+
+    [HttpGet("delivery-methods")]
+    public async Task<ActionResult<IReadOnlyList<DeliveryMethod>>> GetDeliveryMethods()
+    {
+        return Ok(await unit.Repository<DeliveryMethod>().ListAllAsync());
+    }
+
+}
+```
+
+- ` step-5-189: update PaymentService.cs `
+```
+/*
+    replace 
+    IGenericRepository<Core.Entities.Product> productRepo, 
+    IGenericRepository<DeliveryMethod> dmRepo
+
+    to 
+    IUnitOfWork unit
+
+    then replace dmRepo to unit.Repository<DeliveryMethod>()
+
+    while 
+    on productRepo replace to unit.Repository<Core.Entities.Product>().
+*/
+
+public class PaymentService(
+    IConfiguration config,
+    ICartService cartService,
+    IUnitOfWork unit    /* update here */
+
+    // setting Product to not be ambiguous with Core.Entities.Product (below code:)
+    //IGenericRepository<Core.Entities.Product> productRepo, 
+    //IGenericRepository<DeliveryMethod> dmRepo
+    ) 
+    : IPaymentService
+{
+
+    public async Task<ShoppingCart?> CreateOrUpdatePaymentIntent(string cartId)
+    {
+        StripeConfiguration.ApiKey = config["StripeSettings:SecretKey"];
+
+        var cart = await cartService.GetCartAsync(cartId);
+
+        if (cart == null) return null;
+
+        var shippingPrice = 0m;
+
+        if (cart.DeliveryMethodId.HasValue)
+        {
+                                    /* update here */
+            var deliveryMethod = await unit.Repository<DeliveryMethod>().GetByIdAsync((int)cart.DeliveryMethodId); 
+
+            if (deliveryMethod == null) return null;
+
+            shippingPrice = deliveryMethod.Price;
+        }  
+    }
+}
+```
+
+- ` step-6-189: via postman `
+```
+- section 17 - Orders
+
+- go to section 2 - Add Product
+                  {
+                      "name": "{{$randomProduct}}",
+                      "description": "{{$randomLoremParagraph}}",
+                      "price": {{$randomPrice}},
+                      "pictureUrl": "{{$randomImageUrl}}",
+                      "type": "Some type",
+                      "brand": "Some brand",
+                      "quantityInStock": {{$randomInt}}
+                  }
+- go to section 2 - Get Product {{url}}/api/products/2 to {{url}}/api/products/19 in our case its 1002 {{url}}/api/products/1002
+
+- go to section 2 - Get Products -> Get Product {{url}}/api/products' // get all the products
+
+- go to section 2 - Update Product ->  {{url}}/api/products/1002 = 204 'no Content status'
+                        {
+                            "id": 1002,
+                            "name": "{{$randomProduct}} Updated",
+                            "description": "{{$randomLoremParagraph}}",
+                            "price": {{$randomPrice}},
+                            "pictureUrl": "{{$randomImageUrl}}",
+                            "type": "Some type",
+                            "brand": "Some brand",
+                            "quantityInStock": {{$randomInt}}
+                        }
+- go to section 2 - Get Product -> Get Product {{url}}/api/products/1002'
+
+- go to section 2 - Delete Product -> Get Product {{url}}/api/products/1002'
+                  - this will delete the product  '204 No content' should be the status
+
+- go to section 2 - Get Products -> Get Product {{url}}/api/products'
+
 ```

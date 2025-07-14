@@ -26,7 +26,8 @@ public class UnitOfWork(StoreContext context) : IUnitOfWork
         {
             var repositoryType = typeof(GenericRepository<>).MakeGenericType(typeof(TEntity));
             return Activator.CreateInstance(repositoryType, context)
-            ?? throw new InvalidOperationException($"Could not create repository for {t}");
+            ?? throw new InvalidOperationException(
+                $"Could not create repository instance for {t}");
         });
     }
 }
