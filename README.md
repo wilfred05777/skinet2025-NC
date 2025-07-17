@@ -11819,3 +11819,163 @@ public class CreateOrderDto
     public PaymentSummary PaymentSummary { get; set; } = null!;
 }
 ```
+
+###### 191. Debugging the order creation
+
+- `step-1-191: `  
+```
+- add a breakpoint to var email = User.GetEmail();
+- Debugger -> .NET Core Attach -> search -> API -> AirPlayUIAgent
+- the go to postman section 17 Orders
+- postman: Update Cart {{ url }}/api/cart
+-  postman: Section 14: Login as Tom {{url}}/api/login?useCookies=true
+- postman: {{url}}/api/cart
+{
+    "id": "cart1",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 1,
+            "quantity": 3,
+            "pictureUrl": "/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ],
+    "deliveryMethodId": null,
+    "clientSecret": null,
+    "paymentIntentId": null // need this payment intent for th cart
+}
+
+- Create payment intent: {{ url }}/api/payments/cart1
+{
+    "id": "cart1",
+    "items": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "price": 150.00,
+            "quantity": 3,
+            "pictureUrl": "/images/products/boot-ang2.png",
+            "brand": "Angular",
+            "type": "Boots"
+        }
+    ],
+    "deliveryMethodId": null,
+    "clientSecret": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6_secret_LAzqmVeFHX8qxLzhIDlvjUUjh",
+    "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6" // id is here
+}
+
+- create order: {{ url }}/api/orders
+{
+    "orderDate": "2025-07-17T18:58:12.7216706Z",
+    "buyerEmail": "tom@test.com",
+    "shippingAddress": {
+        "name": "Tom Smith",
+        "line1": "100 Centre Street",
+        "line2": null,
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10013",
+        "country": "US"
+    },
+    "deliveryMethod": {
+        "shortName": "UPS1",
+        "deliveryTime": "1-2 Days",
+        "description": "Fastest delivery time",
+        "price": 10.00,
+        "id": 1
+    },
+    "paymentSummary": { // kani ang importante para sa kani na process
+        "last4": 4444,
+        "brand": "Mastercard",
+        "expMonth": 12,
+        "year": 0
+    },
+    "orderItems": [
+        {
+            "itemOrdered": {
+                "productId": 17,
+                "productName": "Angular Purple Boots",
+                "pictureUrl": "/images/products/boot-ang2.png"
+            },
+            "price": 150.00,
+            "quantity": 3,
+            "id": 1
+        }
+    ],
+    "subTotal": 450.00,
+    "status": 0,
+    "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6",
+    "id": 1
+}
+
+- then go to CreateOrderDto.cs
+
+- after seding the send order in postman: Create Order: {{url}}/api/orders
+
+- .net debugger local dapat naa ni sulod kay mo dagan mn diri
+- which is why ang kaning akoang machine OS kay windows man 
+- unsay equivalent sa AirplayUIAgent (appleMac ang example) how about sa windows?
+-
+```
+
+- ` step-2-191: Core/Entities/OrderAggregate/PaymentSumamry.cs`
+```
+namespace Core.Entities.OrderAggregate;
+
+public class PaymentSummary
+{
+    public int Year { get; set; } // wrong
+    public int ExpYear { get; set; } // corrected
+} 
+// kay sa output sa orders sa Postman 0 ang year
+// then after ma correct usabon ang database migration
+// cd solotion folder 'dotnet ef migrations add PaymentSummaryCorrection -p Infrastructure -s API'
+ 
+//json file
+{
+    "orderDate": "2025-07-17T23:11:58.9369522Z",
+    "buyerEmail": "tom@test.com",
+    "shippingAddress": {
+        "name": "Tom Smith",
+        "line1": "100 Centre Street",
+        "line2": null,
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10013",
+        "country": "US"
+    },
+    "deliveryMethod": {
+        "shortName": "UPS1",
+        "deliveryTime": "1-2 Days",
+        "description": "Fastest delivery time",
+        "price": 10.00,
+        "id": 1
+    },
+    "paymentSummary": {
+        "last4": 4444,
+        "brand": "Mastercard",
+        "expMonth": 12,
+        "year": 0 // 0 ang year which is need to correct in the PaymentSummary.cs
+    },
+    "orderItems": [
+        {
+            "itemOrdered": {
+                "productId": 17,
+                "productName": "Angular Purple Boots",
+                "pictureUrl": "/images/products/boot-ang2.png"
+            },
+            "price": 150.00,
+            "quantity": 3,
+            "id": 1002
+        }
+    ],
+    "subTotal": 450.00,
+    "status": 0,
+    "paymentIntentId": "pi_3Rm0y0Q4ykDn46yO2tjDASJs",
+    "id": 1002
+}
+```
+
