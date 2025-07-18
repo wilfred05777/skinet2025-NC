@@ -11979,3 +11979,139 @@ public class PaymentSummary
 }
 ```
 
+###### 192. Adding the get order methods
+
+- ` step-1b-192: update OrdersController.cs `
+```
+[Authorize]
+public class OrdersController(ICartService cartService, IUnitOfWork unit) : BaseApiController
+{
+    //.... more on top
+
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<Order>>> GetOrdersForUser()
+    {
+        var spec = new OrderSpecification(User.GetEmail());
+
+        var orders = await unit.Repository<Order>().ListAsync(spec);
+
+        return Ok(orders);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Order>> GetOrderById(int id)
+    {
+        var spec = new OrderSpecification(User.GetEmail(), id);
+
+        var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null) return NotFound();
+
+        return Ok(order);
+    }
+}
+```
+
+- ` step-1a-192: Create | class | Core/Specifications/OrderSepcifications.cs`
+```
+using Core.Entities.OrderAggregate;
+
+namespace Core.Specifications;
+
+public class OrderSpecification : BaseSpecifications<Order>
+{
+    public OrderSpecification(string email) : base(x => x.BuyerEmail == email)
+    {
+
+    }
+
+    public OrderSpecification(string email, int id) : base(x => x.BuyerEmail == email && x.Id == id)
+    {
+
+    }
+}
+```
+- ` step-2-192: postman cheking `
+```
+- login as a tom
+- Get Orders For User - {{url}}/api/orders
+[
+    {
+        "orderDate": "2025-07-17T18:58:12.7216706Z",
+        "buyerEmail": "tom@test.com",
+        "shippingAddress": {
+            "name": "Tom Smith",
+            "line1": "100 Centre Street",
+            "line2": null,
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10013",
+            "country": "US"
+        },
+        "deliveryMethod": null,
+        "paymentSummary": {
+            "last4": 4444,
+            "brand": "Mastercard",
+            "expMonth": 12,
+            "expYear": 0
+        },
+        "orderItems": [],
+        "subTotal": 450.00,
+        "status": 0,
+        "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6",
+        "id": 1
+    },
+    {
+        "orderDate": "2025-07-17T19:05:02.9614261Z",
+        "buyerEmail": "tom@test.com",
+        "shippingAddress": {
+            "name": "Tom Smith",
+            "line1": "100 Centre Street",
+            "line2": null,
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10013",
+            "country": "US"
+        },
+        "deliveryMethod": null, // issue here related property projection or alternative: eager loading and includes
+        "paymentSummary": {
+            "last4": 4444,
+            "brand": "Mastercard",
+            "expMonth": 12,
+            "expYear": 0 // will be corrected in the coming development
+        },
+        "orderItems": [], // shouldn't be empty projection or eager loading
+        "subTotal": 450.00,
+        "status": 0, 
+        "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6",
+        "id": 2
+    },
+    {
+        "orderDate": "2025-07-17T23:11:58.9369522Z",
+        "buyerEmail": "tom@test.com",
+        "shippingAddress": {
+            "name": "Tom Smith",
+            "line1": "100 Centre Street",
+            "line2": null,
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10013",
+            "country": "US"
+        },
+        "deliveryMethod": null,
+        "paymentSummary": {
+            "last4": 4444,
+            "brand": "Mastercard",
+            "expMonth": 12,
+            "expYear": 0
+        },
+        "orderItems": [],
+        "subTotal": 450.00,
+        "status": 0,
+        "paymentIntentId": "pi_3Rm0y0Q4ykDn46yO2tjDASJs",
+        "id": 1002
+    }
+]
+
+```
+
