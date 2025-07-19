@@ -12182,3 +12182,221 @@ public class SpecificationEvaluator<T> where T: BaseEntity
     }
 }
 ```
+
+###### 194. Updating the controller to eagerly load in the get methods
+
+- `step-1a-194: Update Core/Specifications/OrderSpecification.cs`
+```
+public class OrderSpecification : BaseSpecifications<Order>
+{
+    public OrderSpecification(string email) : base(x => x.BuyerEmail == email)
+    {
+        AddInclude(x => x.OrderItems);
+        AddInclude(x => x.DeliveryMethod);
+        AddOrderByDescending(x => x.OrderDate);
+    }
+
+    public OrderSpecification(string email, int id) : base(x => x.BuyerEmail == email && x.Id == id)
+    {
+        AddInclude("OrderItems");
+        AddInclude("DeliveryMethod"); // downside is no type safety
+    }
+}
+```
+
+- ` step-2a-194: Go to postman: `
+```
+- test for postman: Get Orders for user: {{url}}/api/orders
+"statusCode": 500,
+    "message": "Collection was of a fixed size.",
+```
+
+- ` step-2b-194: check/inspect Core/Entities/OrderAggregate/Order.cs `
+```
+public class Order : BaseEntity
+{ 
+    public List<OrderItem> OrderItems { get; set; } = []; // correct
+    //public IReadOnlyList<OrderItem> OrderItems { get; set; } = []; // wrong
+}
+```
+
+- ` step-2c-194: Go to postman: Get Orders for user: {{url}}/api/orders `
+```
+- test for postman: Get Orders for user: {{url}}/api/orders
+// result on postman below:
+[
+    {
+        "orderDate": "2025-07-17T23:11:58.9369522Z",
+        "buyerEmail": "tom@test.com",
+        "shippingAddress": {
+            "name": "Tom Smith",
+            "line1": "100 Centre Street",
+            "line2": null,
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10013",
+            "country": "US"
+        },
+        "deliveryMethod": {
+            "shortName": "UPS1",
+            "deliveryTime": "1-2 Days",
+            "description": "Fastest delivery time",
+            "price": 10.00,
+            "id": 1
+        },
+        "paymentSummary": {
+            "last4": 4444,
+            "brand": "Mastercard",
+            "expMonth": 12,
+            "expYear": 0
+        },
+        "orderItems": [ // order items here
+            {
+                "itemOrdered": {
+                    "productId": 17,
+                    "productName": "Angular Purple Boots",
+                    "pictureUrl": "/images/products/boot-ang2.png"
+                },
+                "price": 150.00,
+                "quantity": 3,
+                "id": 1002
+            }
+        ],
+        "subTotal": 450.00,
+        "status": 0, // status incorrect
+        "paymentIntentId": "pi_3Rm0y0Q4ykDn46yO2tjDASJs",
+        "id": 1002
+    },
+    {
+        "orderDate": "2025-07-17T19:05:02.9614261Z",
+        "buyerEmail": "tom@test.com",
+        "shippingAddress": {
+            "name": "Tom Smith",
+            "line1": "100 Centre Street",
+            "line2": null,
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10013",
+            "country": "US"
+        },
+        "deliveryMethod": {
+            "shortName": "UPS1",
+            "deliveryTime": "1-2 Days",
+            "description": "Fastest delivery time",
+            "price": 10.00,
+            "id": 1
+        },
+        "paymentSummary": {
+            "last4": 4444,
+            "brand": "Mastercard",
+            "expMonth": 12,
+            "expYear": 0
+        },
+        "orderItems": [
+            {
+                "itemOrdered": {
+                    "productId": 17,
+                    "productName": "Angular Purple Boots",
+                    "pictureUrl": "/images/products/boot-ang2.png"
+                },
+                "price": 150.00,
+                "quantity": 3,
+                "id": 2
+            }
+        ],
+        "subTotal": 450.00,
+        "status": 0,
+        "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6",
+        "id": 2
+    },
+    {
+        "orderDate": "2025-07-17T18:58:12.7216706Z",
+        "buyerEmail": "tom@test.com",
+        "shippingAddress": {
+            "name": "Tom Smith",
+            "line1": "100 Centre Street",
+            "line2": null,
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10013",
+            "country": "US"
+        },
+        "deliveryMethod": {
+            "shortName": "UPS1",
+            "deliveryTime": "1-2 Days",
+            "description": "Fastest delivery time",
+            "price": 10.00,
+            "id": 1
+        },
+        "paymentSummary": {
+            "last4": 4444,
+            "brand": "Mastercard",
+            "expMonth": 12,
+            "expYear": 0
+        },
+        "orderItems": [
+            {
+                "itemOrdered": {
+                    "productId": 17,
+                    "productName": "Angular Purple Boots",
+                    "pictureUrl": "/images/products/boot-ang2.png"
+                },
+                "price": 150.00,
+                "quantity": 3,
+                "id": 1
+            }
+        ],
+        "subTotal": 450.00,
+        "status": 0,
+        "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6",
+        "id": 1
+    }
+]
+```
+
+- ` step-2d-194: Go to postman: Get Order for user: {{url}}/api/orders/1 `
+```
+Postman result below:
+{
+    "orderDate": "2025-07-17T18:58:12.7216706Z",
+    "buyerEmail": "tom@test.com",
+    "shippingAddress": {
+        "name": "Tom Smith",
+        "line1": "100 Centre Street",
+        "line2": null,
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10013",
+        "country": "US"
+    },
+    "deliveryMethod": {
+        "shortName": "UPS1",
+        "deliveryTime": "1-2 Days",
+        "description": "Fastest delivery time",
+        "price": 10.00,
+        "id": 1
+    },
+    "paymentSummary": {
+        "last4": 4444,
+        "brand": "Mastercard",
+        "expMonth": 12,
+        "expYear": 0
+    },
+    "orderItems": [
+        {
+            "itemOrdered": {
+                "productId": 17,
+                "productName": "Angular Purple Boots",
+                "pictureUrl": "/images/products/boot-ang2.png"
+            },
+            "price": 150.00,
+            "quantity": 3,
+            "id": 1
+        }
+    ],
+    "subTotal": 450.00,
+    "status": 0,
+    "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6",
+    "id": 1
+}
+```
