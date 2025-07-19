@@ -32,7 +32,9 @@ public class ProductRepository(StoreContext context) : IProductRepository
     {   
         var query = context.Products.AsQueryable();
 
-        if(!string.IsNullOrWhiteSpace(brand))
+        
+        
+        if (!string.IsNullOrWhiteSpace(brand))
             query = query.Where(x => x.Brand == brand);
 
         if(!string.IsNullOrWhiteSpace(type))

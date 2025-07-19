@@ -12115,3 +12115,70 @@ public class OrderSpecification : BaseSpecifications<Order>
 
 ```
 
+###### 193. Updating the spec for eager loading
+- ` step-1-193: testing postman: Get Order For user = {{url}}/api/orders/1`
+
+- ` step-1b-193: check Core/Interface/ISpecification.cs `
+```public interface ISpecification<T>
+{
+    //Expression<Func<T, bool>>? Criteria{ get; }
+    //Expression<Func<T, object>>? OrderBy { get; }
+    //Expression<Func<T, object>>? OrderByDescending { get; }
+    
+    List<Expression<Func<T, object>>> Indcludes { get; }
+    List<string> IncludeStrings { get; } // For ThenInclude
+}
+```
+
+- ` step-1bc-193: for demo purposes 'Infrastructure/Data/ProductRepository.cs ' `
+```
+   public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brand, string? type, string? sort)
+    {   
+        var query = context.Products.AsQueryable();
+
+        // query.Include(x=> x.Brand).ThenInclude(x=>x.AsQueryable<>) //demo purpose only
+
+        // if (!string.IsNullOrWhiteSpace(brand))
+        // query = query.Where(x => x.Brand == brand);
+    }
+```
+
+- `step-2a-193: Update Core/Specifications/BaseSpecification.cs `
+```
+// - Implete Interface ISpecification<T>
+public class BaseSpecifications<T>(Expression<Func<T, bool>>? criteria) : ISpecification<T>
+{
+    public List<Expression<Func<T, object>>> Indcludes { get; } = [];
+    public List<string> IncludeStrings { get; } = [];
+
+        protected void AddInclude(Expression<Func<T, object>> includeExpression)
+    {
+        Indcludes.Add(includeExpression);
+    }
+
+    protected void AddInclude(string includeString)
+    {
+        IncludeStrings.Add(includeString); // For ThenInclude
+    }
+}
+```
+
+- ` step-3-193: update Infrastructure/Data/SpecificationEvaluator.cs `
+```
+public class SpecificationEvaluator<T> where T: BaseEntity
+{
+    public static IQueryable<T> GetQuery(IQueryable<T> query, ISpecification<T> spec)
+    {
+        //if(spec.IsPagingEnabled)
+        //{
+        //    query = query.Skip(spec.Skip).Take(spec.Take);
+        //}
+
+        /* updated code below */
+        query = spec.Indcludes.Aggregate(query, (current, include) => current.Include(include));
+        query = spec.IncludeStrings.Aggregate(query, (current, include) => current.Include(include));
+
+        //return query;
+    }
+}
+```
