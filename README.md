@@ -12791,3 +12791,17 @@ public static class OrderMappingExtensions
     "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6"
 }
 ```
+
+###### 196. Summary
+
+```
+Summary
+
+- Adding the Order entity
+- Aggregate Entities
+- Owned Entities
+- Unit of Work pattern
+
+- Comming up Next
+  - Orders + Payments
+```
