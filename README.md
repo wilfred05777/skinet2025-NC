@@ -12400,3 +12400,394 @@ Postman result below:
     "id": 1
 }
 ```
+
+###### 195. Shaping the data to return
+
+- `step-1b-195: create DTO | class | 'API/DTOs/OrderDtos.cs' `
+```
+using Core.Entities.OrderAggregate;
+
+namespace API.DTOs;
+
+public class OrderDto
+{
+    public int Id { get; set; }
+    public DateTime OrderDate { get; set; }
+    public required string BuyerEmail { get; set; }
+    public required ShippingAddress ShippingAddress { get; set; } 
+    public required string DeliveryMethod { get; set; }
+    public decimal ShippingPrice { get; set; }
+    public required PaymentSummary PaymentSummary { get; set; }
+    public List<OrderItemDto> OrderItems { get; set; } 
+    public decimal SubTotal { get; set; }
+    public required string Status { get; set; }
+    public required string PaymentIntentId { get; set; }
+}
+
+// - Generate class 'OrderItemDto'
+// - Move type to OrderItemDto.cs
+// - OrderItemDto - go to defination
+
+```
+
+- `step-1a-195: check Core/Entities/OrderAggregate/Order.cs `
+```
+    public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+    public required string BuyerEmail { get; set; }
+    public ShippingAddress ShippingAddress { get; set; } = null!;
+    public DeliveryMethod DeliveryMethod { get; set; } = null!;
+    public PaymentSummary PaymentSummary { get; set; } = null!;
+    public List<OrderItem> OrderItems { get; set; } = [];
+    public decimal SubTotal { get; set; }
+    public OrderStatus Status { get; set; } = OrderStatus.Pending;
+    public required string PaymentIntentId { get; set; }
+```
+
+- ` step-2-195: API/DTOs/OrderItemDto.cs ` 
+```
+namespace API.DTOs;
+
+public class OrderItemDto
+{
+    public int ProductId { get; set; }
+    public string ProductName { get; set; }
+    public string PictureUrl { get; set; }
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
+}
+```
+
+- `step-3-195: |class| Create API/Extensions/OrderMappingExtension.cs`
+```
+using API.DTOs;
+using Core.Entities.OrderAggregate;
+
+namespace API.Extensions;
+
+public static class OrderMappingExtensions
+{
+    public static OrderDto ToDto(this Order order)
+    {
+        return new OrderDto
+        {
+            Id = order.Id,
+            BuyerEmail = order.BuyerEmail,
+            OrderDate = order.OrderDate,
+            ShippingAddress = order.ShippingAddress,
+            PaymentSummary = order.PaymentSummary,
+            DeliveryMethod = order.DeliveryMethod.Description,
+            ShippingPrice = order.DeliveryMethod.Price,
+            OrderItems = order.OrderItems.Select(x => x.ToDto()).ToList(),
+            SubTotal = order.SubTotal,
+            Status = order.Status.ToString(),
+            PaymentIntentId = order.PaymentIntentId
+        };
+    }
+
+    public static OrderItemDto ToDto(this OrderItem orderItem)
+    {
+        return new OrderItemDto
+        {
+            ProductId = orderItem.ItemOrdered.ProductId,
+            ProductName = orderItem.ItemOrdered.ProductName,
+            PictureUrl = orderItem.ItemOrdered.PictureUrl,
+            Price = orderItem.Price,
+            Quantity = orderItem.Quantity,
+        };
+    }
+}
+```
+
+- `step-4-195: Update API/Controllers/OrdersController.cs`
+```
+    /*
+      Updated start code below:
+    */
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<OrderDto>>> GetOrdersForUser()
+    {
+        var spec = new OrderSpecification(User.GetEmail());
+
+        var orders = await unit.Repository<Order>().ListAsync(spec);
+
+        var ordersToReturn = orders.Select(o => o.ToDto()).ToList();
+
+         return Ok(ordersToReturn);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<OrderDto>> GetOrderById(int id)
+    {
+        var spec = new OrderSpecification(User.GetEmail(), id);
+
+        var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null) return NotFound();
+
+        return order.ToDto();
+    }
+
+    /* Updated end code:*/
+
+    /*
+      Old code below:
+    */
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<Order>>> GetOrdersForUser()
+    {
+        var spec = new OrderSpecification(User.GetEmail());
+
+        var orders = await unit.Repository<Order>().ListAsync(spec);
+
+        return Ok(orders);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Order>> GetOrderById(int id)
+    {
+        var spec = new OrderSpecification(User.GetEmail(), id);
+
+        var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+
+        if (order == null) return NotFound();
+
+        return Ok(order);
+    }
+```
+
+
+- `step-test-195: Postman testing `
+```
+- restart api / dotnet watch
+- postman: 
+  - Get Orders For User {{url}}/api/orders
+      [
+        {
+            "id": 1002,
+            "orderDate": "2025-07-17T23:11:58.9369522Z",
+            "buyerEmail": "tom@test.com",
+            "shippingAddress": {   // naa nay content nga gi-return question nako assa ni gikan?
+                "name": "Tom Smith",
+                "line1": "100 Centre Street",
+                "line2": null,
+                "city": "New York",
+                "state": "NY",
+                "postalCode": "10013",
+                "country": "US"
+            },
+            "deliveryMethod": "Fastest delivery time", // naa na sulod
+            "shippingPrice": 10.00,
+            "paymentSummary": {
+                "last4": 4444,
+                "brand": "Mastercard",
+                "expMonth": 12,
+                "expYear": 0
+            },
+            "orderItems": [ // naa na sulod
+                {
+                    "productId": 17,
+                    "productName": "Angular Purple Boots",
+                    "pictureUrl": "/images/products/boot-ang2.png",
+                    "price": 150.00,
+                    "quantity": 3
+                }
+            ],
+            "subTotal": 450.00, // naa na sulod
+            "status": "Pending", // naa na sulod
+            "paymentIntentId": "pi_3Rm0y0Q4ykDn46yO2tjDASJs" // naa na sulod
+        },
+        {
+            "id": 2,
+            "orderDate": "2025-07-17T19:05:02.9614261Z",
+            "buyerEmail": "tom@test.com",
+            "shippingAddress": {
+                "name": "Tom Smith",
+                "line1": "100 Centre Street",
+                "line2": null,
+                "city": "New York",
+                "state": "NY",
+                "postalCode": "10013",
+                "country": "US"
+            },
+            "deliveryMethod": "Fastest delivery time",
+            "shippingPrice": 10.00,
+            "paymentSummary": {
+                "last4": 4444,
+                "brand": "Mastercard",
+                "expMonth": 12,
+                "expYear": 0
+            },
+            "orderItems": [
+                {
+                    "productId": 17,
+                    "productName": "Angular Purple Boots",
+                    "pictureUrl": "/images/products/boot-ang2.png",
+                    "price": 150.00,
+                    "quantity": 3
+                }
+            ],
+            "subTotal": 450.00,
+            "status": "Pending",
+            "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6"
+        },
+        {
+            "id": 1,
+            "orderDate": "2025-07-17T18:58:12.7216706Z",
+            "buyerEmail": "tom@test.com",
+            "shippingAddress": {
+                "name": "Tom Smith",
+                "line1": "100 Centre Street",
+                "line2": null,
+                "city": "New York",
+                "state": "NY",
+                "postalCode": "10013",
+                "country": "US"
+            },
+            "deliveryMethod": "Fastest delivery time",
+            "shippingPrice": 10.00,
+            "paymentSummary": {
+                "last4": 4444,
+                "brand": "Mastercard",
+                "expMonth": 12,
+                "expYear": 0
+            },
+            "orderItems": [
+                {
+                    "productId": 17,
+                    "productName": "Angular Purple Boots",
+                    "pictureUrl": "/images/products/boot-ang2.png",
+                    "price": 150.00,
+                    "quantity": 3
+                }
+            ],
+            "subTotal": 450.00,
+            "status": "Pending",
+            "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6"
+        }
+    ]
+
+
+- Get Order For User {{url}}/api/orders/1
+  - 
+    {
+        "id": 1,
+        "orderDate": "2025-07-17T18:58:12.7216706Z",
+        "buyerEmail": "tom@test.com",
+        "shippingAddress": {
+            "name": "Tom Smith",
+            "line1": "100 Centre Street",
+            "line2": null,
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10013",
+            "country": "US"
+        },
+        "deliveryMethod": "Fastest delivery time",
+        "shippingPrice": 10.00,
+        "paymentSummary": {
+            "last4": 4444,
+            "brand": "Mastercard",
+            "expMonth": 12,
+            "expYear": 0
+        },
+        "orderItems": [
+            {
+                "productId": 17,
+                "productName": "Angular Purple Boots",
+                "pictureUrl": "/images/products/boot-ang2.png",
+                "price": 150.00,
+                "quantity": 3
+            }
+        ],
+        "subTotal": 450.00,
+        "status": "Pending",
+        "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6"
+    }
+```
+
+- `step-7-195: send the subtotal update Core/Entities/OrderAggregate/Order.cs`
+```
+namespace Core.Entities.OrderAggregate;
+
+public class Order : BaseEntity
+{
+    //... public required string PaymentIntentId { get; set; }
+
+    public decimal GetTotal()
+    {
+        return SubTotal + DeliveryMethod.Price;
+    }
+}
+```
+
+- `step-8-195: udpate API/DTOs/OrderDto.cs `
+```
+public class OrderDto
+{
+  //...  public required string Status { get; set; }
+
+   public decimal Total { get; set; } // update
+
+  //...  public required string PaymentIntentId { get; set; }
+}
+```
+
+- `step-9-195: udpate API/Extensions/OrderMappingExtensions.cs `
+```
+public static class OrderMappingExtensions
+{
+    public static OrderDto ToDto(this Order order)
+    {
+        return new OrderDto
+        {
+            //...SubTotal = order.SubTotal,
+            Total = order.GetTotal(), // update
+            //....Status = order.Status.ToString(),
+        };
+    }
+}
+```
+
+- `step-10-195: postman test `
+```
+/*
+    Get Order For User - {{url}}/api/orders/1
+*/
+
+
+{
+    "id": 1,
+    "orderDate": "2025-07-17T18:58:12.7216706Z",
+    "buyerEmail": "tom@test.com",
+    "shippingAddress": {
+        "name": "Tom Smith",
+        "line1": "100 Centre Street",
+        "line2": null,
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10013",
+        "country": "US"
+    },
+    "deliveryMethod": "Fastest delivery time",
+    "shippingPrice": 10.00,
+    "paymentSummary": {
+        "last4": 4444,
+        "brand": "Mastercard",
+        "expMonth": 12,
+        "expYear": 0
+    },
+    "orderItems": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "pictureUrl": "/images/products/boot-ang2.png",
+            "price": 150.00,
+            "quantity": 3
+        }
+    ],
+    "subTotal": 450.00,  
+    "status": "Pending",
+    "total": 460.00, // update here
+    "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6"
+}
+```
