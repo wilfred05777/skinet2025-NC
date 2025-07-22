@@ -12805,3 +12805,50 @@ Summary
 - Comming up Next
   - Orders + Payments
 ```
+
+<hr>
+
+### Section 18: Orders & Payments
+<hr>
+
+###### 197. Introduction
+
+- `In this module`
+```
+- Client side orders
+- Webhooks
+  - communicate with the api server for the confirmation of the payment
+
+- SignalR 
+
+[ API ]       [Stripe]  
+   |          /  |
+   |        /    |
+   |      /      |
+[Client ]        |
+
+1. Create payment intent with API (before payment)
+2. API sends payment intent to Stripe
+3. Stripe creates payment intent returns client secret
+4. API returns client secret to client
+5. Client sends payment to Stripe using the client secret
+6. Stripe Sends confimation to client payment was successful
+7. Client creates order with API
+8. Stripe sends confirmation to API that payment was successful
+9. Payment confirmed and can be shipped
+
+SignalR
+/* real time notification*/
+- Provides real time-functionality
+- Good for:
+    - Dashboards
+    - Monitoring apps
+    - Apps that require notifications
+    - Chat apps
+- SignalR features
+  - Connection management
+  - Supports:
+    - Websockets
+    - Server sent events
+    - Long polling
+```
