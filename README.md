@@ -12852,3 +12852,148 @@ SignalR
     - Server sent events
     - Long polling
 ```
+
+###### 198. Creating the order components
+- `step-1-198: cd client | create order service | ' ng g s core/services/order --skip-tests '`
+- `step-1b-198: cd client | create order features | ' ng g c features/orders/order --skip-tests --flat'`
+- `step-1c-198: cd client | create order order-detailed | ' ng g c features/orders/order-detailed --skip-tests --flat'`
+
+- `step-2-198: check at postman`
+```
+- section 17: Get Order For user {{ url }}/api/orders/1
+- copy to clipboard below:
+{
+    "id": 1,
+    "orderDate": "2025-07-17T18:58:12.7216706Z",
+    "buyerEmail": "tom@test.com",
+    "shippingAddress": {
+        "name": "Tom Smith",
+        "line1": "100 Centre Street",
+        "line2": null,
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10013",
+        "country": "US"
+    },
+    "deliveryMethod": "Fastest delivery time",
+    "shippingPrice": 10.00,
+    "paymentSummary": {
+        "last4": 4444,
+        "brand": "Mastercard",
+        "expMonth": 12,
+        "expYear": 0
+    },
+    "orderItems": [
+        {
+            "productId": 17,
+            "productName": "Angular Purple Boots",
+            "pictureUrl": "/images/products/boot-ang2.png",
+            "price": 150.00,
+            "quantity": 3
+        }
+    ],
+    "subTotal": 450.00,
+    "status": "Pending",
+    "total": 460.00,
+    "paymentIntentId": "pi_3Rlwz8Q4ykDn46yO0mX9ptU6"
+}
+
+- then go to jsontots in google https://transform.tools/json-to-typescript
+- paste the clipboard copy
+- and then copy the typescript output
+- then go create a order.ts file at client/src/app/shared/models/order.ts
+```
+
+- `step-3-198: create client/src/app/shared/order.ts `
+```
+export interface Order {
+  id: number
+  orderDate: string
+  buyerEmail: string
+  shippingAddress: ShippingAddress
+  deliveryMethod: string
+  shippingPrice: number
+  paymentSummary: PaymentSummary
+  orderItems: OrderItem[]
+  subTotal: number
+  status: string
+  total: number
+  paymentIntentId: string
+}
+
+export interface ShippingAddress {
+  name: string
+  line1: string
+  line2?: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+}
+
+export interface PaymentSummary {
+  last4: number
+  brand: string
+  expMonth: number
+  expYear: number
+}
+
+export interface OrderItem {
+  productId: number
+  productName: string
+  pictureUrl: string
+  price: number
+  quantity: number
+}
+
+export interface OrderToCreate{
+  cartId: string;
+  deliveryMethodId: number;
+  shippingAddress: ShippingAddress;
+  paymentSummary: PaymentSummary;
+}
+```
+
+- `step-4-198: update order.services.ts `
+```
+import { inject, Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { Order, OrderToCreate } from '../../shared/models/order';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class OrderService {
+  baseUrl = environment.apiUrl;
+  private http = inject(HttpClient);
+
+  createOrder(orderToCreate: OrderToCreate){
+    return this.http.post<Order>(this.baseUrl = 'orders', orderToCreate);
+  }
+
+  getOrdersForUser(){
+    return this.http.get<Order[]>(this.baseUrl + 'orders');
+  }
+
+  getOrderDetailed(id: number){
+    return this.http.get<Order>(this.baseUrl + 'orders/' + id);
+  }
+
+}
+```
+
+- `step-5-198: update client/src/app/app.routes.ts`
+```
+import { OrderComponent } from './features/orders/order.component';
+import { OrderDetailedComponent } from './features/orders/order-detailed.component';
+
+export const routes: Routes = [
+  //{ path: 'checkout/success', component: CheckoutSuccessComponent, canActivate: [authGuard] },
+  
+  { path: 'orders', component: OrderComponent, canActivate: [authGuard] }, // update
+  { path: 'orders/:id', component: OrderDetailedComponent, canActivate: [authGuard] }, // update
+  
+  //{ path: 'account/login', component: LoginComponent },
+]
+```
