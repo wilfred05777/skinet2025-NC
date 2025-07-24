@@ -13479,3 +13479,195 @@ export class OrderComponent implements OnInit {
     https://localhost:4200/orders
 */
 ```
+
+###### 201. Creating the order detailed page
+
+- `step-1-201: https://localhost:4200/orders/2`
+
+- `step-1a-201: update order-detailed.component.ts`
+```
+- steps-1a-201:
+  - create private orderService = inject(OrderService);
+  - create private activateRouter = inject(ActivateRouter);
+  - create order?: Order;
+  - implements OnInit
+    -ngOnInit(): void(){
+      // create first loadOrder method
+      // insert loadOrder
+      this.loadOrder();
+
+    }
+
+  - create loadOrder(){
+    const id = this.activateRouter.snapshot.paramMap.get('id');
+    if(!id) return;
+    this.orderService.getOrderDetailed(+id).subscribe({
+      next: order => this.order = order,
+    })
+  }
+
+/*
+  order-detailed.component.ts full code below:
+*/ 
+import { Component, inject, OnInit } from '@angular/core';
+import { OrderService } from '../../core/services/order.service';
+import { ActivatedRoute } from '@angular/router';
+import { Order } from '../../shared/models/order';
+
+@Component({
+  selector: 'app-order-detailed',
+  imports: [],
+  templateUrl: './order-detailed.component.html',
+  styleUrl: './order-detailed.component.scss'
+})
+export class OrderDetailedComponent implements OnInit {
+  private orderService = inject(OrderService);
+  private activateRouter = inject(ActivatedRoute);
+  order?: Order;
+
+  ngOnInit(): void {
+    this.loadOrder();
+  }
+
+  loadOrder() {
+    const id = this.activateRouter.snapshot.paramMap.get('id');
+    if(!id) return;
+    this.orderService.getOrderDetailed(+id).subscribe({
+      next: order => this.order = order,
+    })
+  }
+}
+```
+
+- `step-1b-201: update - order-detailed.component.ts `
+```
+/*
+  - imports: [MatCardModule,  MatButton ]
+*/
+import { MatCardModule } from '@angular/material/card';
+import { MatButton } from '@angular/material/button';
+
+@Component({
+  selector: 'app-order-detailed',
+  imports: [
+    MatCardModule,
+    MatButton
+  ],
+  templateUrl: './order-detailed.component.html',
+  styleUrl: './order-detailed.component.scss'
+})
+
+/*
+    next go to template definition order.detailed.component.html
+*/
+```
+
+- `step-1c-201: update  order.detailed.component.html `
+```
+/*
+  - check first there is an order via if(){...}
+  - because of flex everything <div class="mt-8 py-3 border-t border-gray-200 flex gap-16">...</div>
+    will adjust automatically to left and right <div class="space-y-2"></div> there are two of it 
+  - to save a time copy checkout-review.component.html = <table class="w-full text-center">...</div>
+    and modify some component in it.
+      like: 
+        @for (item of cartService.cart()?.items; track item.productId) to  
+        @for (item of order.orderItems; track item.productId)
+  - go to order-summary.component.html and copy to clipboard
+      <div class="space-y-4 rounded-lg border border-gray-200 p-4 bg-white shadow-sm">...</div>
+      then paste to order-detailed.component.ts
+*/
+
+@if(order){
+  <mat-card class="bg-white py-8 shadow-md max-w-screen-lg mx-auto">
+      <div class="px-4 w-full">
+        <h2 class="text-2xl text-center font-semibold">Order summary for order #{{ order.id }}</h2>
+        <div class="mt-8 py-3 border-t border-gray-200 flex gap-16">
+          <div class="space-y-2">
+            <h4 class="text-lg font-semibold">Billing and delivery information</h4>
+            <dl>
+              <dt class="font-medium">Shipping address</dt>
+              <dd class="mt-1 font-light">Address goes here</dd>
+            </dl>
+            <dl>
+              <dt class="font-medium">Payment info</dt>
+              <dd class="mt-1 font-light">payment info goes here</dd>
+            </dl>
+          </div>
+          <div class="space-y-2">
+            <h4 class="text-lg font-semibold">Order details</h4>
+            <dl>
+              <dt class="font-medium">Email address</dt>
+              <dd class="mt-1 font-light">{{ order.buyerEmail }}</dd>
+            </dl>
+            <dl>
+              <dt class="font-medium">Order status</dt>
+              <dd class="mt-1 font-light">{{ order.status }}</dd>
+            </dl>
+            <dl>
+              <dt class="font-medium">Order date</dt>
+              <dd class="mt-1 font-light">{{ order.orderDate | date: 'medium' }}</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="order-y border-gray-200">
+            <table class="w-full text-center">
+              <tbody class="divide-y divide-gray-200">
+                @for (item of order.orderItems; track item.productId) {
+                  <tr>
+                    <td class="py-4">
+                      <div class="flex items-center gap-4">
+                        <img src="{{item.pictureUrl}}" alt="product image" class="w-10 h-10"/>
+                        <span>{{item.productName}}</span>
+                      </div>
+                    </td>
+                    <td class="p-4">x{{ item.quantity }}</td>
+                    <td class="p-4 text-right">{{ item.price | currency }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="space-y-4 rounded-lg border-y border-gray-200 p-4 bg-white shadow-sm">
+          <p class="text-xl font-semi-bold">Order Summary</p>
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <dl class="flex items-center justify-between gap-4">
+                <dt class="font-medium text-gray-500">Subtotal</dt>
+                <dd class="font-medium text-gray-900">
+                  {{ order.subTotal | currency}}
+                </dd>
+              </dl>
+
+              <dl class="flex items-center justify-between gap-4">
+                <dt class="font-medium text-gray-500">Discount</dt>
+                <dd class="font-medium text-green-500">
+                  - $0.00
+                </dd>
+              </dl>
+
+              <dl class="flex items-center justify-between gap-4">
+                <dt class="font-medium text-gray-500">Delivery fee</dt>
+                <dd class="font-medium text-gray-900">
+                  {{ order.shippingPrice | currency }}
+                </dd>
+              </dl>
+
+              <dl class="flex items-center justify-between gap-4 border-t border-gray-200 pt-2">
+                <dt class="font-medium text-gray-500">Total</dt>
+                <dd class="font-medium text-gray-900">
+                  {{ order.total | currency }}
+                </dd>
+              </dl>
+            </div>
+
+          </div>
+        </div>
+      </div>
+  </mat-card>
+}
+```
