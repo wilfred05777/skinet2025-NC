@@ -13161,7 +13161,21 @@ export const routes: Routes = [
 - shop - add to chart -
   - 5555 5555 5555 4444 - mastercard payment
   - not working upon payment 
-    - 'issue Http failure response for https://localhost:4200/orders: 404 OK'
+    - 'issue Http failure response for https://localhost:4200/orders: 404 OK' - (fixed)
+      - to fixed the issue i need to run over again and do some testing and found out the issue was in order.service.ts
+      /*
+        // correct one  
+        createOrder(orderToCreate: OrderToCreate){
+          
+          return this.http.post<Order>(this.baseUrl + 'orders', orderToCreate);
+        }
+
+        - instead of + its = after this.baseUrl = 'orders'
+        // wrong one 
+        createOrder(orderToCreate: OrderToCreate){
+          return this.http.post<Order>(this.baseUrl = 'orders', orderToCreate);
+        }
+      */
 
 - database - localhost - skinet - tables - dbo.Orders - select top 1000
 ```

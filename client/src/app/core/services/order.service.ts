@@ -11,7 +11,7 @@ export class OrderService {
   private http = inject(HttpClient);
 
   createOrder(orderToCreate: OrderToCreate){
-    return this.http.post<Order>(this.baseUrl = 'orders', orderToCreate);
+    return this.http.post<Order>(this.baseUrl + 'orders', orderToCreate);
   }
 
   getOrdersForUser(){
