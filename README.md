@@ -13402,3 +13402,80 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 }
 ```
+
+###### 200. Designing the order component to display orders 
+- `step-1-200: Open order.component.ts`
+```
+/*
+  - goal is to get the order from the API
+  - display in the User interface
+*/
+
+import { Component, inject, OnInit } from '@angular/core';
+import { OrderService } from '../../core/services/order.service';
+import { Order } from '../../shared/models/order';
+import { RouterLink } from '@angular/router';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+
+@Component({
+  selector: 'app-order',
+  imports: [
+    RouterLink,
+    DatePipe,
+    CurrencyPipe
+  ],
+  templateUrl: './order.component.html',
+  styleUrl: './order.component.scss'
+})
+export class OrderComponent implements OnInit {
+  private orderService = inject(OrderService);
+  orders: Order[] = [];
+
+  ngOnInit(): void {
+    this.orderService.getOrdersForUser().subscribe({
+      next: orders => this.orders = orders
+
+    })
+  }
+}
+```
+
+- `step-2-200: update = order.component.html`
+```
+<div class="mx-auto mt-32">
+  <h2 class="font-semibold text-2xl mb-6 text-center">
+    My Orders
+  </h2>
+  <div class="flex flex-col">
+    <div class="w-full">
+      <table class="min-w-full divide-y divide-gray-200 cursor-pointer">
+        <thead class="bg-gray-50">
+          <tr class="uppercase text-gray-600 text-sm">
+            <th class="text-center px-6 py-3">Order</th>
+            <th class="text-left">Date</th>
+            <th class="text-left">Total</th>
+            <th class="text-left">Status</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divid-gray-200">
+          @for (order of orders; track order.id) {
+            <tr routerLink="/orders/{{order.id}}" class="hover:bg-gray-100">
+              <th class="px-6 py-3"># {{order.id}}</th>
+              <td>{{ order.orderDate | date: 'medium' }}</td>
+              <td>{{ order.total | currency }}</td>
+              <td>{{ order.status }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+```
+
+- `step-3-200: checking the UI`
+```
+/*
+    https://localhost:4200/orders
+*/
+```
