@@ -12997,3 +12997,394 @@ export const routes: Routes = [
   //{ path: 'account/login', component: LoginComponent },
 ]
 ```
+
+###### 199. Submitting the order
+- `step-1-199: go to checkout.component.ts then createOrderModel method`
+```
+
+  private async createOrderModel():Promise<OrderToCreate> {
+    const cart = this.cartService.cart();
+    const shippingAddress = await this.getAddressFromStripeAddress() as ShippingAddress
+    const card = this.confirmationToken?.payment_method_preview?.card;
+
+    if(!cart?.id || !cart?.deliveryMethodId || !card || !shippingAddress){
+      throw new Error("Problem creating order")
+    }
+
+    return {
+      cartId: cart.id,
+      paymentSummary: {
+        last4: +card.last4,
+        brand: card.brand,
+        expMonth: card.exp_month,
+        expYear: card.exp_year
+      },
+      deliveryMethodId: cart.deliveryMethodId,
+      shippingAddress
+    }
+  } 
+
+  /*
+  - adding ShippingAddress solves the issue as ShippingAddress from createOrderModel 
+  - remove the ShippingAddress from import of stripe
+  - import { ConfirmationToken, StripeAddressElement, StripeAddressElementChangeEvent, StripePaymentElement, StripePaymentElementChangeEvent } from '@stripe/stripe-js';
+  - then import add Import From shared models instead: 
+    - import { ShippingAddress } from '../../shared/models/order'; 
+    - it should be an interface and not the stripe
+  -
+
+  */
+
+  private async getAddressFromStripeAddress(): Promise<Address| ShippingAddress | null> {
+    const result = await this.addressElement?.getValue();
+    const address = result?.value.address;
+
+    if (address){
+      return {
+        name: result.value.name, // newly added
+        line1: address.line1,
+        line2: address.line2 || undefined,
+        city: address.city,
+        country: address.country,
+        state: address.state,
+        postalCode: address.postal_code,
+      }
+    } else return null;
+  }
+
+  /*
+  - private async getAddressFromStripeAddress(): Promise<Address null> {} // old
+  - update the inside it like the address
+    -
+      if (address){
+        return {
+          name: result.value.name, // update
+          line1: address.line1,
+          line2: address.line2 || undefined,
+          city: address.city,
+          country: address.country,
+          state: address.state,
+          postalCode: address.postal_code,
+        }
+      } else return null; 
+  */
+
+
+  /*  
+  
+  async onStepChange(event:StepperSelectionEvent){
+    const address = await this.getAddressFromStripeAddress() as Address; // update - set as Address
+    // const address = await this.getAddressFromStripeAddress();- old needs to update
+  }  
+  */
+
+  -then add to createOrderModel = const card = this.confirmationToken?.payment_method_preview?.card;
+
+  -then create a check statement
+    - 
+      if(!cart?.id || !cart?.deliveryMethodId || !card || !shippingAddress){
+        throw new Error("Problem creating order")
+      }
+
+  - then
+    return {
+      cartId: cart.id,
+      paymentSummary: {
+        last4: +card.last4,
+        brand: card.brand,
+        expMonth: card.exp_month,
+        expYear: card.exp_year
+      },
+      deliveryMethodId: cart.deliveryMethodId,
+      shippingAddress
+    }
+  
+  - then 
+    private async createOrderModel(){} to adjust to promise to OrderToCreate below initation
+    private async createOrderModel(): Promise<OrderToCreate> {} to adjust to promise to OrderToCreate
+
+
+  - then use id to the confirmPayment(){} method
+  - inside the try create a checking if(result.paymentIntent?.status === 'succeeded'){}
+  - since it is in async loading at start turn on and turn off at the finally block not needed to subscribe to it and will make more confusion
+  - then add = private orderService = inject(OrderService);
+  - then 
+
+  async confirmPayment(stepper: MatStepper){
+    this.loading = true;
+    try {
+      if(this.confirmationToken){
+        const result = await this.stripeService.confirmPayment(this.confirmationToken);
+
+        if(result.paymentIntent?.status === 'succeeded'){
+          const order = await this.createOrderModel();
+          const orderResult = await firstValueFrom();
+          if(orderResult){
+            this.cartService.deleteCart();
+            this.cartService.seletedDelivery.set(null);
+            this.router.navigateByUrl('/checkout/success');
+          } else {
+            throw new Error('Order creation failed');
+          } else if (result.error) {
+            //coming from stripe error
+            throw new Error(result.error.message);
+        } else {
+          throw new Error('Something went wrong')
+        } 
+
+        }
+
+        /*
+        - this will be remove because of modification above
+        if(result.error){
+          throw new Error(result.error.message);
+        } else {
+          /* transfer this to if(orderResult) */
+          this.cartService.deleteCart();
+          this.cartService.seletedDelivery.set(null);
+          this.router.navigateByUrl('/checkout/success');
+        }
+        */
+
+      }
+    } catch (error: any) {
+      this.snackbar.error(error.message || 'Something went wrong');
+      stepper.previous();
+    } finally {
+      this.loading = false;
+    }    
+  }  
+
+```
+- `step-2-198: test in the UI/UX`
+```
+- shop - add to chart -
+  - 5555 5555 5555 4444 - mastercard payment
+  - not working upon payment 
+    - 'issue Http failure response for https://localhost:4200/orders: 404 OK'
+
+- database - localhost - skinet - tables - dbo.Orders - select top 1000
+```
+
+- `protoype messy code of checkout.component.ts `
+```
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { OrderSummaryComponent } from "../../shared/components/order-summary/order-summary.component";
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
+import { MatButton } from '@angular/material/button';
+import { Router, RouterLink } from '@angular/router';
+import { StripeService } from '../../core/services/stripe.service';
+import { ConfirmationToken, StripeAddressElement, StripeAddressElementChangeEvent, StripePaymentElement, StripePaymentElementChangeEvent } from '@stripe/stripe-js';
+import { SnackbarService } from '../../core/services/snackbar.service';
+import {MatCheckboxChange, MatCheckboxModule} from '@angular/material/checkbox';
+import { StepperSelectionEvent } from '@angular/cdk/stepper';
+import { Address } from '../../shared/models/user';
+import { firstValueFrom } from 'rxjs';
+import { AccountService } from '../../core/servies/account.service';
+import { CheckoutDeliveryComponent } from "./checkout-delivery/checkout-delivery.component";
+import { CheckoutReviewComponent } from "./checkout-review/checkout-review.component";
+import { CartService } from '../../core/services/cart.service';
+import { CurrencyPipe, JsonPipe } from '@angular/common';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { OrderToCreate, ShippingAddress } from '../../shared/models/order';
+import { OrderService } from '../../core/services/order.service';
+
+@Component({
+  selector: 'app-checkout',
+  imports: [
+    OrderSummaryComponent,
+    MatStepperModule,
+    MatButton,
+    RouterLink,
+    MatCheckboxModule,
+    CheckoutDeliveryComponent,
+    CheckoutReviewComponent,
+    CurrencyPipe,
+    JsonPipe,
+    MatProgressSpinnerModule
+],
+  templateUrl: './checkout.component.html',
+  styleUrl: './checkout.component.scss'
+})
+export class CheckoutComponent implements OnInit, OnDestroy {
+  // inject stripe into our component
+  private stripeService = inject(StripeService);
+  private snackbar = inject(SnackbarService);
+  private router = inject(Router);
+  private accountService = inject(AccountService);
+  private orderService = inject(OrderService);
+  cartService = inject(CartService);
+  addressElement?: StripeAddressElement;
+  paymentElement?: StripePaymentElement;
+  saveAddress = false;
+
+  completionStatus = signal<{address: boolean, card: boolean, delivery:boolean}>(
+    {address: false, card: false, delivery: false}
+  )
+
+  confirmationToken?: ConfirmationToken;
+  loading = false;
+
+  async ngOnInit() {
+    try {
+      this.addressElement = await this.stripeService.createAddressElement();
+      this.addressElement.mount('#address-element');
+      this.addressElement.on('change', this.handleAddressChange);
+
+      this.paymentElement = await this.stripeService.createPaymentElement();
+      this.paymentElement.mount('#payment-element');
+      this.paymentElement.on('change', this.handlePaymentChange);
+    } catch (error: any) {
+      this.snackbar.error(error.message);
+    }
+  }
+
+  handleAddressChange = (event: StripeAddressElementChangeEvent) => {
+    this.completionStatus.update(state => {
+      state.address = event.complete;
+      return state;
+    })
+  }
+
+  handlePaymentChange = (event: StripePaymentElementChangeEvent) => {
+    this.completionStatus.update(state => {
+      state.card = event.complete;
+      return state;
+    })
+  }
+
+  handleDeliveryChange(event: boolean){
+    this.completionStatus.update(state =>{
+      state.delivery = event;
+      return state;
+    })
+  }
+
+  async getConfirmationToken(){
+    try {
+      if(Object.values(this.completionStatus()).every(status => status === true)){
+        const result = await this.stripeService.createConfimationToken();
+        if(result.error) throw new Error(result.error.message);
+        this.confirmationToken = result.confirmationToken;
+        console.log(this.confirmationToken);
+      }
+    } catch (error:any) {
+      this.snackbar.error(error.message);
+    }
+  }
+
+  async onStepChange(event:StepperSelectionEvent){
+    if (event.selectedIndex === 1){
+      if (this.saveAddress){
+        // const address = await this.addressElement?.getValue();
+        const address = await this.getAddressFromStripeAddress() as Address;
+        address && firstValueFrom(this.accountService.updateAddress(address));
+      }
+    }
+    if(event.selectedIndex === 2){
+      // update payment intent
+      await firstValueFrom(this.stripeService.createOrUpdatePaymentIntent());
+    }
+    if(event.selectedIndex === 3) {
+      await this.getConfirmationToken();
+    }
+  }
+
+  async confirmPayment(stepper: MatStepper){
+    this.loading = true;
+    try {
+      if(this.confirmationToken){
+        const result = await this.stripeService.confirmPayment(this.confirmationToken);
+
+        if(result.paymentIntent?.status === 'succeeded'){
+          const order = await this.createOrderModel();
+          const orderResult = await firstValueFrom(this.orderService.createOrder(order));
+          if(orderResult){
+            this.cartService.deleteCart();
+            this.cartService.seletedDelivery.set(null);
+            this.router.navigateByUrl('/checkout/success');
+          } else {
+            throw new Error('Order creation failed');
+          }
+        } else if (result.error) {
+            //coming from stripe error
+            throw new Error(result.error.message);
+        } else {
+          throw new Error('Something went wrong')
+        }
+
+        // if(result.error){
+        //   throw new Error(result.error.message);
+        // } else {
+        //   this.cartService.deleteCart();
+        //   this.cartService.seletedDelivery.set(null);
+        //   this.router.navigateByUrl('/checkout/success');
+        // }
+      }
+    } catch (error: any) {
+      this.snackbar.error(error.message || 'Something went wrong');
+      stepper.previous();
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private async createOrderModel():Promise<OrderToCreate> {
+    const cart = this.cartService.cart();
+    const shippingAddress = await this.getAddressFromStripeAddress() as ShippingAddress
+    const card = this.confirmationToken?.payment_method_preview?.card;
+
+    if(!cart?.id || !cart?.deliveryMethodId || !card || !shippingAddress){
+      throw new Error("Problem creating order")
+    }
+
+    return {
+      cartId: cart.id,
+      paymentSummary: {
+        last4: +card.last4,
+        brand: card.brand,
+        expMonth: card.exp_month,
+        expYear: card.exp_year
+      },
+      deliveryMethodId: cart.deliveryMethodId,
+      shippingAddress
+    }
+    // const order: OrderToCreate = {
+    //   cartId: cart.id,
+    //   paymentSummary: {
+    //     last4: +card.last4,
+    //     brand: card.brand,
+    //     expMonth: card.exp_month,
+    //     expYear: card.exp_year
+    //   },
+    //   deliveryMethodId: cart.deliveryMethodId,
+    //   shippingAddress
+    // }
+  }
+
+  private async getAddressFromStripeAddress(): Promise<Address| ShippingAddress | null> {
+    const result = await this.addressElement?.getValue();
+    const address = result?.value.address;
+
+    if (address){
+      return {
+        name: result.value.name,
+        line1: address.line1,
+        line2: address.line2 || undefined,
+        city: address.city,
+        country: address.country,
+        state: address.state,
+        postalCode: address.postal_code,
+      }
+    } else return null;
+  }
+
+  onSaveAddressCheckboxChange(event: MatCheckboxChange){
+    this.saveAddress = event.checked;
+  }
+
+  ngOnDestroy(): void {
+    this.stripeService.disposeElements();
+  }
+}
+```
