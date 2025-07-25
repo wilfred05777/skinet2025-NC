@@ -13671,3 +13671,136 @@ import { MatButton } from '@angular/material/button';
   </mat-card>
 }
 ```
+
+###### 202. Updating the address pipe with type guards
+
+- `step-1-202: update order-detailed.component.html`
+```
+- update Shipping address
+
+          <div class="space-y-2">
+            <h4 class="text-lg font-semibold">Billing and delivery information</h4>
+            <dl>
+              <dt class="font-medium">Shipping address</dt>
+              <dd class="mt-1 font-light">Address goes here</dd> // needs modification below:
+              <dd class="mt-1 font-light">{{ order.shippingAddress | address }}</dd>
+            </dl>
+            <dl>
+              <dt class="font-medium">Payment info</dt>
+              <dd class="mt-1 font-light">{{ order.paymentSummary | paymentCard }}</dd> 
+              // modify
+                // encounter error which we need to fixed in 'step-2-202 paymentCard issue address.pine.ts'
+                // step-3-202: paymentSummary issue is next - payment-card.pipe.ts  
+            </dl>
+          </div>
+
+```
+
+- `step-2-202: modify address.pipe.ts `
+```
+import { ShippingAddress } from '../models/order';
+
+export class AddressPipe implements PipeTransform {
+  /* modifide code below: */
+    transform(value?: ConfirmationToken['shipping'] | ShippingAddress, ...args: unknown[]): unknown {
+    if(value && 'address' && value.name){
+      const {line1, line2, city, state, country, postal_code} =
+        (value as ConfirmationToken['shipping'])?.address!;
+      return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''},
+        ${city}, ${state}, ${postal_code}, ${country}`
+    } else if(value && 'line1' in value){
+      const {line1, line2, city, state, country, postalCode} =
+        value as ShippingAddress;
+      return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''},
+        ${city}, ${state}, ${postalCode}, ${country}`
+    }
+    else {
+      return 'Unknown address'
+    }
+  }
+
+  /* old code below */
+  transform(value?: ConfirmationToken['shipping'], ...args: unknown[]): unknown {
+    if(value?.address && value.name){
+      const {line1, line2, city, state, country, postal_code} = value.address;
+      return `${value.name}, ${line1}${line2 ? ', ' + line2 : ''},
+        ${city}, ${state}, ${postal_code}, ${country}`
+    } else {
+      return 'Unknown address'
+    }
+  }
+
+}
+```
+
+- `step-3-202: Update payment-card.pipe.ts `
+```
+import { PaymentSummary } from '../models/order';
+
+/* modified code below: */
+export class PaymentCardPipe implements PipeTransform {
+
+  transform(value?: ConfirmationToken['payment_method_preview'] | PaymentSummary, ...args: unknown[]): unknown {
+    if(value && 'card' in value) {
+      const {brand, last4, exp_month, exp_year} =
+        (value as ConfirmationToken['payment_method_preview']).card!;
+          return `${brand.toUpperCase()} **** **** **** ${last4}, Exp: ${exp_month}/${exp_year}`;
+    } else if(value && 'last4' in value) {
+      const {brand, last4, expMonth, expYear} =  value as PaymentSummary;
+        return `${brand.toUpperCase()} **** **** **** ${last4}, Exp: ${expMonth}/${expYear}`;
+    } else {
+      return 'Unknown payment method'
+    }
+  }
+}
+
+
+/*old code below:
+
+    export class PaymentCardPipe implements PipeTransform {
+
+  transform(value?: ConfirmationToken['payment_method_preview'], ...args: unknown[]): unknown {
+    if(value?.card){
+      const {brand, last4, exp_month, exp_year} = value.card;
+      return `${brand.toUpperCase()} **** **** **** ${last4}, Exp: ${exp_month}/${exp_year}`;
+    } else {
+      return 'Unknown payment method'
+    }
+  }
+}
+
+*/
+```
+
+- `step-1b-202: add button in order-detailed.component.html`
+```
+/*
+- add routerlink should be added in the imports @order-detailed.component.ts 
+    RouterLink
+    @Component({
+  selector: 'app-order-detailed',
+  imports: [
+  //...PaymentCardPipe,
+    RouterLink
+],
+  templateUrl: './order-detailed.component.html',
+  styleUrl: './order-detailed.component.scss'
+})
+*/
+
+<div class="px-4 w-full">
+        <div class="flex justify-between items-center align-middle"> // modify here styles
+          <h2 class="text-2xl text-center font-semibold">Order summary for order #{{ order.id }}</h2>
+          <button routerLink="/orders">Return to orders</button> // modify here the routerlink
+        </div>
+        <div class="mt-8 py-3 border-t border-gray-200 flex gap-16">
+        ...
+        </div>
+        //...
+</div>
+
+```
+- ` issue on my end https://localhost:4200/orders/2003 `
+```
+- always loading and not showing any population of data from stripe in the UI/UX
+```
