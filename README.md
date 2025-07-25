@@ -13803,4 +13803,6 @@ export class PaymentCardPipe implements PipeTransform {
 - ` issue on my end https://localhost:4200/orders/2003 `
 ```
 - always loading and not showing any population of data from stripe in the UI/UX
+
+- working redo the payment process and its all good tested only once
 ```
