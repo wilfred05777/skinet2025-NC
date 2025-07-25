@@ -13791,7 +13791,7 @@ export class PaymentCardPipe implements PipeTransform {
 <div class="px-4 w-full">
         <div class="flex justify-between items-center align-middle"> // modify here styles
           <h2 class="text-2xl text-center font-semibold">Order summary for order #{{ order.id }}</h2>
-          <button routerLink="/orders">Return to orders</button> // modify here the routerlink
+          <button routerLink="/orders" mat-stroked-button>Return to orders</button> // modify here the routerlink
         </div>
         <div class="mt-8 py-3 border-t border-gray-200 flex gap-16">
         ...
