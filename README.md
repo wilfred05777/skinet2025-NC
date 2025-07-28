@@ -13806,3 +13806,131 @@ export class PaymentCardPipe implements PipeTransform {
 
 - working redo the payment process and its all good tested only once
 ```
+
+###### 203. Adding a webhook endpoint in the payments controller
+```
+- ang issue kay sa Stripe backend kay succeeded but on the UI project its order status is pending
+- https://dashboard.stripe.com/test/webhooks
+```
+- `step-1-203: update PaymentsController.cs`
+```
+public class PaymentsController (
+        //IPaymentService paymentService,
+        //IUnitOfWork unit,
+        ILogger<PaymentsController> logger // add this
+            ) : BaseApiController {
+
+    private readonly string _whSecret = ""; // add this
+
+    //...[HttpPost("{cartId}")] ...
+    //...bottom
+    //create new endpoint
+    
+        [HttpGet("delivery-methods")]
+    public async Task<ActionResult<IReadOnlyList<DeliveryMethod>>> GetDeliveryMethods()
+    {
+        return Ok(await unit.Repository<DeliveryMethod>().ListAllAsync());
+    }
+
+    [HttpPost("webhook")]
+    public async Task<IActionResult> StripeWebhook()
+    {
+        var json = await new StreamReader(Request.Body).ReadToEndAsync();
+        try
+        {
+            var stripeEvent = ConstructStripeEvent(json);
+
+            if (stripeEvent.Data.Object is not PaymentIntent paymentIntent)
+            {
+                return BadRequest("Invalid event data");
+            }
+
+            await HandlePaymentIntentSucceeded(paymentIntent);
+            return Ok();
+        }
+        catch (StripeException ex)
+        {
+            logger.LogError(ex, "Stripe webhook error");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Webhook error");
+        }
+
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected occurred");
+            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected occurred");
+        }
+    }
+
+    // going back here and create 
+    private async Task HandlePaymentIntentSucceeded(PaymentIntent intent)
+    {
+        if (intent.Status == "succeeded")
+        {
+            // create constructor for this controller @ OrderSpecification.cs 
+            var spec = new OrderSpecification(intent.Id, true);
+
+            var order = await unit.Repository<Order>().GetEntityWithSpec(spec);
+                ?? throw new Exception("Order not found");
+
+            if ((long)order.GetTotal() * 100 != intent.Amount)
+            {
+                // update first OrderStatus.cs - `step-3-203: Update OrderStatus.cs`
+                order.Status = OrderStatus.PaymentMismatch; 
+            }
+            else
+            {
+                order.Status = OrderStatus.PaymentReceived;
+            }
+            await unit.Complete();
+
+            // TODO: SignalR // send notification to the client
+
+        }
+    }
+
+    private Event ConstructStripeEvent(string json)
+    {
+       try
+       {
+        return EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], _whSecret);
+       }
+       catch (System.Exception)
+       {
+        
+        throw;
+       }
+    }
+}        
+```
+- `step-2-203: update and create constructor for Stripe webhook @ OrderSpecification.cs`
+```
+public class OrderSpecification : BaseSpecifications<Order>
+{
+    //... more constollers above
+
+    public OrderSpecification(string PaymentIntentId, bool isPaymentIntent) :
+        base(x => x.PaymentIntentId == PaymentIntentId)
+    {
+        AddInclude("OrderItems");
+        AddInclude("DeliveryMethod");
+    }
+}
+
+// then go back again to PaymentsController.cs method HandlePaymentIntentSucceeded(PaymentIntent intent)
+{
+
+}
+```
+
+- `step-3-203: Update OrderStatus.cs`
+```
+public enum OrderStatus
+{
+    //...PaymentFailed,
+    PyamentMismatch, // update
+}
+```
+
+- `step-4-203: going back to StripeWebhook @PaymentsController.cs`
+```
+```

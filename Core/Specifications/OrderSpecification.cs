@@ -16,4 +16,11 @@ public class OrderSpecification : BaseSpecifications<Order>
         AddInclude("OrderItems");
         AddInclude("DeliveryMethod");
     }
+
+    public OrderSpecification(string PaymentIntentId, bool isPaymentIntent) :
+        base(x => x.PaymentIntentId == PaymentIntentId)
+    {
+        AddInclude("OrderItems");
+        AddInclude("DeliveryMethod");
+    }
 }
