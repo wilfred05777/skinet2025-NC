@@ -14087,3 +14087,110 @@ public class PaymentsController(
 
 - next issue is at https://localhost:4200/checkout/success using SignalR for webhooks
 ```
+
+###### 205. Adding SignalR to the API
+
+- issue: notify the client about the transaction? via SignalR 
+- to maintain connection client browser and API to the backend
+
+- `step-1-205: create | class | API/SignalR/NotificationHub.cs`
+```
+/* 
+  - redis has features of  multiple web service
+*/
+
+using System.Collections.Concurrent;
+using API.Extensions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+
+namespace API.SignalR;
+
+[Authorize]
+public class NotificationHub : Hub
+{
+    private static readonly ConcurrentDictionary<string, string> UserConnections = new();
+
+    public override Task OnConnectedAsync()
+    {
+        var email = Context.User?.GetEmail();
+
+        if (!string.IsNullOrEmpty(email)) UserConnections[email] = Context.ConnectionId;
+
+        return base.OnConnectedAsync();
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        var email = Context.User?.GetEmail();
+
+        if (!string.IsNullOrEmpty(email)) UserConnections.TryRemove(email, out _);
+
+        return base.OnDisconnectedAsync(exception);
+    }
+
+    public static string? GetConnectionIdByEmail(string email)
+    {
+        UserConnections.TryGetValue(email, out var ConnectionId);
+
+        return ConnectionId;
+    }
+}
+```
+
+- `step-2-205: update Program.cs`
+```
+/*
+  - specificy the endpoint we are going to use
+*/
+
+//..builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddSignalR(); // add it here
+
+// then specify authentication middleware
+// signalR doesn't do it in the endpoint 
+//... app.UseCors below 
+app.UseAuthentication(); // add it here
+app.UseAuthorization(); // add it here
+
+// then add a mapping so that dotnet will know where to forward any request signalR server
+//... app.MapGroup("api").MapIdentityApi<AppUser>();
+app.MapHub<NotificationHub>("/hub/notifications");
+
+// update the webhook to use the functionality
+```
+
+-`step-3-205: update PaymentsController.cs `
+```
+public class PaymentsController(
+        IPaymentService paymentService,
+        IUnitOfWork unit,
+        ILogger<PaymentsController> logger,
+        IConfiguration config,
+        IHubContext<NotificationHub> hubContext // added this
+    ) : BaseApiController
+{
+  
+  //... more functions top
+
+  // then use in the webhook TODO: SignalR // send notification to the client
+        private async Task HandlePaymentIntentSucceeded(PaymentIntent intent)
+    {
+        if (intent.Status == "succeeded")
+        {
+            //... 
+
+            // TODO: SignalR // send notification to the client, updated code below: 
+            var connectionId = NotificationHub.GetConnectionIdByEmail(order.BuyerEmail);
+            if (!string.IsNullOrEmpty(connectionId))
+            {
+                await hubContext.Clients.Client(connectionId)
+                    .SendAsync("OrderCompleteNotification", order.ToDto());
+            }
+        }
+    }
+
+  //... more functions bottom
+}
+```
+

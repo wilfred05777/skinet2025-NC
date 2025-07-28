@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Identity;
 using Infrastructure;
+using API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
                 .AddEntityFrameworkStores<StoreContext>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
-
+builder.Services.AddSignalR();
 
 builder.Services.AddOpenApi();
 
@@ -52,6 +53,9 @@ app.UseCors(x => x
     .AllowCredentials()
     .WithOrigins("http://localhost:4200", "https://localhost:4200"));
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 // if (app.Environment.IsDevelopment())
 // {
 //     app.MapOpenApi();
@@ -64,6 +68,7 @@ app.UseCors(x => x
 app.MapControllers();
 app.MapGroup("api").MapIdentityApi<AppUser>();
 // app.MapIdentityApi<AppUser>();
+app.MapHub<NotificationHub>("/hub/notifications");
 
 try
 {
