@@ -13931,6 +13931,159 @@ public enum OrderStatus
 }
 ```
 
-- `step-4-203: going back to StripeWebhook @PaymentsController.cs`
+- `step-4-203: going back to StripeWebhook @PaymentsController.cs full code below:`
 ```
+using Core.Entities;
+using Core.Entities.OrderAggregate;
+using Core.Interfaces;
+using Core.Specifications;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Stripe;
+
+namespace API.Controllers;
+
+public class PaymentsController(
+        IPaymentService paymentService,
+        IUnitOfWork unit,
+        ILogger<PaymentsController> logger
+    ) : BaseApiController
+{
+    private readonly string _whSecret = "";
+
+    [Authorize]
+    [HttpPost("{cartId}")]
+    public async Task<ActionResult<ShoppingCart>> CreateOrUpdatePaymentIntent(string cartId)
+    {
+        var cart = await paymentService.CreateOrUpdatePaymentIntent(cartId);
+
+        if (cart == null) return BadRequest("Problem with your cart");
+
+        return Ok(cart);
+    }
+
+    [HttpGet("delivery-methods")]
+    public async Task<ActionResult<IReadOnlyList<DeliveryMethod>>> GetDeliveryMethods()
+    {
+        return Ok(await unit.Repository<DeliveryMethod>().ListAllAsync());
+    }
+
+    [HttpPost("webhook")]
+    public async Task<IActionResult> StripeWebhook()
+    {
+        var json = await new StreamReader(Request.Body).ReadToEndAsync();
+        try
+        {
+            var stripeEvent = ConstructStripeEvent(json);
+
+            if (stripeEvent.Data.Object is not PaymentIntent paymentIntent)
+            {
+                return BadRequest("Invalid event data");
+            }
+
+            await HandlePaymentIntentSucceeded(paymentIntent);
+            return Ok();
+        }
+        catch (StripeException ex)
+        {
+            logger.LogError(ex, "Stripe webhook error");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Webhook error");
+        }
+
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected occurred");
+            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected occurred");
+        }
+
+    }
+
+    private async Task HandlePaymentIntentSucceeded(PaymentIntent intent)
+    {
+        if (intent.Status == "succeeded")
+        {
+            // create constructor for this controller @ OrderSpecification.cs 
+            var spec = new OrderSpecification(intent.Id, true);
+
+            var order = await unit.Repository<Order>().GetEntityWithSpec(spec)
+                ?? throw new Exception("Order not found");
+
+            if ((long)order.GetTotal() * 100 != intent.Amount)
+            {
+                order.Status = OrderStatus.PyamentMismatch;
+            }
+            else
+            {
+                order.Status = OrderStatus.PaymentReceived;
+            }
+            await unit.Complete();
+
+            // TODO: SignalR // send notification to the client
+
+        }
+    }
+
+    private Event ConstructStripeEvent(string json)
+    {
+       try
+       {
+        return EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], _whSecret);
+       }
+       catch (Exception ex)
+       {
+        logger.LogError(ex, "Failed to construct Stripe event");
+        throw new BadHttpRequestException("Invalid Stripe signature");
+       }
+    }
+}
+```
+
+###### 204. Testing the WebHook using the Stripe CLI
+- `step-1-204: in order to test it we need a tool coming from stripe` 
+- [stripe webhooks](https://dashboard.stripe.com/test/workbench/webhooks)
+- [stripe docs](https://docs.stripe.com/stripe-cli)
+- [stripe cli downloadables](https://github.com/stripe/stripe-cli/releases/tag/v1.28.0)
+- [stripe cli link](https://docs.stripe.com/cli)
+
+```
+- stripe apikey: sk_test_51RaRRpQ4ykDn46yOxDUqEkKMSkAxBpFBU4g7AL3TJZEGWF4Gy4r56vA2tcJnRf4yTiCmfqHiwQ4v9vx2Ps7M8TU500wlrybuus
+- stripe login --interactive
+- stripe listen --forward-to https://localhost:5001/api/payments/webhook -e payment_intent.succeeded
+- whsec_71410625e296cf0a1cdc7183364075d0f398d1a571acec320558287627e4086c // add this key to appsettings.json
+```
+- `step-2-204: update PaymentsController.cs`
+```
+/* update code below: */
+public class PaymentsController(
+        IPaymentService paymentService,
+        IUnitOfWork unit,
+        ILogger<PaymentsController> logger, IConfiguration config
+    ) : BaseApiController
+{
+    private readonly string _whSecret = config["StripeSettings:WhSecret"]!;
+}
+
+/*
+  old code below:
+    public class PaymentsController(
+        IPaymentService paymentService,
+        IUnitOfWork unit,
+        ILogger<PaymentsController> logger
+    ) : BaseApiController
+    {
+        private readonly string _whSecret = "";
+    }
+*/
+```
+- `step-3-204: Testing`
+```
+- In order to create  that event
+- we need to test it again by creating new order
+- visa card: 42424242424242
+  - pay button below will take place:
+- upon payment the stripe cli 
+  - stripe listen --forward-to https://localhost:5001/api/payments/webhook -e payment_intent.succeeded
+  - this will show 200 POST it means succeeded
+
+- next issue is at https://localhost:4200/checkout/success using SignalR for webhooks
 ```
