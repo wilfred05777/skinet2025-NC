@@ -14325,3 +14325,114 @@ export class InitService {
   - headers|Payload| [Messages] 
                     - {"type":6}
 ```
+
+###### 207. Updating the checkout success page
+
+- `step-1-207: update checkout-success.component.ts` 
+```
+/*
+- checkout success: localhost:4200/checkout/success
+
+*/
+
+@Component({
+  selector: 'app-checkout-success',
+  imports: [
+    MatButton,
+    RouterLink,
+    MatProgressSpinnerModule, // added/update
+    DatePipe, // added/update
+    AddressPipe, // added/update
+    CurrencyPipe, // added/update
+    PaymentCardPipe // added/update
+  ],
+  templateUrl: './checkout-success.component.html',
+  styleUrl: './checkout-success.component.scss'
+})
+
+export class CheckoutSuccessComponent {
+  signalrService = inject(SignalrService); // added
+
+}
+```
+
+- `step-2-207: update checkout-success.component.html` 
+```
+/*
+  *ngIf is deprecated angular 20 onwards its is been removed
+  instead the angular team what this approach to be use now
+  -> @if(signalrService.orderSignal(); as order){} for the conditional checcking
+*/
+
+@if(signalrService.orderSignal(); as order){
+<section class="bg-white py-16">
+  <div class="mx-auto max-w-2xl px-4">
+    <h2 class="font-semibold text-2xl mb-2">
+      Thanks for your fake order!
+    </h2>
+    <p class="text-gray-500 mb-8">Your order <span class="font-medium">#{{ order.id }}</span>
+      will never be processed as this is a fake shop. we will not notify you once your order has not shipped.
+    </p>
+    <div class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-6 mb-8">
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Date</dt>
+        <dd class="font-medium text-gray-900 text-end">{{ order.orderDate  | date: 'medium' }}</dd>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Payment method</dt>
+        <dd class="font-medium text-gray-900 text-end">{{ order.paymentSummary | paymentCard}}</dd>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Address</dt>
+        <dd class="font-medium text-gray-900 text-end">{{ order.shippingAddress  | address}}</dd>
+      </dl>
+      <dl class="flex items-center justify-between gap-4">
+        <dt class="font-normal text-gray-500">Amount</dt>
+        <dd class="font-medium text-gray-900 text-end">{{ order.total | currency}}</dd>
+      </dl>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button routerLink="/orders/{{order.id}}" mat-flat-button>View your order</button>
+      <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
+    </div>
+  </div>
+</section>
+} @else {
+<section class="bg-white py-16">
+  <div class="mx-auto max-w-2xl px-4">
+    <h2 class="font-semibold text-2xl mb-2">Order proccessing, please wait...</h2>
+
+    <div class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-6 mb-8">
+      <div class="flex flex-col justify-center items-center">
+        <mat-spinner diameter="30"></mat-spinner>
+        <p class="text-xl">Loading order...</p>
+        <span>Your payment has been recieved, we are creating the order</span>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
+    </div>
+  </div>
+</section>
+}
+```
+
+-`step-3-206: testing`
+```
+- https://localhost:4200/checkout/success
+- stripe login --interactive
+- stripe listen --forward-to https://localhost:5001/api/payments/webhook -e payment_intent.succeeded
+- create new order
+  - https://localhost:4200/shop
+  - mastercard: 5555 5555 5555 4444
+    - Note: we wont see a latency because of instant loading we well be able to see this once we publish our application in the web.
+  - https://localhost:4200/orders/5003
+    - Order status
+      -PaymentReceived
+  
+  - then we prevent the access to success page
+    because right this moment we can stil access it even we don't have an order
+    we are going to used guard in angular
+    - https://localhost:4200/checkout/success
+``` 
