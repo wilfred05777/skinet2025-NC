@@ -14194,3 +14194,134 @@ public class PaymentsController(
 }
 ```
 
+###### 206. Adding SignalR to the client
+
+-`step-1a-206: cd client then ' npm install @microsoft/signalr '`
+-`step-1b-206: cd client then ' ng g s core/services/signalr --skip-tests '`
+-`step-1b-206: client/src/environment.developement.ts `
+```
+  hubUrl: 'http://localhost:5000/hub/notifications', // add this code
+```
+
+-`step-1d-206: client/src/environment.ts `
+```
+  hubUrl: 'hub/notifications',
+```
+
+- `step-2-206: update client/src/app/core/services/signalr.service.ts`
+```
+import { Injectable, signal } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
+import { Order } from '../../shared/models/order';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SignalrService {
+  hubUrl = environment.hubUrl;
+  hubConnection?: HubConnection;
+  orderSignal = signal<Order | null>(null);
+
+
+  createHubConnection(){
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl(this.hubUrl, {
+        withCredentials: true,
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    this.hubConnection.start()
+      .catch(error => console.log(error));
+
+    this.hubConnection.on('OrderCompleteNotification', (order: Order) =>{
+      this.orderSignal.set(order);
+    })
+  }
+
+  stopHubConnection() {
+    if(this.hubConnection?.state === HubConnectionState.Connected){
+      this.hubConnection.stop().catch(error => console.log(error));
+    }
+  }
+}
+```
+
+- `step-3-206: Update init.service.ts`
+```
+  /* update code below:*/
+import { inject, Injectable } from '@angular/core';
+import { CartService } from './cart.service';
+import { forkJoin, of, tap } from 'rxjs';
+import { AccountService } from '../servies/account.service';
+import { SignalrService } from './signalr.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class InitService {
+  private cartService = inject(CartService);
+  private accountService = inject(AccountService);
+  private signalrService = inject(SignalrService);
+
+ init(){
+  const cartId = localStorage.getItem('cart_id');
+  const cart$ = cartId ? this.cartService.getCart(cartId) : of(null);
+
+  // forkJoin allows us to wait for multiple observables to complete
+  // multiple requests can be made here, such as fetching user info
+  return forkJoin({
+    cart: cart$,
+    user: this.accountService.getUserInfo().pipe(
+      tap(user=> {
+        if(user) this.signalrService.createHubConnection();
+      })
+    )
+  })
+  // return cart$;
+ }
+}
+
+  /* old code
+  user: this.accountService.getUserInfo()
+  */
+```
+
+- `step-4-206: update client/src/app/core/service/account.service.ts `
+```
+  private signalrService = inject(SignalrService);
+
+    login(values: any){
+    //let params = new HttpParams();
+    //params = params.append('useCookies', true);
+
+    return this.http.post<User>(this.baseUrl + 'login', values, {params}).pipe(
+      tap(() => this.signalrService.createHubConnection())
+    ); // update
+
+    // return this.http.post<User>(this.baseUrl + 'login', values, {params, withCredentials: true});
+  }
+
+
+  logout(){
+    return this.http.post(this.baseUrl + 'account/logout', {})
+    // update code below:
+    .pipe( 
+      tap(() => this.signalrService.stopHubConnection())
+    );
+    // return this.http.post(this.baseUrl + 'account/logout', {}, {withCredentials: true});
+  }
+```
+
+- `step-5-206: testing api and UI`
+```
+- go to browser console
+- success output : websocket connected to ....
+  - : [2025-07-29T07:05:27.058Z] Information: WebSocket connected to ws://localhost:5000/hub/notifications?id=R87rGA_lb3C9sgTLOc1cjA.
+- network tab
+  - Name 
+    -notifications?id=###
+  - headers|Payload| [Messages] 
+                    - {"type":6}
+```
