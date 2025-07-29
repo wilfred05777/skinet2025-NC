@@ -14364,40 +14364,40 @@ export class CheckoutSuccessComponent {
   -> @if(signalrService.orderSignal(); as order){} for the conditional checcking
 */
 
-@if(signalrService.orderSignal(); as order){
+@if(signalrService.orderSignal(); as order){ // update
 <section class="bg-white py-16">
   <div class="mx-auto max-w-2xl px-4">
     <h2 class="font-semibold text-2xl mb-2">
       Thanks for your fake order!
     </h2>
-    <p class="text-gray-500 mb-8">Your order <span class="font-medium">#{{ order.id }}</span>
+    <p class="text-gray-500 mb-8">Your order <span class="font-medium">#{{ order.id }}</span> // update order.id
       will never be processed as this is a fake shop. we will not notify you once your order has not shipped.
     </p>
     <div class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-6 mb-8">
       <dl class="flex items-center justify-between gap-4">
         <dt class="font-normal text-gray-500">Date</dt>
-        <dd class="font-medium text-gray-900 text-end">{{ order.orderDate  | date: 'medium' }}</dd>
+        <dd class="font-medium text-gray-900 text-end">{{ order.orderDate  | date: 'medium' }}</dd> // update order.orderDate
       </dl>
       <dl class="flex items-center justify-between gap-4">
         <dt class="font-normal text-gray-500">Payment method</dt>
-        <dd class="font-medium text-gray-900 text-end">{{ order.paymentSummary | paymentCard}}</dd>
+        <dd class="font-medium text-gray-900 text-end">{{ order.paymentSummary | paymentCard}}</dd> // update order.paymentSummary
       </dl>
       <dl class="flex items-center justify-between gap-4">
         <dt class="font-normal text-gray-500">Address</dt>
-        <dd class="font-medium text-gray-900 text-end">{{ order.shippingAddress  | address}}</dd>
+        <dd class="font-medium text-gray-900 text-end">{{ order.shippingAddress  | address}}</dd> // // update order.shippingAddress
       </dl>
       <dl class="flex items-center justify-between gap-4">
         <dt class="font-normal text-gray-500">Amount</dt>
-        <dd class="font-medium text-gray-900 text-end">{{ order.total | currency}}</dd>
+        <dd class="font-medium text-gray-900 text-end">{{ order.total | currency}}</dd> // update order.total
       </dl>
     </div>
     <div class="flex items-center space-x-4">
-      <button routerLink="/orders/{{order.id}}" mat-flat-button>View your order</button>
+      <button routerLink="/orders/{{order.id}}" mat-flat-button>View your order</button> // update order.id
       <button routerLink="/shop" mat-stroked-button>Continue shopping</button>
     </div>
   </div>
 </section>
-} @else {
+} @else { // update below code 
 <section class="bg-white py-16">
   <div class="mx-auto max-w-2xl px-4">
     <h2 class="font-semibold text-2xl mb-2">Order proccessing, please wait...</h2>
@@ -14436,3 +14436,97 @@ export class CheckoutSuccessComponent {
     we are going to used guard in angular
     - https://localhost:4200/checkout/success
 ``` 
+
+###### 208. Adding a guard to the checkout success
+
+-`-step-1-208: update order.service.ts`
+```
+export class OrderService {
+  baseUrl = environment.apiUrl;
+  private http = inject(HttpClient);
+  orderComplete = false; // add this
+  }
+
+```
+
+-`-step-2-208: update checkout.component.ts`
+```
+/*
+  - in async confirmPayment(stepper: MatStepper){
+    //... more code above
+    
+    if(orderResult){
+      this.orderService.orderComplete = true; // add this
+      //... more code below
+    }
+  }
+  
+  then update checkout-success-component.ts
+*/
+```
+
+-`step-3-208:update checkout-success-component.ts`
+```
+/*
+  - implement OnDestroy
+  old code
+  export class CheckoutSuccessComponent {
+  signalrService = inject(SignalrService);
+}
+
+*/
+import { OrderService } from '../../../core/services/order.service';
+
+export class CheckoutSuccessComponent implements OnDestroy{ // newly added OnDestory
+  //signalrService = inject(SignalrService);
+  private orderService = inject(OrderService) // newly added
+
+  ngOnDestroy(): void { // newly added
+    
+    this.orderService.orderComplete = false; // flag // newly added
+    this.signalrService.orderSignal.set(null); // newly added
+
+  }
+}
+```
+
+-`step-4:208: create a guard | order.complete.guard.ts`
+```
+/*
+  ng g guard core/guards/order-complete --skip-tests
+  -CanActivate
+*/
+
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { OrderService } from '../services/order.service';
+
+export const orderCompleteGuard: CanActivateFn = (route, state) => {
+  const orderService = inject(OrderService)
+  const router = inject(Router);
+
+  if(orderService.orderComplete) {
+    return true;
+  } else{
+    router.navigateByUrl("/shop");
+    return false;
+  }
+};
+```
+
+- `step-5-208: update app.routes.ts `
+```
+import { orderCompleteGuard } from './core/guards/order-complete.guard'; // add orderCompleteGuard import
+
+  { path: 'checkout/success', component: CheckoutSuccessComponent,
+    canActivate: [authGuard, orderCompleteGuard]  }, // add orderCompleteGuard
+```
+
+- `step-6-208: checking/testing the UI`
+```
+-  https://localhost:4200/checkout/success upon accessing this directly it will send the client back to the shop page https://localhost:4200/shop if there are no current/newly transaction of order
+
+- 2nd test is to create an order again
+-
+- upon clicking the View your order button it will automatically reset
+```
