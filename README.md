@@ -14565,3 +14565,14 @@ import { RouterLink } from '@angular/router'; // add this import
   </div>
 </div>
 ```
+
+###### 210. Summary
+- In this module
+```
+- Client side orders
+- Webhooks
+- SignalR
+
+- Next Publishing
+  - Continues Integration
+```
