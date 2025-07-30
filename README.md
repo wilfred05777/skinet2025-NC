@@ -14530,3 +14530,26 @@ import { orderCompleteGuard } from './core/guards/order-complete.guard'; // add 
 -
 - upon clicking the View your order button it will automatically reset
 ```
+
+###### 209. Adding the home page component style
+
+- `step-1-209:  update home.component.ts`
+```
+import { MatButton } from '@angular/material/button'; // add this import 
+import { RouterLink } from '@angular/router'; // add this import 
+
+@Component({
+  selector: 'app-home',
+  imports: [
+    MatButton, // add this codee
+    RouterLink // add this codee
+  ],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
+})
+```
+
+- ` step-2-209: update home.component.html`
+```
+
+```
