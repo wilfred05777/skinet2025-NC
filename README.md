@@ -14576,3 +14576,34 @@ import { RouterLink } from '@angular/router'; // add this import
 - Next Publishing
   - Continues Integration
 ```
+
+
+<hr>
+
+### Section 19: Publishing to Azure
+<hr>
+
+###### 211: Introduction
+
+- In this module
+```
+- Prepering the app for publishing
+- Angular Production build
+- Using cloud Redis server -
+- Publishing to Azure
+- Continuous Integration (CI/CD) 
+  - continuous development after initial publish
+- Troubleshooting on Azure
+  - Tips when encoutering error
+
+- Free products from Azure required Credit Card and after 30 days only
+  if you select the free version of this you will not be charge 
+    - Azure SQL Database - 
+    - Azure App Service
+      - be careful with selecting it
+
+Azure
+  - what we are using is free.
+  - Does require credit card to sign up
+  - Use with care
+```
