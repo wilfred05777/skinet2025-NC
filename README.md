@@ -14607,3 +14607,117 @@ Azure
   - Does require credit card to sign up
   - Use with care
 ```
+
+###### 212. Preparing the client app for publishing
+
+- `step-1:212: update angular.json`
+```
+
+/* before the update start*/
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+              "outputPath": {
+              "base": "../API/wwwroot", // updated example
+              "browser": "browser"
+            },
+            "outputPath": "../API/wwwroot/browser", // previous examples of doing it
+            "outputPath": "dist/client", // update this file location
+            
+            //...more code below on actual file
+          }
+/* before the update end */            
+```
+
+- `step-2-212: update loading.interceptor.ts`
+```
+/* updated code below: */
+import { delay, ... } from 'rxjs';
+import { environment } from '../../../environments/environment';
+
+  return next(req).pipe(
+    (environment.production ? identity : delay(500)),
+    finalize(() => busyService.idle())
+  );
+
+/*
+- older version for reference
+
+export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
+  const busyService = inject(BusyService);
+
+  busyService.busy();
+
+  return next(req).pipe(
+    delay(500),
+    finalize(() => busyService.idle())
+  );
+};
+*/
+
+```
+
+- `step-3-212: highlight client folder = Find in folder / shift+alt+f`
+```
+- Search
+  - localhost
+- filest to include
+  - ./client/src/
+
+using it in th production will cause an issue in production if the environment is in url format
+```
+
+-`step-3a-212: update shop.service.ts`
+```
+import { environment } from '../../../environments/environment';
+
+  export class ShopService {
+    baseUrl = environment.apiUrl; // modify to this 
+
+  /* 
+    old code
+    baseUrl = 'https://localhost:5001/api/';
+  */
+  }
+```
+
+-`step-3b-212: update test-error.component.ts`
+```
+import { environment } from '../../../environments/environment';
+
+  export class TestErrorComponent {
+   baseUrl = environment.apiUrl
+
+    /* old code below
+    baseUrl = 'https://localhost:5001/api/';
+    */
+
+    //... more code below
+  }
+```
+
+-`step-4-212: create build in angular`
+```
+inside client app folder
+run this command
+  - ' ng build '
+
+- encouter issue exceed file size build
+  - to fixed it below is the solution:
+
+    - update angular.json
+
+        "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB", // to "maximumWarning": "1MB",
+                  "maximumError": "1MB" // to "maximumError": "2MB"
+                },
+        ]
+
+        - run this command again
+          - ' ng build '
+
+        - note: if it is successful build this will be seen in the terminal:
+          ' Output location: C:\Users\wilfr\Desktop\Web-App-Development\skinet2025-NC\API\wwwroot '
+
+```
