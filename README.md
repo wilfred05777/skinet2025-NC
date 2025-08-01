@@ -14802,5 +14802,8 @@ public class StoreContextSeed
 - @root folder = `dotnet ef database drop -p Infrastructure/ -s API '
 - cd API 
 - dotnet build
+- API/bin/Debug/Data/delivery.json
+- API/bin/Debug/Data/products.json
+- dotnet run
 
 ```
