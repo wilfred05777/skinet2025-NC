@@ -14,11 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Data\SeedData\**" CopyToOutputDirectory="PreserveNewest"/>
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <Folder Include="Data\SeedData\" />
-  </ItemGroup>
+  </ItemGroup> -->
 
 </Project>

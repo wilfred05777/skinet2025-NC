@@ -14721,3 +14721,86 @@ run this command
           ' Output location: C:\Users\wilfr\Desktop\Web-App-Development\skinet2025-NC\API\wwwroot '
 
 ```
+
+
+###### 213. Preparing the .Net app for publishing
+- `step-1-213:  update API/Program.cs`
+```
+app.UseDefaultFiles(); //added
+app.UseStaticFiles(); //added
+//...
+//... app.MapHub<NotificationHub>("/hub/notifications");
+app.MapFallbackToController("Index", "Fallback"); //added
+``` 
+
+- `step-2-213:  create | class |  API/Controllers/Fallback.cs`
+```
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers;
+
+public class FallbackController : Controller
+{
+    public IActionResult Index()
+    {
+        return PhysicalFile(Path.Combine(Directory.GetCurrentDirectory(),
+            "wwwroot", "index.html"), "text/html");
+    }
+}
+```
+
+- `step-2-213:  update | class |  Infrastructure/Data/StoreContextSeed.cs`
+```
+public class StoreContextSeed
+{
+    public static async Task SeedAsync(StoreContext context)
+    {
+        var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); // new code added
+        //... more code below: 
+
+        if (!context.Products.Any())
+        {
+            var productsData = await File
+                .ReadAllTextAsync(path + @"/Data/SeedData/products.json"); // new code added
+                // .ReadAllTextAsync("../Infrastructure/Data/SeedData/products.json"); // old code
+        }
+
+        if (!context.DeliveryMethods.Any())
+        {
+            var dmData = await File.ReadAllTextAsync(path + @"/Data/SeedData/delivery.json"); // new code added
+            // var dmData = await File.ReadAllTextAsync("../Infrastructure/Data/SeedData/delivery.json"); // old code
+
+            var methods = JsonSerializer.Deserialize<List<DeliveryMethod>>(dmData);
+
+            if (methods == null) return;
+            context.DeliveryMethods.AddRange(methods);
+            await context.SaveChangesAsync();
+        }
+  }
+}
+```
+
+- `step-3-213:  update | class |  Infrastructure/Infrastructure.csproj`
+```
+//... more code on top
+
+  <ItemGroup>
+    <None Include="Data\SeedData\**" CopyToOutputDirectory="PreserveNewest"/> // newly added
+    <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+
+// removed 
+/*
+  <!-- <ItemGroup>
+    <Folder Include="Data\SeedData\" />
+  </ItemGroup> -->
+*/
+```
+
+- `step-4-213: re-run database seed `
+```
+- @root folder = `dotnet ef database drop -p Infrastructure/ -s API '
+- cd API 
+- dotnet build
+
+```
